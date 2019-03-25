@@ -7,6 +7,10 @@ AC_PROG_CC
 LT_PREREQ([2.2])
 LT_INIT([])
 
+PKG_CHECK_MODULES(GTK, [gtk+-3.0 >= 3.22])
+AC_SUBST(GTK_CFLAGS)
+AC_SUBST(GTK_LIBS)
+
 AC_CONFIG_FILES([Makefile include/Makefile src/Makefile example/Makefile])
 
 AC_OUTPUT
