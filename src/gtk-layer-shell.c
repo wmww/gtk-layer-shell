@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "header.h"
+#include "gtk-layer-shell.h"
 
 void some_func() {
     printf("some_func()\n");
