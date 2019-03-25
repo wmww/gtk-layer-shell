@@ -11,6 +11,10 @@ PKG_CHECK_MODULES(GTK, [gtk+-3.0 >= 3.22])
 AC_SUBST(GTK_CFLAGS)
 AC_SUBST(GTK_LIBS)
 
+PKG_CHECK_MODULES(WAYLAND, wayland-client)
+AC_SUBST(WAYLAND_CFLAGS)
+AC_SUBST(WAYLAND_LIBS)
+
 PKG_CHECK_MODULES(WAYLAND_SCANNER, [wayland-scanner])
 
 AC_CONFIG_FILES([Makefile include/Makefile src/Makefile src/protocol/Makefile example/Makefile])
