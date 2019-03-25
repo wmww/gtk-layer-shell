@@ -1,2 +1,2 @@
-SUBDIRS = include src
+SUBDIRS = include src example
 AM_LDFLAGS = -O3
