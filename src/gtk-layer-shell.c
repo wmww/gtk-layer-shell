@@ -260,6 +260,7 @@ wayland_shell_surface_new_layer_surface (GtkWindow *gtk_window, struct wl_output
     GdkWindow *gdk_window;
     struct wl_surface *wl_surface;
 
+    gtk_window_set_decorated (gtk_window, FALSE);
     self = wayland_shell_surface_new (gtk_window);
     g_return_val_if_fail (self, NULL);
 
