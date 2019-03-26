@@ -575,7 +575,7 @@ wayland_window_realize_override_cb (GtkWindow *gtk_window, void *_data)
 
     window_widget = GTK_WIDGET (gtk_window);
 
-    if (g_strcmp0 (gtk_widget_get_name (GTK_WIDGET (gtk_window)), "GtkTooltipWindow") == 0) {
+    if (gtk_window_get_type_hint (gtk_window) == GDK_WINDOW_TYPE_HINT_TOOLTIP) {
         is_tooltip = TRUE;
     }
 
