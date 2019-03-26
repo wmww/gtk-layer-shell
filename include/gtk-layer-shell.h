@@ -7,8 +7,6 @@
 
 // Types defined in Wayland protocol headers
 struct xdg_wm_base;
-enum xdg_positioner_anchor;
-enum xdg_positioner_gravity;
 struct zwlr_layer_shell_v1;
 
 // Both always attached to GDK windows (not GTK ones)
@@ -63,8 +61,8 @@ void wayland_shell_surface_set_layer_surface_info (WaylandShellSurface *self, ui
 
 // With an already existing (but not mapped) WaylandShellSurface, map it as a popup, usually called from the popup callback
 void wayland_shell_surface_map_popup (WaylandShellSurface *self,
-                                      enum xdg_positioner_anchor anchor,
-                                      enum xdg_positioner_gravity gravity,
+                                      GdkGravity anchor,
+                                      GdkGravity gravity,
                                       GdkPoint offset);
 
 // If this shell surface is transient for another Wayland shell surface, return that. Else return NULL
