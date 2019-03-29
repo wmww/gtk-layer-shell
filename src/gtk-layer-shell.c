@@ -1,4 +1,5 @@
 #include "gtk-layer-shell.h"
+#include "gdk-window-hack.h"
 #include "protocol/xdg-shell-client.h"
 #include "protocol/wlr-layer-shell-unstable-v1-client.h"
 
@@ -588,6 +589,7 @@ wayland_window_realize_override_cb (GtkWindow *gtk_window, void *_data)
     if (transient_for_widget && gtk_widget_get_wayland_shell_surface (transient_for_widget)) {
         WaylandShellSurface *shell_surface;
 
+        gdk_window_hack_init (gtk_widget_get_window (window_widget));
         shell_surface = gtk_widget_get_wayland_shell_surface (window_widget);
 
         if (shell_surface) {
