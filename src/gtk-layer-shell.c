@@ -392,6 +392,19 @@ gdk_gravity_get_xdg_positioner_anchor(GdkGravity anchor)
     }
 }
 
+static enum xdg_positioner_constraint_adjustment
+gdk_anchor_hints_get_xdg_positioner_constraint_adjustment (GdkAnchorHints hints)
+{
+    enum xdg_positioner_constraint_adjustment adjustment;
+    if (hints & GDK_ANCHOR_FLIP_X) adjustment |= XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_X;
+    if (hints & GDK_ANCHOR_FLIP_Y) adjustment |= XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_Y;
+    if (hints & GDK_ANCHOR_SLIDE_X) adjustment |= XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X;
+    if (hints & GDK_ANCHOR_SLIDE_Y) adjustment |= XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y;
+    if (hints & GDK_ANCHOR_RESIZE_X) adjustment |= XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_X;
+    if (hints & GDK_ANCHOR_RESIZE_Y) adjustment |= XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_Y;
+    return adjustment;
+}
+
 static struct xdg_positioner *
 wayland_shell_surface_get_xdg_positioner (WaylandShellSurface *self,
                       GdkGravity anchor,
@@ -577,8 +590,7 @@ wayland_shell_surface_map_popup_auto (WaylandShellSurface *self)
     xdg_positioner_set_gravity (positioner,
                                 gdk_gravity_get_xdg_positioner_gravity(position->window_anchor));
     xdg_positioner_set_constraint_adjustment (positioner,
-                          XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_X
-                          | XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_Y);// TODO
+                                              gdk_anchor_hints_get_xdg_positioner_constraint_adjustment (position->anchor_hints));
 
     struct wl_surface *popup_wl_surface = gdk_wayland_window_get_wl_surface (popup_window);
     g_return_if_fail (popup_wl_surface);
