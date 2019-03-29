@@ -205,14 +205,17 @@ wayland_shell_surface_destroy_cb (WaylandShellSurface *self) {
 static void
 wayland_shell_surface_set_size (WaylandShellSurface *self, gint width, gint height)
 {
-    if (self->width != width || self->height != height) {
+    //if (self->width != width || self->height != height) {
         self->width  = width;
         self->height = height;
         if (self->layer_surface)
             zwlr_layer_surface_v1_set_size (self->layer_surface, self->width, self->height);
-        if (self->xdg_surface)
-            xdg_surface_set_window_geometry (self->xdg_surface, 0, 0, self->width, self->height);
-    }
+        if (self->xdg_surface) {
+            GdkRectangle geom;
+            wayland_widget_get_logical_geom (GTK_WIDGET (self->gtk_window), &geom);
+            xdg_surface_set_window_geometry (self->xdg_surface, geom.x, geom.y, geom.width, geom.height);
+        }
+    //}
 }
 
 static void
@@ -547,10 +550,7 @@ wayland_shell_surface_map_popup (WaylandShellSurface *self,
                  GdkGravity gravity,
                  GdkPoint offset)
 {
-    struct xdg_positioner *positioner;
-    gtk_window_show_props (self->gtk_window);
-
-    positioner = wayland_shell_surface_get_xdg_positioner (self, anchor, gravity, offset);
+    struct xdg_positioner *positioner = wayland_shell_surface_get_xdg_positioner (self, anchor, gravity, offset);
     wayland_shell_surface_map_as_popup (self, positioner);
     xdg_positioner_destroy (positioner);
 }
@@ -560,14 +560,12 @@ wayland_shell_surface_map_popup_auto (WaylandShellSurface *self)
 {
     GdkWindow *popup_window = gtk_widget_get_window (GTK_WIDGET (self->gtk_window));
     GdkWinowHackPosition *position = gtk_window_hack_get_position (popup_window);
+    GdkRectangle popup_geom;
 
     struct xdg_positioner *positioner = xdg_wm_base_create_positioner (xdg_wm_base_global);
-    int popup_x, popup_y, popup_width, popup_height;
-    gdk_window_get_geometry (popup_window,
-                             &popup_x, &popup_y,
-                             &popup_width, &popup_height);
+    wayland_widget_get_logical_geom (GTK_WIDGET (self->gtk_window), &popup_geom);
     xdg_positioner_set_size (positioner,
-                             popup_width, popup_height);
+                             popup_geom.width, popup_geom.height);
     xdg_positioner_set_anchor_rect (positioner,
                                     position->rect.x, position->rect.y,
                                     position->rect.width, position->rect.height);
