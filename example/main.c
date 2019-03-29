@@ -42,16 +42,19 @@ activate (GtkApplication* app, void *_data)
     wayland_shell_surface_global_init (on_wayland_popup_map);
 
     GtkWidget *window = gtk_application_window_new (app);
-    gtk_window_set_default_size (GTK_WINDOW (window), 200, 200);
+    gtk_window_set_default_size (GTK_WINDOW (window), 400, 400);
 
     gtk_window_set_title (GTK_WINDOW (window), "Window");
-    GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+    GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 100);
     gtk_container_add (GTK_CONTAINER (window), vbox);
-    GtkWidget *button = gtk_button_new_with_label ("Hello");
-    gtk_widget_set_tooltip_text (button, "This is a tooltip");
+    GtkWidget *spacer_button = gtk_button_new_with_label ("Useless");
+    gtk_container_add (GTK_CONTAINER (vbox), spacer_button);
+    GtkWidget *button = gtk_button_new_with_label ("Menu");
+    // gtk_widget_set_tooltip_text (button, "This is a tooltip");
     g_signal_connect (button, "button_press_event",  G_CALLBACK (on_button_press), NULL);
     gtk_container_add (GTK_CONTAINER (vbox), button);
     g_signal_connect (window, "realize", G_CALLBACK (on_window_realize), NULL);
+    gtk_window_set_decorated (GTK_WINDOW (window), FALSE);
     gtk_widget_show_all (window);
 }
 
