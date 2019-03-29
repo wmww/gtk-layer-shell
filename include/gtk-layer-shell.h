@@ -44,7 +44,9 @@ struct _WaylandShellSurface {
 typedef struct _WaylandShellSurface WaylandShellSurface;
 
 // Set up global variables and callbacks needed for Wayland shell surfaces
-void wayland_shell_surface_global_init (void(*map_popup_callback)(WaylandShellSurface *self));
+void wayland_shell_surface_global_init ();
+
+void wayland_shell_surface_set_popup_callback (void(*map_popup_callback)(WaylandShellSurface *self));
 
 // If the widget or a parent has a WaylandShellSurface, return it, else return NULL
 WaylandShellSurface *gtk_widget_get_wayland_shell_surface (GtkWidget *widget);

@@ -4,8 +4,6 @@
 
 static void window_realize_cb (GtkWidget *window, void *_data)
 {
-    if (!gtk_layer_shell_has_initialized ())
-        wayland_shell_surface_global_init (NULL);
     WaylandShellSurface *layer_surface = wayland_shell_surface_new_layer_surface (GTK_WINDOW (window), NULL, 2, "gtk_example");
     wayland_shell_surface_set_layer_surface_info (layer_surface, 4, 20);
 }

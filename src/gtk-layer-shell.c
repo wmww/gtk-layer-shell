@@ -33,8 +33,7 @@ get_xdg_wm_base_global ()
     return xdg_wm_base_global;
 }
 
-gboolean
-gtk_layer_shell_has_initialized()
+gboolean gtk_layer_shell_has_initialized ()
 {
     return has_initialized;
 }
@@ -230,6 +229,9 @@ wayland_shell_surface_new (GtkWindow *gtk_window)
 {
     WaylandShellSurface *self;
     GdkWindow *gdk_window;
+
+    if (!has_initialized)
+        wayland_shell_surface_global_init ();
 
     g_return_val_if_fail (has_initialized, NULL);
     g_return_val_if_fail (gtk_window, NULL);
@@ -630,15 +632,13 @@ wayland_query_tooltip_emission_hook (GSignalInvocationHint *_ihint,
 }
 
 void
-wayland_shell_surface_global_init (void (*map_popup_callback)(WaylandShellSurface *self))
+wayland_shell_surface_global_init ()
 {
     GdkDisplay *gdk_display;
     gint realize_signal_id, unmap_signal_id, query_tooltip_signal_id;
     GClosure *realize_closure, *unmap_closure;
 
     g_assert_false (has_initialized);
-
-    wayland_shell_surface_popup_callback = map_popup_callback;
 
     gdk_display = gdk_display_get_default ();
     g_return_if_fail (gdk_display);
@@ -664,4 +664,10 @@ wayland_shell_surface_global_init (void (*map_popup_callback)(WaylandShellSurfac
     g_signal_add_emission_hook (query_tooltip_signal_id, 0, wayland_query_tooltip_emission_hook, NULL, NULL);
 
     has_initialized = TRUE;
+}
+
+void
+wayland_shell_surface_set_popup_callback(void (*map_popup_callback)(WaylandShellSurface *self))
+{
+    wayland_shell_surface_popup_callback = map_popup_callback;
 }
