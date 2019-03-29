@@ -356,15 +356,15 @@ gdk_gravity_get_xdg_positioner_gravity(GdkGravity gravity)
 {
     switch (gravity)
     {
-    case GDK_GRAVITY_NORTH_WEST: return XDG_POSITIONER_GRAVITY_TOP_LEFT;
-    case GDK_GRAVITY_NORTH: return XDG_POSITIONER_GRAVITY_TOP;
-    case GDK_GRAVITY_NORTH_EAST: return XDG_POSITIONER_GRAVITY_TOP_RIGHT;
-    case GDK_GRAVITY_WEST: return XDG_POSITIONER_GRAVITY_LEFT;
+    case GDK_GRAVITY_NORTH_WEST: return XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT;
+    case GDK_GRAVITY_NORTH: return XDG_POSITIONER_GRAVITY_BOTTOM;
+    case GDK_GRAVITY_NORTH_EAST: return XDG_POSITIONER_GRAVITY_BOTTOM_LEFT;
+    case GDK_GRAVITY_WEST: return XDG_POSITIONER_GRAVITY_RIGHT;
     case GDK_GRAVITY_CENTER: return XDG_POSITIONER_GRAVITY_NONE;
-    case GDK_GRAVITY_EAST: return XDG_POSITIONER_GRAVITY_RIGHT;
-    case GDK_GRAVITY_SOUTH_WEST: return XDG_POSITIONER_GRAVITY_BOTTOM_LEFT;
-    case GDK_GRAVITY_SOUTH: return XDG_POSITIONER_GRAVITY_BOTTOM;
-    case GDK_GRAVITY_SOUTH_EAST: return XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT;
+    case GDK_GRAVITY_EAST: return XDG_POSITIONER_GRAVITY_LEFT;
+    case GDK_GRAVITY_SOUTH_WEST: return XDG_POSITIONER_GRAVITY_TOP_RIGHT;
+    case GDK_GRAVITY_SOUTH: return XDG_POSITIONER_GRAVITY_TOP;
+    case GDK_GRAVITY_SOUTH_EAST: return XDG_POSITIONER_GRAVITY_TOP_LEFT;
     case GDK_GRAVITY_STATIC: return XDG_POSITIONER_GRAVITY_NONE;
     default: return XDG_POSITIONER_GRAVITY_NONE;
     }
@@ -373,10 +373,20 @@ gdk_gravity_get_xdg_positioner_gravity(GdkGravity gravity)
 static enum xdg_positioner_anchor
 gdk_gravity_get_xdg_positioner_anchor(GdkGravity anchor)
 {
-    g_assert (XDG_POSITIONER_ANCHOR_LEFT == XDG_POSITIONER_GRAVITY_LEFT &&
-              XDG_POSITIONER_ANCHOR_TOP_RIGHT == XDG_POSITIONER_GRAVITY_TOP_RIGHT &&
-              XDG_POSITIONER_ANCHOR_NONE == XDG_POSITIONER_GRAVITY_NONE);
-    return (enum xdg_positioner_anchor)gdk_gravity_get_xdg_positioner_gravity(anchor);
+    switch (anchor)
+    {
+    case GDK_GRAVITY_NORTH_WEST: return XDG_POSITIONER_ANCHOR_TOP_LEFT;
+    case GDK_GRAVITY_NORTH: return XDG_POSITIONER_ANCHOR_TOP;
+    case GDK_GRAVITY_NORTH_EAST: return XDG_POSITIONER_ANCHOR_TOP_RIGHT;
+    case GDK_GRAVITY_WEST: return XDG_POSITIONER_ANCHOR_LEFT;
+    case GDK_GRAVITY_CENTER: return XDG_POSITIONER_ANCHOR_NONE;
+    case GDK_GRAVITY_EAST: return XDG_POSITIONER_ANCHOR_RIGHT;
+    case GDK_GRAVITY_SOUTH_WEST: return XDG_POSITIONER_ANCHOR_BOTTOM_LEFT;
+    case GDK_GRAVITY_SOUTH: return XDG_POSITIONER_ANCHOR_BOTTOM;
+    case GDK_GRAVITY_SOUTH_EAST: return XDG_POSITIONER_ANCHOR_BOTTOM_RIGHT;
+    case GDK_GRAVITY_STATIC: return XDG_POSITIONER_ANCHOR_NONE;
+    default: return XDG_POSITIONER_ANCHOR_NONE;
+    }
 }
 
 static struct xdg_positioner *
@@ -538,10 +548,62 @@ wayland_shell_surface_map_popup (WaylandShellSurface *self,
                  GdkPoint offset)
 {
     struct xdg_positioner *positioner;
+    gtk_window_show_props (self->gtk_window);
 
     positioner = wayland_shell_surface_get_xdg_positioner (self, anchor, gravity, offset);
     wayland_shell_surface_map_as_popup (self, positioner);
     xdg_positioner_destroy (positioner);
+}
+
+static void
+wayland_shell_surface_map_popup_auto (WaylandShellSurface *self)
+{
+    GdkWindow *popup_window = gtk_widget_get_window (GTK_WIDGET (self->gtk_window));
+    GdkWinowHackPosition *position = gtk_window_hack_get_position (popup_window);
+
+    struct xdg_positioner *positioner = xdg_wm_base_create_positioner (xdg_wm_base_global);
+    int popup_x, popup_y, popup_width, popup_height;
+    gdk_window_get_geometry (popup_window,
+                             &popup_x, &popup_y,
+                             &popup_width, &popup_height);
+    xdg_positioner_set_size (positioner,
+                             popup_width, popup_height);
+    xdg_positioner_set_anchor_rect (positioner,
+                                    position->rect.x, position->rect.y,
+                                    position->rect.width, position->rect.height);
+    xdg_positioner_set_offset (positioner,
+                               position->rect_anchor_dx,
+                               position->rect_anchor_dy);
+    xdg_positioner_set_anchor (positioner,
+                               gdk_gravity_get_xdg_positioner_anchor(position->rect_anchor));
+    xdg_positioner_set_gravity (positioner,
+                                gdk_gravity_get_xdg_positioner_gravity(position->window_anchor));
+    xdg_positioner_set_constraint_adjustment (positioner,
+                          XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_X
+                          | XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_Y);// TODO
+
+    struct wl_surface *popup_wl_surface = gdk_wayland_window_get_wl_surface (popup_window);
+    g_return_if_fail (popup_wl_surface);
+    self->xdg_surface = xdg_wm_base_get_xdg_surface (xdg_wm_base_global, popup_wl_surface);
+    xdg_surface_add_listener (self->xdg_surface, &xdg_surface_listener, self);
+
+    GdkWindow *transient_for_gdk_window = gdk_window_hack_get_transient_for (popup_window);
+    g_return_if_fail (transient_for_gdk_window);
+    WaylandShellSurface *transient_for_wayland_shell_surface = g_object_get_data (G_OBJECT (transient_for_gdk_window), wayland_shell_surface_key);
+    g_return_if_fail (transient_for_wayland_shell_surface);
+    self->xdg_popup = wayland_shell_surface_make_child_xdg_popup (transient_for_wayland_shell_surface,
+                                                                  self->xdg_surface,
+                                                                  positioner);
+    g_return_if_fail (self->xdg_popup);
+    xdg_positioner_destroy (positioner);
+    xdg_popup_add_listener (self->xdg_popup, &xdg_popup_listener, self);
+
+    wayland_shell_surface_set_size (self,
+                    gtk_widget_get_allocated_width (GTK_WIDGET (self->gtk_window)),
+                    gtk_widget_get_allocated_height (GTK_WIDGET (self->gtk_window)));
+
+    wl_surface_commit (popup_wl_surface);
+    wl_display_roundtrip (gdk_wayland_display_get_wl_display (gdk_window_get_display (popup_window)));
 }
 
 static gboolean
@@ -555,9 +617,12 @@ wayland_popup_map_event_cb (GtkWidget *popup_widget, GdkEvent *event, WaylandShe
         shell_surface->transient_for_widget = last_query_tooltip_widget;
     }
 
+    /*
     if (wayland_shell_surface_popup_callback) {
         wayland_shell_surface_popup_callback (shell_surface);
     }
+    */
+    wayland_shell_surface_map_popup_auto (shell_surface);
 
     return TRUE;
 }

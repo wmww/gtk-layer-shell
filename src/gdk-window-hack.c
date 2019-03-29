@@ -2,13 +2,7 @@
 
 #include <glib-2.0/glib.h>
 
-GdkWindow *
-gdk_window_hack_get_transient_for (GdkWindow *gdk_window)
-{
-    // Assume the transient_for GdkWindow* is the 3rd pointer after the GObject in GdkWindow (gdkinternals:206)
-    void **transient_for = (void *)gdk_window + sizeof(GObject) + 2 * sizeof(void *);
-    return GDK_WINDOW (*transient_for);
-}
+static const char *popup_data_key = "hack_popup_position";
 
 // The type of the function pointer of GdkWindowImpl's move_to_rect method (gdkwindowimpl.h:78)'
 typedef void (*MoveToRectFunc) (GdkWindow *window,
@@ -30,23 +24,23 @@ gdk_window_move_to_rect_impl_override (GdkWindow *window,
                                        int rect_anchor_dx,
                                        int rect_anchor_dy)
 {
-    GdkRectangle r = {0, 0, -1, -1};
-    if (rect)
-        r = *rect;
-    g_message("gdk_window_move_to_rect_impl_override(window: %p\n"
-              "                                      rect: %dx%d at (%d, %d)\n"
-              "                                      rect_anchor: %d\n"
-              "                                      window_anchor: %d\n"
-              "                                      anchor_hints: %d\n"
-              "                                      rect_anchor_dx: %d\n"
-              "                                      rect_anchor_dy: %d\n",
-              window,
-              r.width, r.height, r.x, r.y,
-              rect_anchor,
-              window_anchor,
-              anchor_hints,
-              rect_anchor_dx,
-              rect_anchor_dy);
+    GdkWinowHackPosition* position_data = gtk_window_hack_get_position (window);
+    if (!position_data) {
+        position_data = g_new0 (GdkWinowHackPosition, 1);
+        g_object_set_data_full (G_OBJECT (window), popup_data_key, position_data, g_free);
+    }
+
+    if (rect) {
+        position_data->rect = *rect;
+    } else {
+        g_warning ("No rect sent to gdk_window_move_to_rect_impl_override ()");
+    }
+    position_data->rect_anchor = rect_anchor;
+    position_data->window_anchor = window_anchor;
+    position_data->anchor_hints = anchor_hints;
+    position_data->rect_anchor_dx = rect_anchor_dx;
+    position_data->rect_anchor_dy = rect_anchor_dy;
+
     g_assert (gdk_window_move_to_rect_real);
     gdk_window_move_to_rect_real (window, rect, rect_anchor, window_anchor, anchor_hints, rect_anchor_dx, rect_anchor_dy);
 }
@@ -72,4 +66,18 @@ gdk_window_hack_init (GdkWindow *gdk_window)
         gdk_window_move_to_rect_real = *move_to_rect_func_ptr_ptr;
         *move_to_rect_func_ptr_ptr = gdk_window_move_to_rect_impl_override;
     }
+}
+
+// Returned memory is valid for the lifetime of the window
+GdkWinowHackPosition* gtk_window_hack_get_position (GdkWindow *gdk_window)
+{
+    return g_object_get_data (G_OBJECT (gdk_window), popup_data_key);
+}
+
+GdkWindow *
+gdk_window_hack_get_transient_for (GdkWindow *gdk_window)
+{
+    // Assume the transient_for GdkWindow* is the 3rd pointer after the GObject in GdkWindow (gdkinternals:206)
+    void **transient_for = (void *)gdk_window + sizeof(GObject) + 2 * sizeof(void *);
+    return GDK_WINDOW (*transient_for);
 }
