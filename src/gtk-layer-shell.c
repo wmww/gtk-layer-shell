@@ -12,6 +12,33 @@ struct zwlr_layer_shell_v1 *layer_shell_global = NULL;
 
 static gboolean has_initialized = FALSE;
 
+
+// Current state of a Layer surface (not used for layer surface popups)
+struct _LayerSurfaceInfo {
+    uint32_t anchor;
+    int exclusive_zone;
+};
+
+typedef struct _LayerSurfaceInfo LayerSurfaceInfo;
+
+// The Wayland variables for some sort of custom Wayland shell surface (can be a Layer surface, XDG stable toplevel or XDG popup)
+struct _WaylandShellSurface {
+    GtkWindow *gtk_window;
+    GtkWidget *transient_for_widget;
+    gint width, height;
+
+    struct xdg_surface *xdg_surface;
+    struct xdg_toplevel *xdg_toplevel;
+    struct xdg_popup *xdg_popup;
+    gboolean is_tooltip;
+
+    struct zwlr_layer_surface_v1 *layer_surface;
+    LayerSurfaceInfo *layer_surface_info;
+};
+
+typedef struct _WaylandShellSurface WaylandShellSurface;
+
+
 // The last widget to get the query-tooltip callback
 // Used as the parent of new tooltips
 static GtkWidget *last_query_tooltip_widget = NULL;
@@ -238,8 +265,7 @@ wayland_shell_surface_new (GtkWindow *gtk_window)
     WaylandShellSurface *self;
     GdkWindow *gdk_window;
 
-    if (!has_initialized)
-        wayland_shell_surface_global_init ();
+    g_assert (has_initialized);
 
     g_return_val_if_fail (has_initialized, NULL);
     g_return_val_if_fail (gtk_window, NULL);
@@ -288,6 +314,7 @@ wayland_shell_surface_new_layer_surface (GtkWindow *gtk_window, struct wl_output
                                          name_space);
         g_return_val_if_fail (self->layer_surface, NULL);
         zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, FALSE);
+        zwlr_layer_surface_v1_set_anchor (self->layer_surface, ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT);
         zwlr_layer_surface_v1_add_listener (self->layer_surface, &layer_surface_listener, self);
     } else if (xdg_wm_base_global) {
         g_warning ("Layer Shell Wayland protocol not supported, panel will not be placed correctly");
@@ -356,57 +383,6 @@ wayland_shell_surface_make_child_xdg_popup (WaylandShellSurface *self,
         g_warning ("Wayland shell surface %p has no layer or xdg shell surface wayland objects", self);
         return NULL;
     }
-}
-
-static enum xdg_positioner_gravity
-gdk_gravity_get_xdg_positioner_gravity(GdkGravity gravity)
-{
-    switch (gravity)
-    {
-    case GDK_GRAVITY_NORTH_WEST: return XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT;
-    case GDK_GRAVITY_NORTH: return XDG_POSITIONER_GRAVITY_BOTTOM;
-    case GDK_GRAVITY_NORTH_EAST: return XDG_POSITIONER_GRAVITY_BOTTOM_LEFT;
-    case GDK_GRAVITY_WEST: return XDG_POSITIONER_GRAVITY_RIGHT;
-    case GDK_GRAVITY_CENTER: return XDG_POSITIONER_GRAVITY_NONE;
-    case GDK_GRAVITY_EAST: return XDG_POSITIONER_GRAVITY_LEFT;
-    case GDK_GRAVITY_SOUTH_WEST: return XDG_POSITIONER_GRAVITY_TOP_RIGHT;
-    case GDK_GRAVITY_SOUTH: return XDG_POSITIONER_GRAVITY_TOP;
-    case GDK_GRAVITY_SOUTH_EAST: return XDG_POSITIONER_GRAVITY_TOP_LEFT;
-    case GDK_GRAVITY_STATIC: return XDG_POSITIONER_GRAVITY_NONE;
-    default: return XDG_POSITIONER_GRAVITY_NONE;
-    }
-}
-
-static enum xdg_positioner_anchor
-gdk_gravity_get_xdg_positioner_anchor(GdkGravity anchor)
-{
-    switch (anchor)
-    {
-    case GDK_GRAVITY_NORTH_WEST: return XDG_POSITIONER_ANCHOR_TOP_LEFT;
-    case GDK_GRAVITY_NORTH: return XDG_POSITIONER_ANCHOR_TOP;
-    case GDK_GRAVITY_NORTH_EAST: return XDG_POSITIONER_ANCHOR_TOP_RIGHT;
-    case GDK_GRAVITY_WEST: return XDG_POSITIONER_ANCHOR_LEFT;
-    case GDK_GRAVITY_CENTER: return XDG_POSITIONER_ANCHOR_NONE;
-    case GDK_GRAVITY_EAST: return XDG_POSITIONER_ANCHOR_RIGHT;
-    case GDK_GRAVITY_SOUTH_WEST: return XDG_POSITIONER_ANCHOR_BOTTOM_LEFT;
-    case GDK_GRAVITY_SOUTH: return XDG_POSITIONER_ANCHOR_BOTTOM;
-    case GDK_GRAVITY_SOUTH_EAST: return XDG_POSITIONER_ANCHOR_BOTTOM_RIGHT;
-    case GDK_GRAVITY_STATIC: return XDG_POSITIONER_ANCHOR_NONE;
-    default: return XDG_POSITIONER_ANCHOR_NONE;
-    }
-}
-
-static enum xdg_positioner_constraint_adjustment
-gdk_anchor_hints_get_xdg_positioner_constraint_adjustment (GdkAnchorHints hints)
-{
-    enum xdg_positioner_constraint_adjustment adjustment;
-    if (hints & GDK_ANCHOR_FLIP_X) adjustment |= XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_X;
-    if (hints & GDK_ANCHOR_FLIP_Y) adjustment |= XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_Y;
-    if (hints & GDK_ANCHOR_SLIDE_X) adjustment |= XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X;
-    if (hints & GDK_ANCHOR_SLIDE_Y) adjustment |= XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y;
-    if (hints & GDK_ANCHOR_RESIZE_X) adjustment |= XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_X;
-    if (hints & GDK_ANCHOR_RESIZE_Y) adjustment |= XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_Y;
-    return adjustment;
 }
 
 static struct xdg_positioner *
@@ -712,8 +688,8 @@ wayland_query_tooltip_emission_hook (GSignalInvocationHint *_ihint,
     return TRUE; // Always stay connected
 }
 
-void
-wayland_shell_surface_global_init ()
+static void
+gtk_layer_shell_init ()
 {
     GdkDisplay *gdk_display;
     gint realize_signal_id, unmap_signal_id, query_tooltip_signal_id;
@@ -747,8 +723,46 @@ wayland_shell_surface_global_init ()
     has_initialized = TRUE;
 }
 
-void
-wayland_shell_surface_set_popup_callback(void (*map_popup_callback)(WaylandShellSurface *self))
+const char *layer_surface_creation_info_key = "layer_surface_creation_info";
+
+struct LayerSurfaceCreationInfo
 {
-    wayland_shell_surface_popup_callback = map_popup_callback;
+    struct wl_output *output;
+    enum zwlr_layer_shell_v1_layer layer;
+    const char *_namespace;
+};
+
+static void on_window_realize (GtkWindow *window, void *_data)
+{
+    struct LayerSurfaceCreationInfo *info = g_object_get_data (G_OBJECT (window), layer_surface_creation_info_key);
+    g_assert (info);
+    wayland_shell_surface_new_layer_surface (window, info->output, info->layer, info->_namespace);
+    // g_object_set_data (G_OBJECT (window), layer_surface_creation_info_key, NULL);
+}
+
+void
+gtk_window_init_layer (GtkWindow *window,
+                       void *output,
+                       unsigned int layer,
+                       const char *_namespace)
+{
+    if (!has_initialized)
+        gtk_layer_shell_init ();
+
+    struct LayerSurfaceCreationInfo *info = g_new0(struct LayerSurfaceCreationInfo, 1);
+    info->output = output;
+    info->layer = layer;
+    info->_namespace = _namespace;
+    g_object_set_data_full (G_OBJECT (window), layer_surface_creation_info_key, info, g_free);
+    g_signal_connect (window, "realize", G_CALLBACK (on_window_realize), NULL);
+}
+
+void gtk_window_set_layer_anchor (GtkWindow *window, unsigned int anchor)
+{
+    // TODO
+}
+
+void gtk_window_set_layer_exclusive_zone (GtkWindow *window, int exclusive_zone)
+{
+    // TODO
 }

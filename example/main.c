@@ -2,22 +2,6 @@
 
 #include <gtk/gtk.h>
 
-static void
-on_window_realize (GtkWidget *window, void *_data)
-{
-    WaylandShellSurface *layer_surface = wayland_shell_surface_new_layer_surface (GTK_WINDOW (window), NULL, 2, "gtk_example");
-    wayland_shell_surface_set_layer_surface_info (layer_surface, 4, 20);
-}
-
-static void
-on_wayland_popup_map (WaylandShellSurface *shell_surface)
-{
-    GdkPoint offset = {0, 12};
-    GdkGravity anchor = GDK_GRAVITY_SOUTH_WEST;
-    GdkGravity gravity = GDK_GRAVITY_SOUTH_EAST;
-    wayland_shell_surface_map_popup (shell_surface, anchor, gravity, offset);
-}
-
 gboolean
 on_button_press (GtkWidget *parent, GdkEventButton *event, void *_data)
 {
@@ -39,12 +23,15 @@ on_button_press (GtkWidget *parent, GdkEventButton *event, void *_data)
 static void
 activate (GtkApplication* app, void *_data)
 {
-    wayland_shell_surface_global_init (on_wayland_popup_map);
-
     GtkWidget *window = gtk_application_window_new (app);
-    gtk_window_set_default_size (GTK_WINDOW (window), 400, 400);
 
+    gtk_window_init_layer (GTK_WINDOW (window), NULL, 2, "gtk_example");
+    gtk_window_set_layer_anchor (GTK_WINDOW (window), 4);
+    gtk_window_set_layer_exclusive_zone (GTK_WINDOW (window), 20);
+
+    gtk_window_set_default_size (GTK_WINDOW (window), 400, 400);
     gtk_window_set_title (GTK_WINDOW (window), "Window");
+
     GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 100);
     gtk_container_add (GTK_CONTAINER (window), vbox);
     GtkWidget *spacer_button = gtk_button_new_with_label ("Useless");
@@ -53,7 +40,6 @@ activate (GtkApplication* app, void *_data)
     // gtk_widget_set_tooltip_text (button, "This is a tooltip");
     g_signal_connect (button, "button_press_event",  G_CALLBACK (on_button_press), NULL);
     gtk_container_add (GTK_CONTAINER (vbox), button);
-    g_signal_connect (window, "realize", G_CALLBACK (on_window_realize), NULL);
     gtk_window_set_decorated (GTK_WINDOW (window), FALSE);
     gtk_widget_show_all (window);
 }
