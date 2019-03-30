@@ -3,6 +3,7 @@ lib_LIBRARIES = libgtk-layer-shell.a
 libgtk_layer_shell_a_SOURCES = \
 	gtk-layer-shell.c \
 	gdk-window-hack.c \
+	simple-conversions.c \
 	protocol/xdg-shell.c \
 	protocol/wlr-layer-shell-unstable-v1.c
 AUTOMAKE_OPTIONS = subdir-objects

@@ -2,6 +2,10 @@
 #include "gdk-window-hack.h"
 #include "protocol/xdg-shell-client.h"
 #include "protocol/wlr-layer-shell-unstable-v1-client.h"
+#include "simple-conversions.h"
+
+#include <gdk/gdk.h>
+#include <gdk/gdkwayland.h>
 
 struct xdg_wm_base *xdg_wm_base_global = NULL;
 struct zwlr_layer_shell_v1 *layer_shell_global = NULL;
