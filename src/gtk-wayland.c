@@ -1,6 +1,8 @@
 #include "gtk-wayland.h"
 
 #include "custom-shell-surface.h"
+#include "xdg-popup-surface.h"
+#include "gdk-window-hack.h"
 
 #include "protocol/xdg-shell-client.h"
 #include "protocol/wlr-layer-shell-unstable-v1-client.h"
@@ -49,16 +51,51 @@ static const struct wl_registry_listener wl_registry_listener = {
     .global_remove = wl_registry_handle_global_remove,
 };
 
+// This callback only does anything for popups of Wayland surfaces
+static void
+gtk_wayland_override_on_window_realize (GtkWindow *gtk_window, void *_data)
+{
+    // Call the super class's realize handler
+    GValue args[1] = { G_VALUE_INIT };
+    g_value_init_from_instance (&args[0], gtk_window);
+    g_signal_chain_from_overridden (args, NULL);
+    g_value_unset (&args[0]);
+
+    // TODO: figure out how to move this to gtk_wayland_init_if_needed ()
+    gdk_window_hack_init (gtk_widget_get_window (GTK_WIDGET (gtk_window)));
+
+    GtkWindow *transient_for = gtk_window_get_transient_for (gtk_window);
+    if (!transient_for) {
+        GtkWidget *attached_to = gtk_window_get_attached_to (gtk_window);
+        GtkWidget *toplevel = attached_to ? gtk_widget_get_toplevel (attached_to) : NULL;
+        transient_for = GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL;
+    }
+    CustomShellSurface *transient_for_shell_surface = gtk_window_get_custom_shell_surface (transient_for);
+
+    if (transient_for_shell_surface)
+    {
+        CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (gtk_window);
+        XdgPopupSurface *popup_surface = custom_shell_surface_get_xdg_popup (shell_surface);
+        g_return_if_fail (shell_surface == (CustomShellSurface *)popup_surface); // make sure the cast succeeded
+        if (popup_surface) {
+            shell_surface->virtual->unmap (shell_surface);
+        } else {
+            popup_surface = xdg_popup_surface_new (gtk_window);
+        }
+        xdg_popup_surface_set_transient_for (popup_surface, transient_for_shell_surface);
+    }
+}
+
 // This callback must override the default unmap handler, so it can run first
 // The custom surface's unmap method must be called before GtkWidget's unmap, or Wayland objects are destroyed in the wrong order
 static void
-gtk_wayland_override_on_unmap (GtkWindow *gtk_window, void *_data)
+gtk_wayland_override_on_window_unmap (GtkWindow *gtk_window, void *_data)
 {
     CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (gtk_window);
     if (shell_surface)
         shell_surface->virtual->unmap (shell_surface);
 
-    // Call the default unmap handler
+    // Call the super class's unmap handler
     GValue args[1] = { G_VALUE_INIT };
     g_value_init_from_instance (&args[0], gtk_window);
     g_signal_chain_from_overridden (args, NULL);
@@ -66,7 +103,7 @@ gtk_wayland_override_on_unmap (GtkWindow *gtk_window, void *_data)
 }
 
 void
-gtk_wayland_init_if_needed()
+gtk_wayland_init_if_needed ()
 {
     if (has_initialized)
         return;
@@ -86,13 +123,12 @@ gtk_wayland_init_if_needed()
     if (!xdg_wm_base_global)
         g_warning ("It appears your Wayland compositor does not support the XDG Shell stable protocol");
 
-    // For popups:
-    // gint realize_signal_id = g_signal_lookup ("realize", GTK_TYPE_WINDOW);
-    // GClosure *realize_closure = g_cclosure_new (G_CALLBACK (wayland_window_realize_override_cb), NULL, NULL);
-    // g_signal_override_class_closure (realize_signal_id, GTK_TYPE_WINDOW, realize_closure);
+    gint realize_signal_id = g_signal_lookup ("realize", GTK_TYPE_WINDOW);
+    GClosure *realize_closure = g_cclosure_new (G_CALLBACK (gtk_wayland_override_on_window_realize), NULL, NULL);
+    g_signal_override_class_closure (realize_signal_id, GTK_TYPE_WINDOW, realize_closure);
 
     gint unmap_signal_id = g_signal_lookup ("unmap", GTK_TYPE_WINDOW);
-    GClosure *unmap_closure = g_cclosure_new (G_CALLBACK (gtk_wayland_override_on_unmap), NULL, NULL);
+    GClosure *unmap_closure = g_cclosure_new (G_CALLBACK (gtk_wayland_override_on_window_unmap), NULL, NULL);
     g_signal_override_class_closure (unmap_signal_id, GTK_TYPE_WINDOW, unmap_closure);
 
     has_initialized = TRUE;
@@ -108,4 +144,18 @@ struct xdg_wm_base *
 gtk_wayland_get_xdg_wm_base_global ()
 {
     return xdg_wm_base_global;
+}
+
+// Gets the upper left and size of the portion of the window that is actually used (not shadows and whatnot)
+// It does this by walking down the gdk_window tree, as long as there is exactly one child
+GdkRectangle
+gtk_wayland_get_logical_geom (GtkWindow *gtk_window)
+{
+    GdkWindow *window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
+    GList *list = gdk_window_get_children (window);
+    if (list && !list->next) // If there is exactly one child window
+        window = list->data;
+    GdkRectangle geom;
+    gdk_window_get_geometry (window, &geom.x, &geom.y, &geom.width, &geom.height);
+    return geom;
 }

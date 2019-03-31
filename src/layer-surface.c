@@ -10,7 +10,7 @@
 
 struct _LayerSurface
 {
-    CustomShellSurface parent;
+    CustomShellSurface super;
 
     // Set by GTK
     int cached_width, cached_height;
@@ -28,14 +28,12 @@ struct _LayerSurface
     struct zwlr_layer_surface_v1 *layer_surface;
 };
 
-typedef struct _LayerSurfaceInfo LayerSurfaceInfo;
-
 static void
 layer_surface_handle_configure (void *wayland_shell_surface,
-                struct zwlr_layer_surface_v1 *surface,
-                uint32_t serial,
-                uint32_t w,
-                uint32_t h)
+                                struct zwlr_layer_surface_v1 *surface,
+                                uint32_t serial,
+                                uint32_t w,
+                                uint32_t h)
 {
     // WaylandShellSurface *self = wayland_shell_surface;
     // TODO: resize the GTK window
@@ -45,7 +43,7 @@ layer_surface_handle_configure (void *wayland_shell_surface,
 
 static void
 layer_surface_handle_closed (void *wayland_shell_surface,
-                struct zwlr_layer_surface_v1 *surface)
+                             struct zwlr_layer_surface_v1 *surface)
 {
     // WaylandShellSurface *self = wayland_shell_surface;
     // TODO: close the GTK window and destroy the layer shell surface object
@@ -56,11 +54,12 @@ static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
     .closed = layer_surface_handle_closed,
 };
 
-
 static void
-layer_shell_surface_realize (CustomShellSurface *super, struct wl_surface *wl_surface)
+layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
 {
     LayerSurface *self = (LayerSurface *)super;
+
+    g_return_if_fail (!self->layer_surface);
 
     struct zwlr_layer_shell_v1 *layer_shell_global = gtk_wayland_get_layer_shell_global ();
     g_return_if_fail (layer_shell_global);
@@ -104,10 +103,11 @@ layer_surface_get_popup (CustomShellSurface *super,
 
     struct xdg_popup *xdg_popup = xdg_surface_get_popup (popup_xdg_surface, NULL, positioner);
     zwlr_layer_surface_v1_get_popup (self->layer_surface, xdg_popup);
+    return xdg_popup;
 }
 
 static const CustomShellSurfaceVirtual layer_surface_virtual = {
-    .realize = layer_shell_surface_realize,
+    .map = layer_surface_map,
     .unmap = layer_surface_unmap,
     .finalize = layer_surface_unmap, // nothing but unmapping is needed to finalize
     .get_popup = layer_surface_get_popup,
@@ -131,8 +131,8 @@ LayerSurface *
 layer_surface_new (GtkWindow *gtk_window)
 {
     LayerSurface *self = g_new0 (LayerSurface, 1);
-    self->parent.virtual = &layer_surface_virtual;
-    custom_shell_surface_init ((CustomShellSurface*)self, gtk_window);
+    self->super.virtual = &layer_surface_virtual;
+    custom_shell_surface_init ((CustomShellSurface *)self, gtk_window);
 
     self->cached_width = -1;
     self->cached_height = -1;

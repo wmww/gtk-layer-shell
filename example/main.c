@@ -35,9 +35,9 @@ activate (GtkApplication* app, void *_data)
     GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 100);
     gtk_container_add (GTK_CONTAINER (window), vbox);
     GtkWidget *spacer_button = gtk_button_new_with_label ("Useless");
+    gtk_widget_set_tooltip_text (spacer_button, "This is a tooltip");
     gtk_container_add (GTK_CONTAINER (vbox), spacer_button);
     GtkWidget *button = gtk_button_new_with_label ("Menu");
-    // gtk_widget_set_tooltip_text (button, "This is a tooltip");
     g_signal_connect (button, "button_press_event",  G_CALLBACK (on_button_press), NULL);
     gtk_container_add (GTK_CONTAINER (vbox), button);
     gtk_window_set_decorated (GTK_WINDOW (window), FALSE);

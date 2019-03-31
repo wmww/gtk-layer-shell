@@ -12,9 +12,9 @@ typedef struct _CustomShellSurfaceVirtual CustomShellSurfaceVirtual;
 
 struct _CustomShellSurfaceVirtual
 {
-    // Called during the window's gtk signale of the same name
-    // Create the wayland objects needed to map the surface
-    void (*realize) (CustomShellSurface *super, struct wl_surface *wl_surface);
+    // Called during the window's gtk signal of the same name
+    // Should create the wayland objects needed to map the surface
+    void (*map) (CustomShellSurface *super, struct wl_surface *wl_surface);
 
     // Must be called before the associated GtkWindow is unmapped
     void (*unmap) (CustomShellSurface *super);
@@ -38,7 +38,10 @@ struct _CustomShellSurface
 void custom_shell_surface_init (CustomShellSurface *self, GtkWindow *gtk_window);
 
 // If the window has a shell surface, return it; else return NULL
+// NULL input is handled gracefully
 CustomShellSurface *gtk_window_get_custom_shell_surface (GtkWindow *gtk_window);
+
+GtkWindow *custom_shell_surface_get_gtk_window (CustomShellSurface *self);
 
 // Destruction is taken care of automatically when the associated window is destroyed
 

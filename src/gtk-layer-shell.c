@@ -735,7 +735,8 @@ struct LayerSurfaceCreationInfo
     const char *_namespace;
 };
 
-static void on_window_realize (GtkWindow *window, void *_data)
+static void
+on_window_realize (GtkWindow *window, void *_data)
 {
     struct LayerSurfaceCreationInfo *info = g_object_get_data (G_OBJECT (window), layer_surface_creation_info_key);
     g_assert (info);

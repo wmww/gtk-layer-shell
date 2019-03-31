@@ -5,6 +5,7 @@ libgtk_layer_shell_a_SOURCES = \
 	gtk-wayland.c \
 	custom-shell-surface.c \
 	layer-surface.c \
+	xdg-popup-surface.c \
 	gdk-window-hack.c \
 	simple-conversions.c \
 	protocol/xdg-shell.c \
