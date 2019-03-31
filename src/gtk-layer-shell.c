@@ -1,8 +1,11 @@
 #include "gtk-layer-shell.h"
 #include "gdk-window-hack.h"
+#include "simple-conversions.h"
+#include "gtk-wayland.h"
+#include "custom-shell-surface.h"
+#include "layer-surface.h"
 #include "protocol/xdg-shell-client.h"
 #include "protocol/wlr-layer-shell-unstable-v1-client.h"
-#include "simple-conversions.h"
 
 #include <gdk/gdk.h>
 #include <gdk/gdkwayland.h>
@@ -746,15 +749,8 @@ gtk_window_init_layer (GtkWindow *window,
                        unsigned int layer,
                        const char *_namespace)
 {
-    if (!has_initialized)
-        gtk_layer_shell_init ();
-
-    struct LayerSurfaceCreationInfo *info = g_new0(struct LayerSurfaceCreationInfo, 1);
-    info->output = output;
-    info->layer = layer;
-    info->_namespace = _namespace;
-    g_object_set_data_full (G_OBJECT (window), layer_surface_creation_info_key, info, g_free);
-    g_signal_connect (window, "realize", G_CALLBACK (on_window_realize), NULL);
+    gtk_wayland_init_if_needed ();
+    layer_surface_new (window);
 }
 
 void gtk_window_set_layer_anchor (GtkWindow *window, unsigned int anchor)
