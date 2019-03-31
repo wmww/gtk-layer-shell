@@ -9,7 +9,6 @@ static const char *custom_shell_surface_key = "wayland_custom_shell_surface";
 struct _CustomShellSurfacePrivate
 {
     GtkWindow *gtk_window;
-    struct wl_surface *wl_surface;
 };
 
 static void
@@ -26,19 +25,21 @@ custom_shell_surface_on_window_realize (GtkWindow *gtk_window, CustomShellSurfac
     GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
     g_return_if_fail (gdk_window);
 
-    self->private->wl_surface = gdk_wayland_window_get_wl_surface (gdk_window);
-    g_return_if_fail (self->private->wl_surface);
-
     gdk_wayland_window_set_use_custom_surface (gdk_window);
 }
 
 static void
 custom_shell_surface_on_window_map (GtkWindow *gtk_window, CustomShellSurface *self)
 {
-    g_return_if_fail (self->private->wl_surface);
-    self->virtual->map (self, self->private->wl_surface);
+    GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
+    g_return_if_fail (gdk_window);
 
-    wl_surface_commit (self->private->wl_surface);
+    struct wl_surface *wl_surface = gdk_wayland_window_get_wl_surface (gdk_window);
+    g_return_if_fail (wl_surface);
+
+    self->virtual->map (self, wl_surface);
+
+    wl_surface_commit (wl_surface);
     wl_display_roundtrip (gdk_wayland_display_get_wl_display (gdk_display_get_default ()));
 }
 
@@ -49,7 +50,6 @@ custom_shell_surface_init (CustomShellSurface *self, GtkWindow *gtk_window)
 
     self->private = g_new0 (CustomShellSurfacePrivate, 1);
     self->private->gtk_window = gtk_window;
-    self->private->wl_surface = NULL;
 
     g_return_if_fail (gtk_window);
     g_return_if_fail (!gtk_widget_get_mapped (GTK_WIDGET (gtk_window)));
