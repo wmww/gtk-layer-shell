@@ -47,6 +47,10 @@ xdg_popup_handle_configure (void *data,
     if (width > 0 && height > 0) {
         GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
         gtk_window_resize (gtk_window, width, height);
+        GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
+        g_return_if_fail (gdk_window);
+        // calculating the correct values is hard, but we're not required to provide them
+        g_signal_emit_by_name (gdk_window, "moved-to-rect", NULL, NULL, FALSE, FALSE);
     }
 }
 
