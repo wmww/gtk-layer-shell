@@ -143,6 +143,7 @@ layer_surface_new (GtkWindow *gtk_window)
     self->exclusive_zone = 0;
     self->layer_surface = NULL;
 
+    gtk_window_set_decorated (gtk_window, FALSE);
     g_signal_connect (gtk_window, "size-allocate", G_CALLBACK (layer_surface_on_size_allocate), self);
 
     return self;

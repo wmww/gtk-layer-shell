@@ -53,7 +53,6 @@ custom_shell_surface_init (CustomShellSurface *self, GtkWindow *gtk_window)
 
     g_return_if_fail (gtk_window);
     g_return_if_fail (!gtk_widget_get_mapped (GTK_WIDGET (gtk_window)));
-    gtk_window_set_decorated (gtk_window, FALSE);
     g_object_set_data_full (G_OBJECT (gtk_window),
                             custom_shell_surface_key,
                             self,
