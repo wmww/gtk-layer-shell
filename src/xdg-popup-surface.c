@@ -16,7 +16,7 @@ struct _XdgPopupSurface
     CustomShellSurface super;
 
     CustomShellSurface *transient_for;
-    GdkRectangle cached_geom;
+    GdkRectangle cached_allocation;
 
     // These can be NULL
     struct xdg_surface *xdg_surface;
@@ -81,14 +81,13 @@ xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     struct xdg_wm_base *xdg_wm_base_global = gtk_wayland_get_xdg_wm_base_global ();
     g_return_if_fail (xdg_wm_base_global);
     struct xdg_positioner *positioner = xdg_wm_base_create_positioner (xdg_wm_base_global);
-    GtkRequisition popup_size;
-    gtk_widget_get_preferred_size (GTK_WIDGET (gtk_window), NULL, &popup_size);
+    GdkRectangle popup_geom = gtk_wayland_get_logical_geom (gtk_window);
     enum xdg_positioner_anchor anchor = gdk_gravity_get_xdg_positioner_anchor(position->rect_anchor);
     enum xdg_positioner_gravity gravity = gdk_gravity_get_xdg_positioner_gravity(position->window_anchor);
     enum xdg_positioner_constraint_adjustment constraint_adjustment =
         gdk_anchor_hints_get_xdg_positioner_constraint_adjustment (position->anchor_hints);
 
-    xdg_positioner_set_size (positioner, popup_size.width, popup_size.height);
+    xdg_positioner_set_size (positioner, popup_geom.width, popup_geom.height);
     xdg_positioner_set_anchor_rect (positioner,
                                     position->rect.x, position->rect.y,
                                     position->rect.width, position->rect.height);
@@ -154,13 +153,12 @@ xdg_popup_surface_on_size_allocate (GtkWidget *widget,
                                     GdkRectangle *allocation,
                                     XdgPopupSurface *self)
 {
-    GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
-    GdkRectangle new_geom = gtk_wayland_get_logical_geom (gtk_window);
-    if (self->xdg_surface && !gdk_rectangle_equal (&self->cached_geom, &new_geom)) {
-        self->cached_geom = new_geom;
-        xdg_surface_set_window_geometry (self->xdg_surface, 0, 0, allocation->width, allocation->height);
-        // xdg_surface_set_window_geometry (self->xdg_surface, new_geom.x, new_geom.y, new_geom.width, new_geom.height);
-        // g_message ("xdg_surface_set_window_geometry (%d, %d, %d, %d)", new_geom.x, new_geom.y, new_geom.width, new_geom.height);
+    if (self->xdg_surface && !gdk_rectangle_equal (&self->cached_allocation, allocation)) {
+        self->cached_allocation = *allocation;
+        // allocation only used for catching duplicate calls. To get the correct geom we need to check something else
+        GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
+        GdkRectangle new_geom = gtk_wayland_get_logical_geom (gtk_window);
+        xdg_surface_set_window_geometry (self->xdg_surface, new_geom.x, new_geom.y, new_geom.width, new_geom.height);
     }
 }
 
@@ -172,11 +170,11 @@ xdg_popup_surface_new (GtkWindow *gtk_window)
     custom_shell_surface_init ((CustomShellSurface *)self, gtk_window);
 
     self->transient_for = NULL;
-    self->cached_geom = (GdkRectangle) {
+    self->cached_allocation = (GdkRectangle) {
         .x = 0,
         .y = 0,
-        .width = -1,
-        .height = -1,
+        .width = 0,
+        .height = 0,
     };
     self->xdg_surface = NULL;
     self->xdg_popup = NULL;
