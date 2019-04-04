@@ -81,3 +81,17 @@ custom_shell_surface_get_gtk_window (CustomShellSurface *self)
     g_return_val_if_fail (self, NULL);
     return self->private->gtk_window;
 }
+
+void
+custom_shell_surface_needs_commit (CustomShellSurface *self)
+{
+    g_return_if_fail (self->private->gtk_window);
+
+    GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (self->private->gtk_window));
+    g_return_if_fail (gdk_window);
+
+    struct wl_surface *wl_surface = gdk_wayland_window_get_wl_surface (gdk_window);
+    g_return_if_fail (wl_surface);
+
+    wl_surface_commit (wl_surface);
+}

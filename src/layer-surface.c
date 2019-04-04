@@ -73,6 +73,7 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
 
     zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, FALSE);
     zwlr_layer_surface_v1_set_anchor (self->layer_surface, self->anchor);
+    zwlr_layer_surface_v1_set_exclusive_zone (self->layer_surface, self->exclusive_zone);
     zwlr_layer_surface_v1_add_listener (self->layer_surface, &layer_surface_listener, self);
     if (self->cached_width > -1 && self->cached_height > -1)
         zwlr_layer_surface_v1_set_size (self->layer_surface, self->cached_width, self->cached_height);
@@ -147,4 +148,25 @@ layer_surface_new (GtkWindow *gtk_window)
     g_signal_connect (gtk_window, "size-allocate", G_CALLBACK (layer_surface_on_size_allocate), self);
 
     return self;
+}
+
+LayerSurface *
+custom_shell_surface_get_layer_surface (CustomShellSurface *shell_surface)
+{
+    if (shell_surface && shell_surface->virtual == &layer_surface_virtual)
+        return (LayerSurface *)shell_surface;
+    else
+        return NULL;
+}
+
+void
+layer_surface_set_exclusive_zone (LayerSurface *self, int exclusive_zone)
+{
+    if (self->exclusive_zone != exclusive_zone) {
+        self->exclusive_zone = exclusive_zone;
+        if (self->layer_surface) {
+            zwlr_layer_surface_v1_set_exclusive_zone (self->layer_surface, self->exclusive_zone);
+            custom_shell_surface_needs_commit ((CustomShellSurface *)self);
+        }
+    }
 }

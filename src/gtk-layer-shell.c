@@ -756,10 +756,19 @@ gtk_window_init_layer (GtkWindow *window,
 
 void gtk_window_set_layer_anchor (GtkWindow *window, unsigned int anchor)
 {
+    CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (window);
+    g_return_if_fail (shell_surface);
+    LayerSurface *layer_surface = custom_shell_surface_get_layer_surface (shell_surface);
+    g_return_if_fail (layer_surface);
     // TODO
+    // layer_surface_set_anchor (layer_surface, anchor);
 }
 
 void gtk_window_set_layer_exclusive_zone (GtkWindow *window, int exclusive_zone)
 {
-    // TODO
+    CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (window);
+    g_return_if_fail (shell_surface);
+    LayerSurface *layer_surface = custom_shell_surface_get_layer_surface (shell_surface);
+    g_return_if_fail (layer_surface);
+    layer_surface_set_exclusive_zone (layer_surface, exclusive_zone);
 }

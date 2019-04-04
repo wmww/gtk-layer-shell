@@ -43,6 +43,9 @@ CustomShellSurface *gtk_window_get_custom_shell_surface (GtkWindow *gtk_window);
 
 GtkWindow *custom_shell_surface_get_gtk_window (CustomShellSurface *self);
 
+// In theory this could commit once on next event loop, but for now it will just commit every time it is called
+void custom_shell_surface_needs_commit (CustomShellSurface *self);
+
 // Destruction is taken care of automatically when the associated window is destroyed
 
 #endif // CUSTOM_SHELL_SURFACE_H
