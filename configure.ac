@@ -1,5 +1,5 @@
 AC_PREREQ([2.61])
-AC_INIT([gtk-layer-shell], [0.1], [wm@wmww.sh])
+AC_INIT([gtk-layer-shell], [0.1.0], [wm@wmww.sh])
 AM_INIT_AUTOMAKE([-Wall foreign])
 
 AC_PROG_CC
@@ -17,6 +17,8 @@ AC_SUBST(WAYLAND_LIBS)
 
 PKG_CHECK_MODULES(WAYLAND_SCANNER, [wayland-scanner])
 
-AC_CONFIG_FILES([Makefile include/Makefile src/Makefile src/protocol/Makefile example/Makefile])
+AC_CONFIG_FILES([Makefile include/gtk-layer-shell-0.pc include/Makefile src/Makefile src/protocol/Makefile example/Makefile])
+
+PKG_INSTALLDIR
 
 AC_OUTPUT
