@@ -140,7 +140,7 @@ layer_surface_new (GtkWindow *gtk_window)
     self->output = NULL;
     self->layer = ZWLR_LAYER_SHELL_V1_LAYER_TOP;
     self->_namespace = "todo-chage-me";
-    self->anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
+    self->anchor = 0;
     self->exclusive_zone = 0;
     self->layer_surface = NULL;
 
@@ -157,6 +157,22 @@ custom_shell_surface_get_layer_surface (CustomShellSurface *shell_surface)
         return (LayerSurface *)shell_surface;
     else
         return NULL;
+}
+
+void
+layer_surface_set_anchor (LayerSurface *self, gboolean left, gboolean right, gboolean top, gboolean bottom)
+{
+    uint32_t new_anchor = (left ? ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT : 0) |
+                          (right ? ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT : 0) |
+                          (top ? ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP : 0) |
+                          (bottom ? ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM : 0);
+    if (self->anchor != new_anchor) {
+        self->anchor = new_anchor;
+        if (self->layer_surface) {
+            zwlr_layer_surface_v1_set_anchor (self->layer_surface, self->anchor);
+            custom_shell_surface_needs_commit ((CustomShellSurface *)self);
+        }
+    }
 }
 
 void

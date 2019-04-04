@@ -13,7 +13,7 @@ void gtk_window_init_layer (GtkWindow *window,
                             unsigned int layer,
                             const char *_namespace);
 
-void gtk_window_set_layer_anchor (GtkWindow *window, unsigned int anchor);
+void gtk_window_set_layer_anchor (GtkWindow *window, gboolean left, gboolean right, gboolean top, gboolean bottom);
 
 void gtk_window_set_layer_exclusive_zone (GtkWindow *window, int exclusive_zone);
 

@@ -26,8 +26,8 @@ activate (GtkApplication* app, void *_data)
     GtkWidget *window = gtk_application_window_new (app);
 
     gtk_window_init_layer (GTK_WINDOW (window), NULL, 2, "gtk_example");
-    // gtk_window_set_layer_anchor (GTK_WINDOW (window), 4);
-    // gtk_window_set_layer_exclusive_zone (GTK_WINDOW (window), 20);
+    gtk_window_set_layer_anchor (GTK_WINDOW (window), TRUE, FALSE, FALSE, TRUE);
+    gtk_window_set_layer_exclusive_zone (GTK_WINDOW (window), 20);
 
     gtk_window_set_default_size (GTK_WINDOW (window), 400, 400);
     gtk_window_set_title (GTK_WINDOW (window), "Window");
