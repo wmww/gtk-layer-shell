@@ -163,13 +163,8 @@ custom_shell_surface_get_layer_surface (CustomShellSurface *shell_surface)
 }
 
 void
-layer_surface_set_layer (LayerSurface *self, GtkLayerShellLayer _layer)
+layer_surface_set_layer (LayerSurface *self, enum zwlr_layer_shell_v1_layer layer)
 {
-    // The protocol can never remove or change existing values, so I feel reasonably safe assuming my hard coded enum matches the protocol
-    g_assert (GTK_LAYER_SHELL_LAYER_BACKGROUND == ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND);
-    g_assert (GTK_LAYER_SHELL_LAYER_OVERLAY == ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
-    enum zwlr_layer_shell_v1_layer layer = (enum zwlr_layer_shell_v1_layer)_layer;
-
     if (self->layer != layer) {
         self->layer = layer;
         if (self->layer_surface) {
@@ -178,15 +173,17 @@ layer_surface_set_layer (LayerSurface *self, GtkLayerShellLayer _layer)
     }
 }
 
-void
-layer_surface_set_anchor (LayerSurface *self, gboolean left, gboolean right, gboolean top, gboolean bottom)
+uint32_t
+layer_surface_get_anchor (LayerSurface *self)
 {
-    uint32_t new_anchor = (left ? ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT : 0) |
-                          (right ? ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT : 0) |
-                          (top ? ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP : 0) |
-                          (bottom ? ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM : 0);
-    if (self->anchor != new_anchor) {
-        self->anchor = new_anchor;
+    return self->anchor;
+}
+
+void
+layer_surface_set_anchor (LayerSurface *self, uint32_t anchor)
+{
+    if (self->anchor != anchor) {
+        self->anchor = anchor;
         if (self->layer_surface) {
             zwlr_layer_surface_v1_set_anchor (self->layer_surface, self->anchor);
             custom_shell_surface_needs_commit ((CustomShellSurface *)self);

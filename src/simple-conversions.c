@@ -1,5 +1,20 @@
 #include "simple-conversions.h"
 
+enum zwlr_layer_shell_v1_layer
+gtk_layer_shell_layer_get_zwlr_layer_shell_v1_layer (GtkLayerShellLayer layer)
+{
+    switch (layer)
+    {
+    case GTK_LAYER_SHELL_LAYER_BACKGROUND: return ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND;
+    case GTK_LAYER_SHELL_LAYER_BOTTOM: return ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM;
+    case GTK_LAYER_SHELL_LAYER_TOP: return ZWLR_LAYER_SHELL_V1_LAYER_TOP;
+    case GTK_LAYER_SHELL_LAYER_OVERLAY: return ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY;
+    default:
+        g_critical ("Invalid GtkLayerShellLayer %d", layer);
+        return ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND;
+    }
+}
+
 enum xdg_positioner_gravity
 gdk_gravity_get_xdg_positioner_gravity (GdkGravity gravity)
 {
@@ -15,7 +30,9 @@ gdk_gravity_get_xdg_positioner_gravity (GdkGravity gravity)
     case GDK_GRAVITY_SOUTH: return XDG_POSITIONER_GRAVITY_TOP;
     case GDK_GRAVITY_SOUTH_EAST: return XDG_POSITIONER_GRAVITY_TOP_LEFT;
     case GDK_GRAVITY_STATIC: return XDG_POSITIONER_GRAVITY_NONE;
-    default: return XDG_POSITIONER_GRAVITY_NONE;
+    default:
+        g_critical ("Invalid GdkGravity %d", gravity);
+        return XDG_POSITIONER_GRAVITY_NONE;
     }
 }
 
@@ -34,7 +51,9 @@ gdk_gravity_get_xdg_positioner_anchor (GdkGravity anchor)
     case GDK_GRAVITY_SOUTH: return XDG_POSITIONER_ANCHOR_BOTTOM;
     case GDK_GRAVITY_SOUTH_EAST: return XDG_POSITIONER_ANCHOR_BOTTOM_RIGHT;
     case GDK_GRAVITY_STATIC: return XDG_POSITIONER_ANCHOR_NONE;
-    default: return XDG_POSITIONER_ANCHOR_NONE;
+    default:
+        g_critical ("Invalid GdkGravity %d", anchor);
+        return XDG_POSITIONER_ANCHOR_NONE;
     }
 }
 

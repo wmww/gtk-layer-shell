@@ -24,8 +24,6 @@ static void
 on_layer_selected (GtkComboBox *widget,
                    GtkWindow *layer_window)
 {
-    g_message ("on_layer_selected ()");
-
     GtkComboBox *combo_box = widget;
 
     gchar *layer = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT (combo_box));
