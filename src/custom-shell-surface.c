@@ -20,9 +20,9 @@ custom_shell_surface_on_window_destroy (CustomShellSurface *self)
 }
 
 static void
-custom_shell_surface_on_window_realize (GtkWindow *gtk_window, CustomShellSurface *self)
+custom_shell_surface_on_window_realize (GtkWidget *widget, CustomShellSurface *self)
 {
-    g_return_if_fail (self->private->gtk_window == gtk_window);
+    g_return_if_fail (GTK_WIDGET (self->private->gtk_window) == widget);
 
     GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (self->private->gtk_window));
     g_return_if_fail (gdk_window);
@@ -31,9 +31,9 @@ custom_shell_surface_on_window_realize (GtkWindow *gtk_window, CustomShellSurfac
 }
 
 static void
-custom_shell_surface_map (CustomShellSurface *self)
+custom_shell_surface_on_window_map (GtkWidget *widget, CustomShellSurface *self)
 {
-    g_return_if_fail (self->private->gtk_window);
+    g_return_if_fail (GTK_WIDGET (self->private->gtk_window) == widget);
 
     GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (self->private->gtk_window));
     g_return_if_fail (gdk_window);
@@ -45,12 +45,6 @@ custom_shell_surface_map (CustomShellSurface *self)
 
     wl_surface_commit (wl_surface);
     wl_display_roundtrip (gdk_wayland_display_get_wl_display (gdk_display_get_default ()));
-}
-
-static void
-custom_shell_surface_on_window_map (GtkWindow *gtk_window, CustomShellSurface *self)
-{
-    custom_shell_surface_map (self);
 }
 
 void
@@ -114,6 +108,9 @@ custom_shell_surface_needs_commit (CustomShellSurface *self)
 void
 custom_shell_surface_remap (CustomShellSurface *self)
 {
-    self->virtual->unmap (self);
-    custom_shell_surface_map (self);
+    GtkWidget *window_widget = GTK_WIDGET (self->private->gtk_window);
+    g_return_if_fail (window_widget);
+    gtk_widget_hide (window_widget);
+    gtk_widget_unrealize (window_widget);
+    gtk_widget_show (window_widget);
 }
