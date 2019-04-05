@@ -22,7 +22,6 @@ struct _LayerSurface
     // Need the surface to be recreated to change
     struct wl_output *output;
     enum zwlr_layer_shell_v1_layer layer;
-    const char *_namespace;
 
     // The actual layer surface Wayland object (can be NULL)
     struct zwlr_layer_surface_v1 *layer_surface;
@@ -64,11 +63,16 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     struct zwlr_layer_shell_v1 *layer_shell_global = gtk_wayland_get_layer_shell_global ();
     g_return_if_fail (layer_shell_global);
 
+    // name is either static or managed by the window widget
+    const char *name = gtk_window_get_title (custom_shell_surface_get_gtk_window (super));
+    if (name == NULL)
+        name = "gtk-layer-shell";
+
     self->layer_surface = zwlr_layer_shell_v1_get_layer_surface (layer_shell_global,
                                                                  wl_surface,
                                                                  self->output,
                                                                  self->layer,
-                                                                 self->_namespace);
+                                                                 name);
     g_return_if_fail (self->layer_surface);
 
     zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, FALSE);
@@ -139,7 +143,6 @@ layer_surface_new (GtkWindow *gtk_window)
     self->cached_height = -1;
     self->output = NULL;
     self->layer = ZWLR_LAYER_SHELL_V1_LAYER_TOP;
-    self->_namespace = "todo-chage-me";
     self->anchor = 0;
     self->exclusive_zone = 0;
     self->layer_surface = NULL;

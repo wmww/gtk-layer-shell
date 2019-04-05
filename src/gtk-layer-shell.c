@@ -6,8 +6,7 @@
 void
 gtk_window_init_layer (GtkWindow *window,
                        void *output,
-                       unsigned int layer,
-                       const char *_namespace)
+                       unsigned int layer)
 {
     gtk_wayland_init_if_needed ();
     layer_surface_new (window);
