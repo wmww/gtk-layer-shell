@@ -47,6 +47,9 @@ GtkWindow *custom_shell_surface_get_gtk_window (CustomShellSurface *self);
 // Does nothing is the shell surface does not currently have a GdkWindow with a wl_surface
 void custom_shell_surface_needs_commit (CustomShellSurface *self);
 
+// Unmap and remap a currently mapped shell surface
+void custom_shell_surface_remap (CustomShellSurface *self);
+
 // Destruction is taken care of automatically when the associated window is destroyed
 
 #endif // CUSTOM_SHELL_SURFACE_H

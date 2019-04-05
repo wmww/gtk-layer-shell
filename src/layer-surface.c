@@ -163,6 +163,22 @@ custom_shell_surface_get_layer_surface (CustomShellSurface *shell_surface)
 }
 
 void
+layer_surface_set_layer (LayerSurface *self, GtkLayerShellLayer _layer)
+{
+    // The protocol can never remove or change existing values, so I feel reasonably safe assuming my hard coded enum matches the protocol
+    g_assert (GTK_LAYER_SHELL_LAYER_BACKGROUND == ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND);
+    g_assert (GTK_LAYER_SHELL_LAYER_OVERLAY == ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
+    enum zwlr_layer_shell_v1_layer layer = (enum zwlr_layer_shell_v1_layer)_layer;
+
+    if (self->layer != layer) {
+        self->layer = layer;
+        if (self->layer_surface) {
+            custom_shell_surface_remap ((CustomShellSurface *)self);
+        }
+    }
+}
+
+void
 layer_surface_set_anchor (LayerSurface *self, gboolean left, gboolean right, gboolean top, gboolean bottom)
 {
     uint32_t new_anchor = (left ? ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT : 0) |
