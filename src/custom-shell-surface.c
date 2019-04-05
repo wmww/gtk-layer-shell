@@ -66,7 +66,7 @@ custom_shell_surface_init (CustomShellSurface *self, GtkWindow *gtk_window)
 
     if (gtk_widget_get_realized (GTK_WIDGET (gtk_window))) {
         // We must be in the process of realizing now
-        custom_shell_surface_on_window_realize (gtk_window, self);
+        custom_shell_surface_on_window_realize (GTK_WIDGET (gtk_window), self);
     }
 }
 
