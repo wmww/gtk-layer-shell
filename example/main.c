@@ -28,13 +28,13 @@ on_layer_selected (GtkComboBox *widget,
 
     gchar *layer = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT (combo_box));
     if (g_strcmp0 (layer, "Background") == 0) {
-        gtk_window_set_layer_layer (layer_window, GTK_LAYER_SHELL_LAYER_BACKGROUND);
+        gtk_layer_set_layer (layer_window, GTK_LAYER_BACKGROUND);
     } else if (g_strcmp0 (layer, "Bottom") == 0) {
-        gtk_window_set_layer_layer (layer_window, GTK_LAYER_SHELL_LAYER_BOTTOM);
+        gtk_layer_set_layer (layer_window, GTK_LAYER_BOTTOM);
     } else if (g_strcmp0 (layer, "Top") == 0) {
-        gtk_window_set_layer_layer (layer_window, GTK_LAYER_SHELL_LAYER_TOP);
+        gtk_layer_set_layer (layer_window, GTK_LAYER_TOP);
     } else if (g_strcmp0 (layer, "Overlay") == 0) {
-        gtk_window_set_layer_layer (layer_window, GTK_LAYER_SHELL_LAYER_OVERLAY);
+        gtk_layer_set_layer (layer_window, GTK_LAYER_OVERLAY);
     } else {
         g_assert_not_reached ();
     }
@@ -65,9 +65,10 @@ activate (GtkApplication* app, void *_data)
 {
     GtkWidget *window = gtk_application_window_new (app);
 
-    gtk_window_init_layer (GTK_WINDOW (window));
-    gtk_window_set_layer_anchor (GTK_WINDOW (window), TRUE, FALSE, TRUE, FALSE);
-    gtk_window_set_layer_exclusive_zone (GTK_WINDOW (window), 20);
+    gtk_layer_init_for_window (GTK_WINDOW (window));
+    gtk_layer_set_anchor_left (GTK_WINDOW (window), TRUE);
+    gtk_layer_set_anchor_top (GTK_WINDOW (window), TRUE);
+    gtk_layer_set_exclusive_zone (GTK_WINDOW (window), 20);
 
     gtk_window_set_default_size (GTK_WINDOW (window), -1, -1);
     gtk_window_set_title (GTK_WINDOW (window), "Window");
