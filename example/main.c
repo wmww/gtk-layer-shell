@@ -24,23 +24,23 @@ static void
 on_layer_selected (GtkComboBox *widget,
                    GtkWindow *layer_window)
 {
+    g_message ("on_layer_selected ()");
+
     GtkComboBox *combo_box = widget;
 
-    if (gtk_combo_box_get_active (GTK_COMBO_BOX (combo_box)) != 0) {
-        gchar *layer = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT (combo_box));
-        if (g_strcmp0 (layer, "Background") == 0) {
-            gtk_window_set_layer_layer (layer_window, GTK_LAYER_SHELL_LAYER_BACKGROUND);
-        } else if (g_strcmp0 (layer, "Bottom") == 0) {
-            gtk_window_set_layer_layer (layer_window, GTK_LAYER_SHELL_LAYER_BOTTOM);
-        } else if (g_strcmp0 (layer, "Top") == 0) {
-            gtk_window_set_layer_layer (layer_window, GTK_LAYER_SHELL_LAYER_TOP);
-        } else if (g_strcmp0 (layer, "Overlay") == 0) {
-            gtk_window_set_layer_layer (layer_window, GTK_LAYER_SHELL_LAYER_OVERLAY);
-        } else {
-            g_assert_not_reached ();
-        }
-        g_free (layer);
+    gchar *layer = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT (combo_box));
+    if (g_strcmp0 (layer, "Background") == 0) {
+        gtk_window_set_layer_layer (layer_window, GTK_LAYER_SHELL_LAYER_BACKGROUND);
+    } else if (g_strcmp0 (layer, "Bottom") == 0) {
+        gtk_window_set_layer_layer (layer_window, GTK_LAYER_SHELL_LAYER_BOTTOM);
+    } else if (g_strcmp0 (layer, "Top") == 0) {
+        gtk_window_set_layer_layer (layer_window, GTK_LAYER_SHELL_LAYER_TOP);
+    } else if (g_strcmp0 (layer, "Overlay") == 0) {
+        gtk_window_set_layer_layer (layer_window, GTK_LAYER_SHELL_LAYER_OVERLAY);
+    } else {
+        g_assert_not_reached ();
     }
+    g_free (layer);
 }
 
 
@@ -52,9 +52,14 @@ layer_selection_new (GtkWindow *layer_window)
     gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_box), "Top");
     gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_box), "Bottom");
     gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_box), "Background");
-    gtk_combo_box_set_active (GTK_COMBO_BOX (combo_box), 0);
     g_signal_connect (combo_box, "changed", G_CALLBACK (on_layer_selected), layer_window);
-    return combo_box;
+    GtkWidget *label = gtk_label_new ("Layer");
+    gtk_widget_set_halign (label, GTK_ALIGN_START);
+    GtkWidget *hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+    gtk_box_set_homogeneous (GTK_BOX (hbox), TRUE);
+    gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 12);
+    gtk_box_pack_start (GTK_BOX (hbox), combo_box, TRUE, TRUE, 0);
+    return hbox;
 }
 
 static void
@@ -63,14 +68,13 @@ activate (GtkApplication* app, void *_data)
     GtkWidget *window = gtk_application_window_new (app);
 
     gtk_window_init_layer (GTK_WINDOW (window));
-    gtk_window_set_layer_layer (GTK_WINDOW (window), GTK_LAYER_SHELL_LAYER_TOP);
-    gtk_window_set_layer_anchor (GTK_WINDOW (window), TRUE, FALSE, FALSE, TRUE);
+    gtk_window_set_layer_anchor (GTK_WINDOW (window), TRUE, FALSE, TRUE, FALSE);
     gtk_window_set_layer_exclusive_zone (GTK_WINDOW (window), 20);
 
-    gtk_window_set_default_size (GTK_WINDOW (window), 400, 400);
+    gtk_window_set_default_size (GTK_WINDOW (window), -1, -1);
     gtk_window_set_title (GTK_WINDOW (window), "Window");
 
-    GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 100);
+    GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
     gtk_container_add (GTK_CONTAINER (window), vbox);
     GtkWidget *spacer_button = gtk_button_new_with_label ("Useless");
     gtk_widget_set_tooltip_text (spacer_button, "This is a tooltip");
