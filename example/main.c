@@ -25,7 +25,7 @@ activate (GtkApplication* app, void *_data)
 {
     GtkWidget *window = gtk_application_window_new (app);
 
-    gtk_window_init_layer (GTK_WINDOW (window), NULL, 2);
+    gtk_window_init_layer (GTK_WINDOW (window), 2);
     gtk_window_set_layer_anchor (GTK_WINDOW (window), TRUE, FALSE, FALSE, TRUE);
     gtk_window_set_layer_exclusive_zone (GTK_WINDOW (window), 20);
 
