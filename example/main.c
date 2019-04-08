@@ -21,8 +21,7 @@ on_button_press (GtkWidget *parent, GdkEventButton *event, void *_data)
 }
 
 static void
-on_layer_selected (GtkComboBox *widget,
-                   GtkWindow *layer_window)
+on_layer_selected (GtkComboBox *widget, GtkWindow *layer_window)
 {
     GtkComboBox *combo_box = widget;
 
@@ -41,7 +40,6 @@ on_layer_selected (GtkComboBox *widget,
     g_free (layer);
 }
 
-
 static GtkWidget *
 layer_selection_new (GtkWindow *layer_window)
 {
@@ -58,6 +56,81 @@ layer_selection_new (GtkWindow *layer_window)
     gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 12);
     gtk_box_pack_start (GTK_BOX (hbox), combo_box, TRUE, TRUE, 0);
     return hbox;
+}
+
+typedef void (*AnchorEdgeSetter) (GtkWindow *window, gboolean anchor);
+
+struct AnchorEdge {
+    AnchorEdgeSetter setter;
+    gboolean is_anchored;
+    GtkWindow *layer_window;
+};
+
+static void
+on_anchor_toggled (GtkButton *button, struct AnchorEdge *edge)
+{
+    edge->is_anchored = !edge->is_anchored;
+    gtk_button_set_relief (button, edge->is_anchored ? GTK_RELIEF_NORMAL : GTK_RELIEF_NONE);
+    edge->setter (edge->layer_window, edge->is_anchored);
+}
+
+static void
+anchor_edge_new_for_button (GtkButton *button, GtkWindow *layer_window, AnchorEdgeSetter setter, gboolean anchor)
+{
+    struct AnchorEdge *data = g_new0 (struct AnchorEdge, 1);
+    *data = (struct AnchorEdge) {
+        .setter = setter,
+        .is_anchored = !anchor, // when we call on_anchor_toggled this will get flipped
+        .layer_window = layer_window,
+    };
+    g_signal_connect_data (button,
+                           "clicked",
+                           G_CALLBACK (on_anchor_toggled),
+                           data,
+                           (GClosureNotify)g_free,
+                           (GConnectFlags)0);
+    on_anchor_toggled (button, data);
+}
+
+static GtkWidget *
+anchor_control_new (GtkWindow *layer_window, gboolean left, gboolean right, gboolean top, gboolean bottom)
+{
+    GtkWidget *outside_hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+    {
+        GtkWidget *hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+        gtk_box_pack_start (GTK_BOX (outside_hbox), hbox, TRUE, FALSE, 0);
+        {
+            GtkWidget *left_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+            gtk_container_add (GTK_CONTAINER (hbox), left_vbox);
+            {
+                GtkWidget *button = gtk_button_new_from_icon_name ("go-first", GTK_ICON_SIZE_BUTTON);
+                gtk_box_pack_start (GTK_BOX (left_vbox), button, TRUE, FALSE, 0);
+                anchor_edge_new_for_button (GTK_BUTTON (button), layer_window, gtk_layer_set_anchor_left, left);
+            }
+        }{
+            GtkWidget *center_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+            gtk_container_add (GTK_CONTAINER (hbox), center_vbox);
+            {
+                GtkWidget *button = gtk_button_new_from_icon_name ("go-top", GTK_ICON_SIZE_BUTTON);
+                gtk_box_pack_start (GTK_BOX (center_vbox), button, FALSE, FALSE, 0);
+                anchor_edge_new_for_button (GTK_BUTTON (button), layer_window, gtk_layer_set_anchor_top, top);
+            }{
+                GtkWidget *button = gtk_button_new_from_icon_name ("go-bottom", GTK_ICON_SIZE_BUTTON);
+                gtk_box_pack_end (GTK_BOX (center_vbox), button, FALSE, FALSE, 0);
+                anchor_edge_new_for_button (GTK_BUTTON (button), layer_window, gtk_layer_set_anchor_bottom, bottom);
+            }
+        }{
+            GtkWidget *right_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+            gtk_container_add (GTK_CONTAINER (hbox), right_vbox);
+            {
+                GtkWidget *button = gtk_button_new_from_icon_name ("go-last", GTK_ICON_SIZE_BUTTON);
+                gtk_box_pack_start (GTK_BOX (right_vbox), button, TRUE, FALSE, 0);
+                anchor_edge_new_for_button (GTK_BUTTON (button), layer_window, gtk_layer_set_anchor_right, right);
+            }
+        }
+    }
+
+    return outside_hbox;
 }
 
 static void
@@ -82,6 +155,7 @@ activate (GtkApplication* app, void *_data)
     g_signal_connect (button, "button_press_event",  G_CALLBACK (on_button_press), NULL);
     gtk_container_add (GTK_CONTAINER (vbox), button);
     gtk_container_add (GTK_CONTAINER (vbox), layer_selection_new (GTK_WINDOW (window)));
+    gtk_container_add (GTK_CONTAINER (vbox), anchor_control_new (GTK_WINDOW (window), TRUE, FALSE, TRUE, FALSE));
     gtk_widget_show_all (window);
 }
 
