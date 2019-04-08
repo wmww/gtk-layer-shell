@@ -46,12 +46,12 @@ layer_surface_handle_configure (void *wayland_shell_surface,
                                 uint32_t w,
                                 uint32_t h)
 {
+    LayerSurface *self = wayland_shell_surface;
     if (w > 0 || h > 0) {
         GtkRequisition requested = {
             .width = w,
             .height = h,
         };
-        LayerSurface *self = wayland_shell_surface;
         GtkRequisition current_size = layer_surface_get_gtk_window_size (self);
         if (requested.width == 0)
             requested.width = current_size.width;
@@ -67,8 +67,9 @@ static void
 layer_surface_handle_closed (void *wayland_shell_surface,
                              struct zwlr_layer_surface_v1 *surface)
 {
-    // WaylandShellSurface *self = wayland_shell_surface;
-    // TODO: close the GTK window and destroy the layer shell surface object
+    LayerSurface *self = wayland_shell_surface;
+    GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
+    gtk_window_close (gtk_window);
 }
 
 static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
