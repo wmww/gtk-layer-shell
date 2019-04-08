@@ -12,12 +12,11 @@ struct _LayerSurface
 {
     CustomShellSurface super;
 
-    // Set by GTK
-    int cached_width, cached_height;
-
     // Can be set at any time
     uint32_t anchor;
     int exclusive_zone;
+    GtkRequisition current_allocation; // Last size allocation, or (-1, -1) if there hasn't been one
+    GtkRequisition cached_layer_size; // Last size sent to zwlr_layer_surface_v1_set_size, or (-1, -1) if never called
 
     // Need the surface to be recreated to change
     struct wl_output *output;
@@ -27,6 +26,19 @@ struct _LayerSurface
     struct zwlr_layer_surface_v1 *layer_surface;
 };
 
+static GtkRequisition
+layer_surface_get_gtk_window_size (LayerSurface *self)
+{
+    if (self->current_allocation.width >= 0 && self->current_allocation.height >= 0) {
+        return self->current_allocation;
+    } else {
+        GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
+        GtkRequisition natural_size;
+        gtk_widget_get_preferred_size (GTK_WIDGET (gtk_window), NULL, &natural_size);
+        return natural_size;
+    }
+}
+
 static void
 layer_surface_handle_configure (void *wayland_shell_surface,
                                 struct zwlr_layer_surface_v1 *surface,
@@ -34,9 +46,20 @@ layer_surface_handle_configure (void *wayland_shell_surface,
                                 uint32_t w,
                                 uint32_t h)
 {
-    // WaylandShellSurface *self = wayland_shell_surface;
-    // TODO: resize the GTK window
-    // gtk_window_set_default_size (GTK_WINDOW (window), width, height);
+    if (w > 0 || h > 0) {
+        GtkRequisition requested = {
+            .width = w,
+            .height = h,
+        };
+        LayerSurface *self = wayland_shell_surface;
+        GtkRequisition current_size = layer_surface_get_gtk_window_size (self);
+        if (requested.width == 0)
+            requested.width = current_size.width;
+        if (requested.height == 0)
+            requested.height = current_size.height;
+        GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
+        gtk_window_resize (gtk_window, requested.width, requested.height);
+    }
     zwlr_layer_surface_v1_ack_configure (surface, serial);
 }
 
@@ -78,9 +101,12 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, FALSE);
     zwlr_layer_surface_v1_set_anchor (self->layer_surface, self->anchor);
     zwlr_layer_surface_v1_set_exclusive_zone (self->layer_surface, self->exclusive_zone);
+    if (self->cached_layer_size.width >= 0 && self->cached_layer_size.height >= 0) {
+        zwlr_layer_surface_v1_set_size (self->layer_surface,
+                                        self->cached_layer_size.width,
+                                        self->cached_layer_size.height);
+    }
     zwlr_layer_surface_v1_add_listener (self->layer_surface, &layer_surface_listener, self);
-    if (self->cached_width > -1 && self->cached_height > -1)
-        zwlr_layer_surface_v1_set_size (self->layer_surface, self->cached_width, self->cached_height);
 }
 
 static void
@@ -119,17 +145,57 @@ static const CustomShellSurfaceVirtual layer_surface_virtual = {
 };
 
 static void
+layer_surface_update_size (LayerSurface *self)
+{
+    GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
+    GtkRequisition request_size;
+    gtk_widget_get_preferred_size (GTK_WIDGET (gtk_window), NULL, &request_size);
+
+    if ((self->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT) &&
+        (self->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT)) {
+
+        request_size.width = 0;
+    }
+    if ((self->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP) &&
+        (self->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM)) {
+
+        request_size.height = 0;
+    }
+
+    GtkRequisition window_default_size;
+    gtk_window_get_default_size (gtk_window,
+                                 &window_default_size.width,
+                                 &window_default_size.height);
+    if (window_default_size.width >= 0)
+        request_size.width = window_default_size.width;
+    if (window_default_size.height >= 0)
+        request_size.height = window_default_size.height;
+
+    if (request_size.width != self->cached_layer_size.width ||
+        request_size.height != self->cached_layer_size.height) {
+
+        self->cached_layer_size = request_size;
+        if (self->layer_surface) {
+            zwlr_layer_surface_v1_set_size (self->layer_surface,
+                                            self->cached_layer_size.width,
+                                            self->cached_layer_size.height);
+        }
+    }
+}
+
+static void
 layer_surface_on_size_allocate (GtkWidget *gtk_window,
                                 GdkRectangle *allocation,
                                 LayerSurface *self)
 {
-    if (self->layer_surface && (self->cached_width != allocation->width ||
-                                self->cached_height != allocation->height)) {
-        zwlr_layer_surface_v1_set_size (self->layer_surface, allocation->width, allocation->height);
-    }
+    if (self->current_allocation.width != allocation->width ||
+        self->current_allocation.height != allocation->height) {
 
-    self->cached_width = allocation->width;
-    self->cached_height = allocation->height;
+        self->current_allocation.width = allocation->width;
+        self->current_allocation.height = allocation->height;
+
+        layer_surface_update_size (self);
+    }
 }
 
 LayerSurface *
@@ -139,8 +205,11 @@ layer_surface_new (GtkWindow *gtk_window)
     self->super.virtual = &layer_surface_virtual;
     custom_shell_surface_init ((CustomShellSurface *)self, gtk_window);
 
-    self->cached_width = -1;
-    self->cached_height = -1;
+    self->current_allocation = (GtkRequisition) {
+        .width = -1,
+        .height = -1,
+    };
+    self->cached_layer_size = self->current_allocation;
     self->output = NULL;
     self->layer = ZWLR_LAYER_SHELL_V1_LAYER_TOP;
     self->anchor = 0;
@@ -186,6 +255,7 @@ layer_surface_set_anchor (LayerSurface *self, uint32_t anchor)
         self->anchor = anchor;
         if (self->layer_surface) {
             zwlr_layer_surface_v1_set_anchor (self->layer_surface, self->anchor);
+            layer_surface_update_size (self);
             custom_shell_surface_needs_commit ((CustomShellSurface *)self);
         }
     }

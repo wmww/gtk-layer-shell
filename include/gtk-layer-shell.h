@@ -18,6 +18,9 @@ typedef enum {
 
 void gtk_layer_set_layer (GtkWindow *window, GtkLayerShellLayer layer);
 
+// Set whether the surface is anchored to each edge, defaults to FALSE for all
+// If two opposite edges are anchored, the window will be stretched across the screen in that direction, Unless the
+//   window's default size has been set
 void gtk_layer_set_anchor_left (GtkWindow *window, gboolean anchor_left);
 void gtk_layer_set_anchor_right (GtkWindow *window, gboolean anchor_right);
 void gtk_layer_set_anchor_top (GtkWindow *window, gboolean anchor_top);
