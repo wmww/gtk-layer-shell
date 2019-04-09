@@ -4,6 +4,22 @@
 #include "simple-conversions.h"
 #include "layer-surface.h"
 
+static LayerSurface* gtk_window_get_layer_surface (GtkWindow *window)
+{
+    g_return_val_if_fail (window, NULL);
+    CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (window);
+    if (!shell_surface) {
+        g_critical ("GtkWindow is not a layer surface, make sure you called gtk_layer_init_for_window () first");
+        return NULL;
+    }
+    LayerSurface *layer_surface = custom_shell_surface_get_layer_surface (shell_surface);
+    if (!layer_surface) {
+        g_critical ("Custom wayland shell surface is not a layer surface");
+        return NULL;
+    }
+    return layer_surface;
+}
+
 void
 gtk_layer_init_for_window (GtkWindow *window)
 {
@@ -14,20 +30,16 @@ gtk_layer_init_for_window (GtkWindow *window)
 void
 gtk_layer_set_layer (GtkWindow *window, GtkLayerShellLayer layer)
 {
-    CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (window);
-    g_return_if_fail (shell_surface);
-    LayerSurface *layer_surface = custom_shell_surface_get_layer_surface (shell_surface);
-    g_return_if_fail (layer_surface);
+    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
+    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
     layer_surface_set_layer (layer_surface, gtk_layer_shell_layer_get_zwlr_layer_shell_v1_layer(layer));
 }
 
 static void
 gtk_layer_set_anchor (GtkWindow *window, uint32_t edge, gboolean anchor_to_edge)
 {
-    CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (window);
-    g_return_if_fail (shell_surface);
-    LayerSurface *layer_surface = custom_shell_surface_get_layer_surface (shell_surface);
-    g_return_if_fail (layer_surface);
+    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
+    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
     uint32_t anchor = layer_surface_get_anchor (layer_surface);
     if (anchor_to_edge) {
         anchor |= edge;
@@ -60,19 +72,15 @@ void gtk_layer_set_anchor_bottom (GtkWindow *window, gboolean anchor_bottom)
 void
 gtk_layer_set_exclusive_zone (GtkWindow *window, int exclusive_zone)
 {
-    CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (window);
-    g_return_if_fail (shell_surface);
-    LayerSurface *layer_surface = custom_shell_surface_get_layer_surface (shell_surface);
-    g_return_if_fail (layer_surface);
+    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
+    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
     layer_surface_set_exclusive_zone (layer_surface, exclusive_zone);
 }
 
 void
 gtk_layer_auto_exclusive_zone_enable (GtkWindow *window)
 {
-    CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (window);
-    g_return_if_fail (shell_surface);
-    LayerSurface *layer_surface = custom_shell_surface_get_layer_surface (shell_surface);
-    g_return_if_fail (layer_surface);
+    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
+    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
     layer_surface_auto_exclusive_zone_enable (layer_surface);
 }
