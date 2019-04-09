@@ -3,9 +3,37 @@
 static const gboolean default_left = FALSE;
 static const gboolean default_right = TRUE;
 static const gboolean default_top = TRUE;
-static const gboolean default_bottom = FALSE;
+static const gboolean default_bottom = TRUE;
 
 static const GtkLayerShellLayer default_layer = GTK_LAYER_TOP;
+
+static const gboolean default_auto_exclusive_zone = TRUE;
+
+void
+on_exclusive_zone_state_set (GtkToggleButton *toggle_button, gboolean state, GtkWindow *layer_window)
+{
+    if (state) {
+        gtk_layer_set_exclusive_zone (layer_window, 50);
+    } else {
+        gtk_layer_set_exclusive_zone (layer_window, 0);
+    }
+}
+
+GtkWidget *
+exclusive_zone_toggle_new (GtkWindow *layer_window)
+{
+    GtkWidget *hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+    {
+        GtkWidget *label = gtk_label_new ("Exclusive Zone");
+        gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
+    }{
+        GtkWidget *toggle = gtk_switch_new ();
+        gtk_switch_set_active (GTK_SWITCH (toggle), default_auto_exclusive_zone);
+        g_signal_connect (toggle, "state-set", G_CALLBACK (on_exclusive_zone_state_set), layer_window);
+        gtk_box_pack_end (GTK_BOX (hbox), toggle, FALSE, FALSE, 0);
+    }
+    return hbox;
+}
 
 gboolean
 on_button_press (GtkWidget *parent, GdkEventButton *event, void *_data)
@@ -56,12 +84,16 @@ activate (GtkApplication* app, void *_data)
 
     gtk_layer_set_layer (GTK_WINDOW (window), default_layer);
 
+    gtk_layer_set_exclusive_zone (GTK_WINDOW (window), default_auto_exclusive_zone);
+
     gtk_window_set_default_size (GTK_WINDOW (window), -1, -1);
     gtk_window_set_title (GTK_WINDOW (window), "Window");
 
     GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
+    gtk_container_set_border_width (GTK_CONTAINER (vbox), 12);
     g_signal_connect (window, "orientation-changed", G_CALLBACK (on_orientation_changed), vbox);
     gtk_container_add (GTK_CONTAINER (window), vbox);
+    gtk_container_add (GTK_CONTAINER (vbox), exclusive_zone_toggle_new (GTK_WINDOW (window)));
     GtkWidget *spacer_button = gtk_button_new_with_label ("Useless");
     gtk_widget_set_tooltip_text (spacer_button, "This is a tooltip");
     gtk_container_add (GTK_CONTAINER (vbox), spacer_button);
