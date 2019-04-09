@@ -1,5 +1,12 @@
 #include "example.h"
 
+static const gboolean default_left = FALSE;
+static const gboolean default_right = TRUE;
+static const gboolean default_top = TRUE;
+static const gboolean default_bottom = FALSE;
+
+static const GtkLayerShellLayer default_layer = GTK_LAYER_TOP;
+
 gboolean
 on_button_press (GtkWidget *parent, GdkEventButton *event, void *_data)
 {
@@ -26,6 +33,13 @@ activate (GtkApplication* app, void *_data)
     gtk_layer_init_for_window (GTK_WINDOW (window));
     gtk_layer_set_exclusive_zone (GTK_WINDOW (window), 20);
 
+    gtk_layer_set_anchor_left (GTK_WINDOW (window), default_left);
+    gtk_layer_set_anchor_right (GTK_WINDOW (window), default_right);
+    gtk_layer_set_anchor_top (GTK_WINDOW (window), default_top);
+    gtk_layer_set_anchor_bottom (GTK_WINDOW (window), default_bottom);
+
+    gtk_layer_set_layer (GTK_WINDOW (window), default_layer);
+
     gtk_window_set_default_size (GTK_WINDOW (window), -1, -1);
     gtk_window_set_title (GTK_WINDOW (window), "Window");
 
@@ -37,8 +51,13 @@ activate (GtkApplication* app, void *_data)
     GtkWidget *button = gtk_button_new_with_label ("Menu");
     g_signal_connect (button, "button_press_event",  G_CALLBACK (on_button_press), NULL);
     gtk_container_add (GTK_CONTAINER (vbox), button);
-    gtk_container_add (GTK_CONTAINER (vbox), layer_selection_new (GTK_WINDOW (window), GTK_LAYER_TOP));
-    gtk_container_add (GTK_CONTAINER (vbox), anchor_control_new (GTK_WINDOW (window), TRUE, FALSE, TRUE, FALSE));
+    gtk_container_add (GTK_CONTAINER (vbox), layer_selection_new (GTK_WINDOW (window),
+                                                                  default_layer));
+    gtk_container_add (GTK_CONTAINER (vbox), anchor_control_new (GTK_WINDOW (window),
+                                                                 default_left,
+                                                                 default_right,
+                                                                 default_top,
+                                                                 default_bottom));
     gtk_widget_show_all (window);
 }
 
