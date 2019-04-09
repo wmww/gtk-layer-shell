@@ -28,7 +28,10 @@ void gtk_layer_set_anchor_right (GtkWindow *window, gboolean anchor_right);
 void gtk_layer_set_anchor_top (GtkWindow *window, gboolean anchor_top);
 void gtk_layer_set_anchor_bottom (GtkWindow *window, gboolean anchor_bottom);
 
+// If auto exclusive zone is enabled, the exclusive zone will be set to the size of the window
+// To disable auto exclusive zone, just set the exclusive zone to 0 or any other fixed value
 void gtk_layer_set_exclusive_zone (GtkWindow *window, int exclusive_zone);
+void gtk_layer_auto_exclusive_zone_enable (GtkWindow *window);
 
 G_END_DECLS
 

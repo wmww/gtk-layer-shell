@@ -15,6 +15,7 @@ struct _LayerSurface
     // Can be set at any time
     uint32_t anchor;
     int exclusive_zone;
+    gboolean auto_exclusive_zone; // if to automatically change the exclusive zone to match the window size
     GtkRequisition current_allocation; // Last size allocation, or (-1, -1) if there hasn't been one
     GtkRequisition cached_layer_size; // Last size sent to zwlr_layer_surface_v1_set_size, or (-1, -1) if never called
 
@@ -149,6 +150,26 @@ static void
 layer_surface_update_size (LayerSurface *self)
 {
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
+
+    if (self->auto_exclusive_zone) {
+        gboolean horiz = !!(self->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT) ==
+                         !!(self->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT);
+        gboolean vert = !!(self->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP) ==
+                        !!(self->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM);
+        int new_exclusive_zone = -1;
+        if (horiz && !vert) {
+            new_exclusive_zone = self->current_allocation.height;
+        } else if (vert && !horiz) {
+            new_exclusive_zone = self->current_allocation.width;
+        }
+        if (new_exclusive_zone >= 0 && self->exclusive_zone != new_exclusive_zone) {
+            self->exclusive_zone = new_exclusive_zone;
+            if (self->layer_surface) {
+                zwlr_layer_surface_v1_set_exclusive_zone (self->layer_surface, self->exclusive_zone);
+            }
+        }
+    }
+
     GtkRequisition request_size;
     gtk_widget_get_preferred_size (GTK_WIDGET (gtk_window), NULL, &request_size);
 
@@ -265,11 +286,21 @@ layer_surface_set_anchor (LayerSurface *self, uint32_t anchor)
 void
 layer_surface_set_exclusive_zone (LayerSurface *self, int exclusive_zone)
 {
+    self->auto_exclusive_zone = FALSE;
     if (self->exclusive_zone != exclusive_zone) {
         self->exclusive_zone = exclusive_zone;
         if (self->layer_surface) {
             zwlr_layer_surface_v1_set_exclusive_zone (self->layer_surface, self->exclusive_zone);
             custom_shell_surface_needs_commit ((CustomShellSurface *)self);
         }
+    }
+}
+
+void
+layer_surface_auto_exclusive_zone_enable (LayerSurface *self)
+{
+    if (!self->auto_exclusive_zone) {
+        self->auto_exclusive_zone = TRUE;
+        layer_surface_update_size (self);
     }
 }

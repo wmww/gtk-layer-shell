@@ -66,3 +66,13 @@ gtk_layer_set_exclusive_zone (GtkWindow *window, int exclusive_zone)
     g_return_if_fail (layer_surface);
     layer_surface_set_exclusive_zone (layer_surface, exclusive_zone);
 }
+
+void
+gtk_layer_auto_exclusive_zone_enable (GtkWindow *window)
+{
+    CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (window);
+    g_return_if_fail (shell_surface);
+    LayerSurface *layer_surface = custom_shell_surface_get_layer_surface (shell_surface);
+    g_return_if_fail (layer_surface);
+    layer_surface_auto_exclusive_zone_enable (layer_surface);
+}

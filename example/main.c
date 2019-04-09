@@ -13,7 +13,7 @@ void
 on_exclusive_zone_state_set (GtkToggleButton *toggle_button, gboolean state, GtkWindow *layer_window)
 {
     if (state) {
-        gtk_layer_set_exclusive_zone (layer_window, 50);
+        gtk_layer_auto_exclusive_zone_enable (layer_window);
     } else {
         gtk_layer_set_exclusive_zone (layer_window, 0);
     }
