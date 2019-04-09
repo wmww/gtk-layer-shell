@@ -5,7 +5,7 @@
 #include <gtk/gtk.h>
 
 GtkWidget *
-layer_selection_new (GtkWindow *layer_window, GtkLayerShellLayer starting_layer);
+layer_selection_new (GtkWindow *layer_window, GtkLayerShellLayer default_layer);
 
 GtkWidget *
 anchor_control_new (GtkWindow *layer_window,
