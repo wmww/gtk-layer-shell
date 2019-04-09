@@ -309,7 +309,7 @@ layer_surface_auto_exclusive_zone_enable (LayerSurface *self)
 }
 
 void
-layer_surface_set_keyboard_interactivity (LayerSurface *self, gboolean *interactivity)
+layer_surface_set_keyboard_interactivity (LayerSurface *self, gboolean interactivity)
 {
     if (self->keyboard_interactivity != interactivity) {
         self->keyboard_interactivity = interactivity;
