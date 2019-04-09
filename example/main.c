@@ -8,6 +8,7 @@ static const gboolean default_bottom = TRUE;
 static const GtkLayerShellLayer default_layer = GTK_LAYER_TOP;
 
 static const gboolean default_auto_exclusive_zone = TRUE;
+static const gboolean default_keyboard_interactivity = FALSE;
 
 void
 on_exclusive_zone_state_set (GtkToggleButton *toggle_button, gboolean state, GtkWindow *layer_window)
@@ -19,20 +20,47 @@ on_exclusive_zone_state_set (GtkToggleButton *toggle_button, gboolean state, Gtk
     }
 }
 
-GtkWidget *
-exclusive_zone_toggle_new (GtkWindow *layer_window)
+void
+on_keyboard_interactivity_state_set (GtkToggleButton *toggle_button, gboolean state, GtkWindow *layer_window)
 {
-    GtkWidget *hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-    {
-        GtkWidget *label = gtk_label_new ("Exclusive Zone");
-        gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
-    }{
-        GtkWidget *toggle = gtk_switch_new ();
-        gtk_switch_set_active (GTK_SWITCH (toggle), default_auto_exclusive_zone);
-        g_signal_connect (toggle, "state-set", G_CALLBACK (on_exclusive_zone_state_set), layer_window);
-        gtk_box_pack_end (GTK_BOX (hbox), toggle, FALSE, FALSE, 0);
+    gtk_layer_set_keyboard_interactivity (layer_window, state);
+}
+
+struct {
+    const char *name;
+    void (*callback) (GtkToggleButton *toggle_button, gboolean state, GtkWindow *layer_window);
+} const mscl_toggles[] = {
+    {"Exclusive zone", on_exclusive_zone_state_set},
+    {"Keyboard", on_keyboard_interactivity_state_set},
+};
+
+GtkWidget *
+mscl_toggles_new (GtkWindow *layer_window,
+                  gboolean default_auto_exclusive_zone,
+                  gboolean default_keyboard_interactivity)
+{
+    GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
+    for (int i = 0; i < sizeof (mscl_toggles) / sizeof (mscl_toggles[0]); i++) {
+        GtkWidget *hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+        gtk_box_pack_start (GTK_BOX (vbox), hbox, TRUE, FALSE, 0);
+        {
+            GtkWidget *label = gtk_label_new (mscl_toggles[i].name);
+            gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
+        }{
+            GtkWidget *toggle = gtk_switch_new ();
+            gboolean default_value;
+            if (mscl_toggles[i].callback == on_exclusive_zone_state_set)
+                default_value = default_auto_exclusive_zone;
+            else if (mscl_toggles[i].callback == on_keyboard_interactivity_state_set)
+                default_value = default_keyboard_interactivity;
+            else
+                g_assert_not_reached ();
+            gtk_switch_set_active (GTK_SWITCH (toggle), default_value);
+            g_signal_connect (toggle, "state-set", G_CALLBACK (mscl_toggles[i].callback), layer_window);
+            gtk_box_pack_end (GTK_BOX (hbox), toggle, FALSE, FALSE, 0);
+        }
     }
-    return hbox;
+    return vbox;
 }
 
 gboolean
@@ -93,7 +121,7 @@ activate (GtkApplication* app, void *_data)
     gtk_container_set_border_width (GTK_CONTAINER (vbox), 12);
     g_signal_connect (window, "orientation-changed", G_CALLBACK (on_orientation_changed), vbox);
     gtk_container_add (GTK_CONTAINER (window), vbox);
-    gtk_container_add (GTK_CONTAINER (vbox), exclusive_zone_toggle_new (GTK_WINDOW (window)));
+    gtk_container_add (GTK_CONTAINER (vbox), mscl_toggles_new (GTK_WINDOW (window), default_auto_exclusive_zone, default_keyboard_interactivity));
     GtkWidget *spacer_button = gtk_button_new_with_label ("Useless");
     gtk_widget_set_tooltip_text (spacer_button, "This is a tooltip");
     gtk_container_add (GTK_CONTAINER (vbox), spacer_button);
