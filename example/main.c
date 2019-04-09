@@ -28,10 +28,11 @@ on_keyboard_interactivity_state_set (GtkToggleButton *toggle_button, gboolean st
 
 struct {
     const char *name;
+    const char *tooltip;
     void (*callback) (GtkToggleButton *toggle_button, gboolean state, GtkWindow *layer_window);
 } const mscl_toggles[] = {
-    {"Exclusive zone", on_exclusive_zone_state_set},
-    {"Keyboard", on_keyboard_interactivity_state_set},
+    {"Exclusive zone", "Push windows around", on_exclusive_zone_state_set},
+    {"Keyboard", "Get keyboard events", on_keyboard_interactivity_state_set},
 };
 
 GtkWidget *
@@ -48,6 +49,7 @@ mscl_toggles_new (GtkWindow *layer_window,
             gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
         }{
             GtkWidget *toggle = gtk_switch_new ();
+            gtk_widget_set_tooltip_text (toggle, mscl_toggles[i].tooltip);
             gboolean default_value;
             if (mscl_toggles[i].callback == on_exclusive_zone_state_set)
                 default_value = default_auto_exclusive_zone;

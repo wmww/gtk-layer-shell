@@ -33,18 +33,15 @@ layer_selection_new (GtkWindow *layer_window, GtkLayerShellLayer default_layer)
 {
     GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
     {
-        GtkWidget *label = gtk_label_new ("Layer:");
-        gtk_widget_set_halign (label, GTK_ALIGN_START);
-        gtk_box_pack_start (GTK_BOX (vbox), label, TRUE, TRUE, 12);
-    }{
         GtkWidget *combo_box = gtk_combo_box_text_new ();
+        gtk_widget_set_tooltip_text (combo_box, "Surface layer");
         for (int i = 0; i < sizeof(all_layers) / sizeof(all_layers[0]); i++) {
             gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_box), all_layers[i].name);
             if (all_layers[i].value == default_layer)
                 gtk_combo_box_set_active (GTK_COMBO_BOX (combo_box), i);
         }
         g_signal_connect (combo_box, "changed", G_CALLBACK (on_layer_selected), layer_window);
-        gtk_box_pack_start (GTK_BOX (vbox), combo_box, TRUE, TRUE, 0);
+        gtk_box_pack_start (GTK_BOX (vbox), combo_box, FALSE, FALSE, 0);
     }
 
     return vbox;

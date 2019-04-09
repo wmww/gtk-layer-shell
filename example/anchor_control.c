@@ -107,6 +107,7 @@ anchor_control_new (GtkWindow *layer_window,
             gtk_container_add (GTK_CONTAINER (hbox), vbox);
             {
                 GtkWidget *button = gtk_button_new_from_icon_name ("go-first", GTK_ICON_SIZE_BUTTON);
+                gtk_widget_set_tooltip_text (button, "Anchor left");
                 gtk_box_pack_start (GTK_BOX (vbox), button, TRUE, FALSE, 0);
                 anchor_edge_setup_button (GTK_BUTTON (button), anchor_edges, ANCHOR_EDGE_LEFT);
             }
@@ -115,10 +116,12 @@ anchor_control_new (GtkWindow *layer_window,
             gtk_container_add (GTK_CONTAINER (hbox), center_vbox);
             {
                 GtkWidget *button = gtk_button_new_from_icon_name ("go-top", GTK_ICON_SIZE_BUTTON);
+                gtk_widget_set_tooltip_text (button, "Anchor top");
                 gtk_box_pack_start (GTK_BOX (center_vbox), button, FALSE, FALSE, 0);
                 anchor_edge_setup_button (GTK_BUTTON (button), anchor_edges, ANCHOR_EDGE_TOP);
             }{
                 GtkWidget *button = gtk_button_new_from_icon_name ("go-bottom", GTK_ICON_SIZE_BUTTON);
+                gtk_widget_set_tooltip_text (button, "Anchor bottom");
                 gtk_box_pack_end (GTK_BOX (center_vbox), button, FALSE, FALSE, 0);
                 anchor_edge_setup_button (GTK_BUTTON (button), anchor_edges, ANCHOR_EDGE_BOTTOM);
             }
@@ -127,6 +130,7 @@ anchor_control_new (GtkWindow *layer_window,
             gtk_container_add (GTK_CONTAINER (hbox), vbox);
             {
                 GtkWidget *button = gtk_button_new_from_icon_name ("go-last", GTK_ICON_SIZE_BUTTON);
+                gtk_widget_set_tooltip_text (button, "Anchor right");
                 gtk_box_pack_start (GTK_BOX (vbox), button, TRUE, FALSE, 0);
                 anchor_edge_setup_button (GTK_BUTTON (button), anchor_edges, ANCHOR_EDGE_RIGHT);
             }
