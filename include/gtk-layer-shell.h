@@ -3,6 +3,8 @@
 
 #include <gtk/gtk.h>
 
+G_BEGIN_DECLS // literally just the extern "C" if C++ thing
+
 // Set the window up to be a layer surface once it is mapped
 // This must be called before the window is realized
 // The "namespace" of the layer surface will come from the window's title
@@ -27,5 +29,7 @@ void gtk_layer_set_anchor_top (GtkWindow *window, gboolean anchor_top);
 void gtk_layer_set_anchor_bottom (GtkWindow *window, gboolean anchor_bottom);
 
 void gtk_layer_set_exclusive_zone (GtkWindow *window, int exclusive_zone);
+
+G_END_DECLS
 
 #endif // GTK_LAYER_SHELL_H
