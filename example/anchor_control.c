@@ -17,12 +17,13 @@ void (*const anchor_edge_setters[]) (GtkWindow *window, gboolean anchor) = {
 
 typedef struct {
     gboolean edges[ANCHOR_EDGE_ENUM_COUNT];
+    WindowOrientation orientation;
+    GtkWindow *layer_window;
 } AnchorEdges;
 
 typedef struct {
     AnchorEdge edge;
     AnchorEdges *window_edges;
-    GtkWindow *layer_window;
 } AnchorButtonData;
 
 static void
@@ -35,23 +36,40 @@ anchor_button_update (GtkButton *button, AnchorButtonData *data)
 }
 
 static void
+anchor_edges_update_orientation (AnchorEdges *edges)
+{
+    gboolean horiz = edges->edges[ANCHOR_EDGE_LEFT] == edges->edges[ANCHOR_EDGE_RIGHT];
+    gboolean vert = edges->edges[ANCHOR_EDGE_TOP] == edges->edges[ANCHOR_EDGE_BOTTOM];
+    WindowOrientation orientation = WINDOW_ORIENTATION_NONE;
+    if (horiz && (!vert || (edges->edges[ANCHOR_EDGE_LEFT] && !edges->edges[ANCHOR_EDGE_TOP]))) {
+        orientation = WINDOW_ORIENTATION_HORIZONTAL;
+    } else if (vert && (!horiz || (edges->edges[ANCHOR_EDGE_TOP] && !edges->edges[ANCHOR_EDGE_LEFT]))) {
+        orientation = WINDOW_ORIENTATION_VERTICAL;
+    }
+    if (orientation != edges->orientation) {
+        edges->orientation = orientation;
+        g_signal_emit_by_name(edges->layer_window, "orientation-changed", orientation);
+    }
+}
+
+static void
 on_anchor_toggled (GtkButton *button, AnchorButtonData *data)
 {
     gboolean is_anchored = !data->window_edges->edges[data->edge];
     data->window_edges->edges[data->edge] = is_anchored;
     anchor_button_update (button, data);
+    anchor_edges_update_orientation (data->window_edges);
     g_return_if_fail (data->edge < sizeof (anchor_edge_setters) / sizeof (anchor_edge_setters[0]));
-    anchor_edge_setters[data->edge] (data->layer_window, is_anchored);
+    anchor_edge_setters[data->edge] (data->window_edges->layer_window, is_anchored);
 }
 
 static void
-anchor_edge_setup_button (GtkButton *button, GtkWindow *layer_window, AnchorEdges *window_edges, AnchorEdge edge)
+anchor_edge_setup_button (GtkButton *button, AnchorEdges *window_edges, AnchorEdge edge)
 {
     AnchorButtonData *data = g_new0 (AnchorButtonData, 1);
     *data = (AnchorButtonData) {
         .edge = edge,
         .window_edges = window_edges,
-        .layer_window = layer_window,
     };
     g_signal_connect_data (button,
                            "clicked",
@@ -74,6 +92,9 @@ anchor_control_new (GtkWindow *layer_window,
     anchor_edges->edges[ANCHOR_EDGE_RIGHT] = default_right;
     anchor_edges->edges[ANCHOR_EDGE_TOP] = default_top;
     anchor_edges->edges[ANCHOR_EDGE_BOTTOM] = default_bottom;
+    anchor_edges->layer_window = layer_window;
+    anchor_edges->orientation = -1; // invalid value will force anchor_edges_update_orientation to update
+    anchor_edges_update_orientation (anchor_edges);
     // This is never accessed, but is set for memeory management
     g_object_set_data_full (G_OBJECT (layer_window), "anchor_edges", anchor_edges, g_free);
 
@@ -87,7 +108,7 @@ anchor_control_new (GtkWindow *layer_window,
             {
                 GtkWidget *button = gtk_button_new_from_icon_name ("go-first", GTK_ICON_SIZE_BUTTON);
                 gtk_box_pack_start (GTK_BOX (vbox), button, TRUE, FALSE, 0);
-                anchor_edge_setup_button (GTK_BUTTON (button), layer_window, anchor_edges, ANCHOR_EDGE_LEFT);
+                anchor_edge_setup_button (GTK_BUTTON (button), anchor_edges, ANCHOR_EDGE_LEFT);
             }
         }{
             GtkWidget *center_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 16);
@@ -95,11 +116,11 @@ anchor_control_new (GtkWindow *layer_window,
             {
                 GtkWidget *button = gtk_button_new_from_icon_name ("go-top", GTK_ICON_SIZE_BUTTON);
                 gtk_box_pack_start (GTK_BOX (center_vbox), button, FALSE, FALSE, 0);
-                anchor_edge_setup_button (GTK_BUTTON (button), layer_window, anchor_edges, ANCHOR_EDGE_TOP);
+                anchor_edge_setup_button (GTK_BUTTON (button), anchor_edges, ANCHOR_EDGE_TOP);
             }{
                 GtkWidget *button = gtk_button_new_from_icon_name ("go-bottom", GTK_ICON_SIZE_BUTTON);
                 gtk_box_pack_end (GTK_BOX (center_vbox), button, FALSE, FALSE, 0);
-                anchor_edge_setup_button (GTK_BUTTON (button), layer_window, anchor_edges, ANCHOR_EDGE_BOTTOM);
+                anchor_edge_setup_button (GTK_BUTTON (button), anchor_edges, ANCHOR_EDGE_BOTTOM);
             }
         }{
             GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
@@ -107,7 +128,7 @@ anchor_control_new (GtkWindow *layer_window,
             {
                 GtkWidget *button = gtk_button_new_from_icon_name ("go-last", GTK_ICON_SIZE_BUTTON);
                 gtk_box_pack_start (GTK_BOX (vbox), button, TRUE, FALSE, 0);
-                anchor_edge_setup_button (GTK_BUTTON (button), layer_window, anchor_edges, ANCHOR_EDGE_RIGHT);
+                anchor_edge_setup_button (GTK_BUTTON (button), anchor_edges, ANCHOR_EDGE_RIGHT);
             }
         }
     }

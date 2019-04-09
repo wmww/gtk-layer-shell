@@ -26,6 +26,22 @@ on_button_press (GtkWidget *parent, GdkEventButton *event, void *_data)
 }
 
 static void
+on_orientation_changed (GtkWindow *window, WindowOrientation orientation, GtkWidget *box)
+{
+    switch (orientation) {
+        case WINDOW_ORIENTATION_HORIZONTAL:
+            gtk_orientable_set_orientation (GTK_ORIENTABLE (box), GTK_ORIENTATION_HORIZONTAL);
+            break;
+        case WINDOW_ORIENTATION_VERTICAL:
+            gtk_orientable_set_orientation (GTK_ORIENTABLE (box), GTK_ORIENTATION_VERTICAL);
+            break;
+        case WINDOW_ORIENTATION_NONE:
+            gtk_orientable_set_orientation (GTK_ORIENTABLE (box), GTK_ORIENTATION_VERTICAL);
+            break;
+    }
+}
+
+static void
 activate (GtkApplication* app, void *_data)
 {
     GtkWidget *window = gtk_application_window_new (app);
@@ -44,6 +60,7 @@ activate (GtkApplication* app, void *_data)
     gtk_window_set_title (GTK_WINDOW (window), "Window");
 
     GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
+    g_signal_connect (window, "orientation-changed", G_CALLBACK (on_orientation_changed), vbox);
     gtk_container_add (GTK_CONTAINER (window), vbox);
     GtkWidget *spacer_button = gtk_button_new_with_label ("Useless");
     gtk_widget_set_tooltip_text (spacer_button, "This is a tooltip");
@@ -64,6 +81,12 @@ activate (GtkApplication* app, void *_data)
 int
 main (int argc, char **argv)
 {
+    g_signal_new("orientation-changed",
+                 GTK_TYPE_WINDOW,
+                 G_SIGNAL_RUN_FIRST,
+                 0, NULL, NULL,
+                 g_cclosure_marshal_VOID__INT,
+                 G_TYPE_NONE, 1, G_TYPE_INT); // WindowOrientation
     GtkApplication * app = gtk_application_new ("org.gtk.example", G_APPLICATION_FLAGS_NONE);
     g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
     int status = g_application_run (G_APPLICATION (app), argc, argv);

@@ -4,6 +4,14 @@
 #include "gtk-layer-shell.h"
 #include <gtk/gtk.h>
 
+typedef enum {
+    WINDOW_ORIENTATION_NONE = 0,
+    WINDOW_ORIENTATION_HORIZONTAL,
+    WINDOW_ORIENTATION_VERTICAL,
+} WindowOrientation;
+
+// The layer_window has am "orientation-changed" signal, whos argument is WindowOrientation
+
 GtkWidget *
 layer_selection_new (GtkWindow *layer_window, GtkLayerShellLayer default_layer);
 
