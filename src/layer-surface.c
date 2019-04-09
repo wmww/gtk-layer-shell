@@ -18,6 +18,7 @@ struct _LayerSurface
     gboolean auto_exclusive_zone; // if to automatically change the exclusive zone to match the window size
     GtkRequisition current_allocation; // Last size allocation, or (-1, -1) if there hasn't been one
     GtkRequisition cached_layer_size; // Last size sent to zwlr_layer_surface_v1_set_size, or (-1, -1) if never called
+    gboolean keyboard_interactivity;
 
     // Need the surface to be recreated to change
     struct wl_output *output;
@@ -100,7 +101,7 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
                                                                  name);
     g_return_if_fail (self->layer_surface);
 
-    zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, FALSE);
+    zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, self->keyboard_interactivity);
     zwlr_layer_surface_v1_set_anchor (self->layer_surface, self->anchor);
     zwlr_layer_surface_v1_set_exclusive_zone (self->layer_surface, self->exclusive_zone);
     if (self->cached_layer_size.width >= 0 && self->cached_layer_size.height >= 0) {
@@ -236,6 +237,8 @@ layer_surface_new (GtkWindow *gtk_window)
     self->layer = ZWLR_LAYER_SHELL_V1_LAYER_TOP;
     self->anchor = 0;
     self->exclusive_zone = 0;
+    self->auto_exclusive_zone = FALSE;
+    self->keyboard_interactivity = FALSE;
     self->layer_surface = NULL;
 
     gtk_window_set_decorated (gtk_window, FALSE);
@@ -302,5 +305,17 @@ layer_surface_auto_exclusive_zone_enable (LayerSurface *self)
     if (!self->auto_exclusive_zone) {
         self->auto_exclusive_zone = TRUE;
         layer_surface_update_size (self);
+    }
+}
+
+void
+layer_surface_set_keyboard_interactivity (LayerSurface *self, gboolean *interactivity)
+{
+    if (self->keyboard_interactivity != interactivity) {
+        self->keyboard_interactivity = interactivity;
+        if (self->layer_surface) {
+            zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, self->keyboard_interactivity);
+            custom_shell_surface_needs_commit ((CustomShellSurface *)self);
+        }
     }
 }

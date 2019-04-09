@@ -33,6 +33,8 @@ void gtk_layer_set_anchor_bottom (GtkWindow *window, gboolean anchor_bottom);
 void gtk_layer_set_exclusive_zone (GtkWindow *window, int exclusive_zone);
 void gtk_layer_auto_exclusive_zone_enable (GtkWindow *window);
 
+void gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interacitvity);
+
 G_END_DECLS
 
 #endif // GTK_LAYER_SHELL_H

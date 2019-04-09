@@ -84,3 +84,11 @@ gtk_layer_auto_exclusive_zone_enable (GtkWindow *window)
     if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
     layer_surface_auto_exclusive_zone_enable (layer_surface);
 }
+
+void
+gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interacitvity)
+{
+    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
+    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
+    layer_surface_set_keyboard_interactivity (layer_surface, interacitvity);
+}
