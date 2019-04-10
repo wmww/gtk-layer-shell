@@ -27,15 +27,6 @@ typedef struct {
 } AnchorButtonData;
 
 static void
-anchor_button_update (GtkButton *button, AnchorButtonData *data)
-{
-    gtk_button_set_relief (button,
-                           data->window_edges->edges[data->edge] ?
-                               GTK_RELIEF_NORMAL :
-                               GTK_RELIEF_NONE);
-}
-
-static void
 anchor_edges_update_orientation (AnchorEdges *edges)
 {
     gboolean horiz = edges->edges[ANCHOR_EDGE_LEFT] == edges->edges[ANCHOR_EDGE_RIGHT];
@@ -53,19 +44,21 @@ anchor_edges_update_orientation (AnchorEdges *edges)
 }
 
 static void
-on_anchor_toggled (GtkButton *button, AnchorButtonData *data)
+on_anchor_toggled (GtkToggleButton *button, AnchorButtonData *data)
 {
-    gboolean is_anchored = !data->window_edges->edges[data->edge];
+    gboolean is_anchored = gtk_toggle_button_get_active (button);
     data->window_edges->edges[data->edge] = is_anchored;
-    anchor_button_update (button, data);
     anchor_edges_update_orientation (data->window_edges);
     g_return_if_fail (data->edge < sizeof (anchor_edge_setters) / sizeof (anchor_edge_setters[0]));
     anchor_edge_setters[data->edge] (data->window_edges->layer_window, is_anchored);
 }
 
-static void
-anchor_edge_setup_button (GtkButton *button, AnchorEdges *window_edges, AnchorEdge edge)
+static GtkWidget *
+anchor_edge_button_new (AnchorEdges *window_edges, AnchorEdge edge, const char *icon_name, const char *tooltip)
 {
+    GtkWidget *button = gtk_toggle_button_new ();
+    gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_icon_name (icon_name, GTK_ICON_SIZE_BUTTON));
+    gtk_widget_set_tooltip_text (button, tooltip);
     AnchorButtonData *data = g_new0 (AnchorButtonData, 1);
     *data = (AnchorButtonData) {
         .edge = edge,
@@ -77,7 +70,8 @@ anchor_edge_setup_button (GtkButton *button, AnchorEdges *window_edges, AnchorEd
                            data,
                            (GClosureNotify)g_free,
                            (GConnectFlags)0);
-    anchor_button_update (button, data);
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), data->window_edges->edges[data->edge]);
+    return button;
 }
 
 GtkWidget *
@@ -106,33 +100,25 @@ anchor_control_new (GtkWindow *layer_window,
             GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
             gtk_container_add (GTK_CONTAINER (hbox), vbox);
             {
-                GtkWidget *button = gtk_button_new_from_icon_name ("go-first", GTK_ICON_SIZE_BUTTON);
-                gtk_widget_set_tooltip_text (button, "Anchor left");
+                GtkWidget *button = anchor_edge_button_new (anchor_edges, ANCHOR_EDGE_LEFT, "go-first", "Anchor left");
                 gtk_box_pack_start (GTK_BOX (vbox), button, TRUE, FALSE, 0);
-                anchor_edge_setup_button (GTK_BUTTON (button), anchor_edges, ANCHOR_EDGE_LEFT);
             }
         }{
             GtkWidget *center_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 16);
             gtk_container_add (GTK_CONTAINER (hbox), center_vbox);
             {
-                GtkWidget *button = gtk_button_new_from_icon_name ("go-top", GTK_ICON_SIZE_BUTTON);
-                gtk_widget_set_tooltip_text (button, "Anchor top");
+                GtkWidget *button = anchor_edge_button_new (anchor_edges, ANCHOR_EDGE_TOP, "go-top", "Anchor top");
                 gtk_box_pack_start (GTK_BOX (center_vbox), button, FALSE, FALSE, 0);
-                anchor_edge_setup_button (GTK_BUTTON (button), anchor_edges, ANCHOR_EDGE_TOP);
             }{
-                GtkWidget *button = gtk_button_new_from_icon_name ("go-bottom", GTK_ICON_SIZE_BUTTON);
-                gtk_widget_set_tooltip_text (button, "Anchor bottom");
+                GtkWidget *button = anchor_edge_button_new (anchor_edges, ANCHOR_EDGE_BOTTOM, "go-bottom", "Anchor bottom");
                 gtk_box_pack_end (GTK_BOX (center_vbox), button, FALSE, FALSE, 0);
-                anchor_edge_setup_button (GTK_BUTTON (button), anchor_edges, ANCHOR_EDGE_BOTTOM);
             }
         }{
             GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
             gtk_container_add (GTK_CONTAINER (hbox), vbox);
             {
-                GtkWidget *button = gtk_button_new_from_icon_name ("go-last", GTK_ICON_SIZE_BUTTON);
-                gtk_widget_set_tooltip_text (button, "Anchor right");
+                GtkWidget *button = anchor_edge_button_new (anchor_edges, ANCHOR_EDGE_RIGHT, "go-last", "Anchor right");
                 gtk_box_pack_start (GTK_BOX (vbox), button, TRUE, FALSE, 0);
-                anchor_edge_setup_button (GTK_BUTTON (button), anchor_edges, ANCHOR_EDGE_RIGHT);
             }
         }
     }
