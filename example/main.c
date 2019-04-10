@@ -102,6 +102,12 @@ on_orientation_changed (GtkWindow *window, WindowOrientation orientation, GtkWid
 }
 
 static void
+on_close_clicked (GtkButton *button, GtkWindow *layer_window)
+{
+    gtk_window_close (layer_window);
+}
+
+static void
 activate (GtkApplication* app, void *_data)
 {
     GtkWidget *window = gtk_application_window_new (app);
@@ -139,6 +145,9 @@ activate (GtkApplication* app, void *_data)
                                                                  default_right,
                                                                  default_top,
                                                                  default_bottom));
+    GtkWidget *close_button = gtk_button_new_from_icon_name ("window-close", GTK_ICON_SIZE_LARGE_TOOLBAR);
+    g_signal_connect (close_button, "clicked", G_CALLBACK (on_close_clicked), window);
+    gtk_container_add (GTK_CONTAINER (vbox), close_button);
     gtk_widget_show_all (window);
 }
 
