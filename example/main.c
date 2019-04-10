@@ -10,7 +10,7 @@ static const GtkLayerShellLayer default_layer = GTK_LAYER_TOP;
 static const gboolean default_auto_exclusive_zone = TRUE;
 static const gboolean default_keyboard_interactivity = FALSE;
 
-void
+gboolean
 on_exclusive_zone_state_set (GtkToggleButton *toggle_button, gboolean state, GtkWindow *layer_window)
 {
     if (state) {
@@ -18,18 +18,20 @@ on_exclusive_zone_state_set (GtkToggleButton *toggle_button, gboolean state, Gtk
     } else {
         gtk_layer_set_exclusive_zone (layer_window, 0);
     }
+    return FALSE;
 }
 
-void
+gboolean
 on_keyboard_interactivity_state_set (GtkToggleButton *toggle_button, gboolean state, GtkWindow *layer_window)
 {
     gtk_layer_set_keyboard_interactivity (layer_window, state);
+    return FALSE;
 }
 
 struct {
     const char *name;
     const char *tooltip;
-    void (*callback) (GtkToggleButton *toggle_button, gboolean state, GtkWindow *layer_window);
+    gboolean (*callback) (GtkToggleButton *toggle_button, gboolean state, GtkWindow *layer_window);
 } const mscl_toggles[] = {
     {"Exclusive zone", "Push windows around", on_exclusive_zone_state_set},
     {"Keyboard", "Get keyboard events", on_keyboard_interactivity_state_set},
