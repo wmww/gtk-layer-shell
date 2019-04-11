@@ -13,7 +13,10 @@ typedef enum {
 typedef struct {
     gboolean edges[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER];
     WindowOrientation orientation;
-} AnchorEdges;
+    GtkWidget *toplevel_box;
+    GtkWidget *first_box;
+    GtkWidget *second_box;
+} ToplevelData;
 
 extern const char *anchor_edges_key;
 

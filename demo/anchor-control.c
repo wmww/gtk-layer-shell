@@ -9,9 +9,9 @@ static void
 on_anchor_toggled (GtkToggleButton *button, AnchorButtonData *data)
 {
     gboolean is_anchored = gtk_toggle_button_get_active (button);
-    AnchorEdges *edges = g_object_get_data (G_OBJECT (data->layer_window), anchor_edges_key);
-    g_return_if_fail (edges);
-    edges->edges[data->edge] = is_anchored;
+    ToplevelData *toplevel_data = g_object_get_data (G_OBJECT (data->layer_window), anchor_edges_key);
+    g_return_if_fail (toplevel_data);
+    toplevel_data->edges[data->edge] = is_anchored;
     layer_window_update_orientation (data->layer_window);
     gtk_layer_set_anchor (data->layer_window, data->edge, is_anchored);
 }
@@ -44,7 +44,9 @@ anchor_edge_button_new (GtkWindow *layer_window,
 GtkWidget *
 anchor_control_new (GtkWindow *layer_window, const gboolean default_anchors[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER])
 {
+    GtkWidget *outside_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
     GtkWidget *outside_hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start (GTK_BOX (outside_vbox), outside_hbox, TRUE, FALSE, 0);
     {
         GtkWidget *hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
         gtk_box_pack_start (GTK_BOX (outside_hbox), hbox, TRUE, FALSE, 0);
@@ -56,7 +58,7 @@ anchor_control_new (GtkWindow *layer_window, const gboolean default_anchors[GTK_
                 gtk_box_pack_start (GTK_BOX (vbox), button, TRUE, FALSE, 0);
             }
         }{
-            GtkWidget *center_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 8);
+            GtkWidget *center_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 40);
             gtk_container_add (GTK_CONTAINER (hbox), center_vbox);
             {
                 GtkWidget *button = anchor_edge_button_new (layer_window, GTK_LAYER_SHELL_EDGE_TOP, default_anchors, "go-top", "Anchor top");
@@ -75,5 +77,5 @@ anchor_control_new (GtkWindow *layer_window, const gboolean default_anchors[GTK_
         }
     }
 
-    return outside_hbox;
+    return outside_vbox;
 }

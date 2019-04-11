@@ -14,7 +14,7 @@ menu_bar_new (GtkWindow *layer_window)
         GtkWidget *menu_bar = gtk_menu_bar_new ();
         gtk_box_pack_start (GTK_BOX (vbox), menu_bar, FALSE, FALSE, 0);
         {
-            GtkWidget *menu_item = gtk_menu_item_new_with_label ("Menu");
+            GtkWidget *menu_item = gtk_menu_item_new_with_label ("Popup menu");
             gtk_container_add (GTK_CONTAINER (menu_bar), menu_item);
             {
                 GtkWidget *submenu = gtk_menu_new ();
