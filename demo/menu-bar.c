@@ -1,4 +1,4 @@
-#include "example.h"
+#include "gtk-layer-demo.h"
 
 static void
 on_close_clicked (GtkMenuItem *item, GtkWindow *layer_window)

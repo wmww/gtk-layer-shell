@@ -1,5 +1,5 @@
-#ifndef GTK_LAYER_SHELL_EXAMPLE_H
-#define GTK_LAYER_SHELL_EXAMPLE_H
+#ifndef GTK_LAYER_DEMO_H
+#define GTK_LAYER_DEMO_H
 
 #include "gtk-layer-shell.h"
 #include <gtk/gtk.h>
@@ -37,4 +37,4 @@ mscl_toggles_new (GtkWindow *layer_window,
 GtkWidget *
 menu_bar_new (GtkWindow *layer_window);
 
-#endif // GTK_LAYER_SHELL_EXAMPLE_H
+#endif // GTK_LAYER_DEMO_H

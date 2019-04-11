@@ -1,4 +1,4 @@
-#include "example.h"
+#include "gtk-layer-demo.h"
 
 struct {
     const char *name;

@@ -1,4 +1,4 @@
-#include "example.h"
+#include "gtk-layer-demo.h"
 
 static const gboolean default_anchors[] = {FALSE, FALSE, TRUE, FALSE};
 static const int default_margins[] = {0, 0, 0, 0};
@@ -95,7 +95,7 @@ main (int argc, char **argv)
                  0, NULL, NULL,
                  g_cclosure_marshal_VOID__INT,
                  G_TYPE_NONE, 1, G_TYPE_INT);
-    GtkApplication * app = gtk_application_new ("org.gtk.example", G_APPLICATION_FLAGS_NONE);
+    GtkApplication * app = gtk_application_new ("sh.wmww.gtk-layer-demo", G_APPLICATION_FLAGS_NONE);
     g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
     int status = g_application_run (G_APPLICATION (app), argc, argv);
     g_object_unref (app);

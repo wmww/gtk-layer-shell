@@ -17,7 +17,13 @@ AC_SUBST(WAYLAND_LIBS)
 
 PKG_CHECK_MODULES(WAYLAND_SCANNER, [wayland-scanner])
 
-AC_CONFIG_FILES([Makefile include/gtk-layer-shell-0.pc include/Makefile src/Makefile src/protocol/Makefile example/Makefile])
+AC_CONFIG_FILES([
+    Makefile
+    include/gtk-layer-shell-0.pc
+    include/Makefile
+    src/Makefile
+    src/protocol/Makefile
+    demo/Makefile])
 
 PKG_INSTALLDIR
 

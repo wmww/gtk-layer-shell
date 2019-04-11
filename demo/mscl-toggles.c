@@ -1,4 +1,4 @@
-#include "example.h"
+#include "gtk-layer-demo.h"
 
 gboolean
 on_exclusive_zone_state_set (GtkToggleButton *toggle_button, gboolean state, GtkWindow *layer_window)

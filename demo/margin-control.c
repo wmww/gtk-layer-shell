@@ -1,4 +1,4 @@
-#include "example.h"
+#include "gtk-layer-demo.h"
 
 static void
 on_orientation_changed (GtkWindow *window, WindowOrientation orientation, GtkWidget *box)
