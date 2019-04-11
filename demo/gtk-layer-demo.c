@@ -68,14 +68,12 @@ activate (GtkApplication* app, void *_data)
     gtk_container_set_border_width (GTK_CONTAINER (vbox), 16);
     gtk_container_add (GTK_CONTAINER (gtk_window), vbox);
     gtk_container_add (GTK_CONTAINER (vbox), menu_bar_new (gtk_window));
-    gtk_container_add (GTK_CONTAINER (vbox),
-                       layer_selection_new (gtk_window, default_layer));
-    gtk_container_add (GTK_CONTAINER (vbox),
-                       anchor_control_new (gtk_window, default_anchors));
-    gtk_container_add (GTK_CONTAINER (vbox),
-                       mscl_toggles_new (gtk_window,
-                                         default_auto_exclusive_zone,
-                                         default_keyboard_interactivity));
+    gtk_container_add (GTK_CONTAINER (vbox), layer_selection_new (gtk_window, default_layer));
+    gtk_container_add (GTK_CONTAINER (vbox), monitor_selection_new (gtk_window));
+    gtk_container_add (GTK_CONTAINER (vbox), anchor_control_new (gtk_window, default_anchors));
+    gtk_container_add (GTK_CONTAINER (vbox), mscl_toggles_new (gtk_window,
+                                                               default_auto_exclusive_zone,
+                                                               default_keyboard_interactivity));
     gtk_container_add (GTK_CONTAINER (vbox),
                        margin_control_new (gtk_window, default_margins));
     g_signal_connect (gtk_window, "orientation-changed", G_CALLBACK (on_orientation_changed), vbox);

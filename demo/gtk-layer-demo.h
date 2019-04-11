@@ -24,6 +24,9 @@ GtkWidget *
 layer_selection_new (GtkWindow *layer_window, GtkLayerShellLayer default_layer);
 
 GtkWidget *
+monitor_selection_new (GtkWindow *layer_window);
+
+GtkWidget *
 anchor_control_new (GtkWindow *layer_window, const gboolean default_anchors[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER]);
 
 GtkWidget *

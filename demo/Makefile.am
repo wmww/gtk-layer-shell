@@ -5,6 +5,7 @@ gtk_layer_demo_SOURCES = \
 	anchor-control.c \
 	margin-control.c \
 	layer-selection.c \
+	monitor-selection.c \
 	mscl-toggles.c \
 	menu-bar.c
 gtk_layer_demo_LDADD = ../src/libgtk-layer-shell.a $(GTK_LIBS) $(WAYLAND_LIBS)
