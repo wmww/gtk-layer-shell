@@ -15,7 +15,8 @@ struct _XdgPopupSurface
 {
     CustomShellSurface super;
 
-    CustomShellSurface *transient_for;
+    CustomShellSurface *parent_shell_surface;
+    GtkWidget *parent_widget; // The anchor rect is relative to the top-left of this. I don't make the rules
     GdkRectangle cached_allocation;
 
     // These can be NULL
@@ -75,13 +76,21 @@ xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
 
     g_return_if_fail (!self->xdg_popup);
     g_return_if_fail (!self->xdg_surface);
-    g_return_if_fail (self->transient_for);
+    g_return_if_fail (self->parent_shell_surface);
+    g_return_if_fail (self->parent_widget);
+    GtkWidget *parent_toplevel_widget = GTK_WIDGET (custom_shell_surface_get_gtk_window(self->parent_shell_surface));
+    g_return_if_fail (parent_toplevel_widget);
 
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window (super);
     GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
     g_return_if_fail (gdk_window);
     GdkWinowHackPosition *position = gtk_window_hack_get_position (gdk_window);
     g_return_if_fail (position);
+    GdkPoint parent_widget_on_window;
+    gtk_widget_translate_coordinates (self->parent_widget, parent_toplevel_widget,
+                                      0, 0, &parent_widget_on_window.x, &parent_widget_on_window.y);
+    position->rect.x += parent_widget_on_window.x;
+    position->rect.y += parent_widget_on_window.y;
     struct xdg_wm_base *xdg_wm_base_global = gtk_wayland_get_xdg_wm_base_global ();
     g_return_if_fail (xdg_wm_base_global);
     struct xdg_positioner *positioner = xdg_wm_base_create_positioner (xdg_wm_base_global);
@@ -104,7 +113,9 @@ xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     g_return_if_fail (self->xdg_surface);
     xdg_surface_add_listener (self->xdg_surface, &xdg_surface_listener, self);
 
-    self->xdg_popup = self->transient_for->virtual->get_popup (self->transient_for, self->xdg_surface, positioner);
+    self->xdg_popup = self->parent_shell_surface->virtual->get_popup (self->parent_shell_surface,
+                                                                      self->xdg_surface,
+                                                                      positioner);
     g_return_if_fail (self->xdg_popup);
     xdg_popup_add_listener (self->xdg_popup, &xdg_popup_listener, self);
 
@@ -173,7 +184,8 @@ xdg_popup_surface_new (GtkWindow *gtk_window)
     self->super.virtual = &xdg_popup_surface_virtual;
     custom_shell_surface_init ((CustomShellSurface *)self, gtk_window);
 
-    self->transient_for = NULL;
+    self->parent_shell_surface = NULL;
+    self->parent_widget = NULL;
     self->cached_allocation = (GdkRectangle) {
         .x = 0,
         .y = 0,
@@ -198,8 +210,11 @@ custom_shell_surface_get_xdg_popup (CustomShellSurface *shell_surface)
 }
 
 void
-xdg_popup_surface_set_transient_for (XdgPopupSurface *self, CustomShellSurface *transient_for)
+xdg_popup_surface_set_parent (XdgPopupSurface *self,
+                              CustomShellSurface *parent_shell_surface,
+                              GtkWidget *parent_widget)
 {
-    self->transient_for = transient_for;
+    self->parent_shell_surface = parent_shell_surface;
+    self->parent_widget = parent_widget;
 }
 

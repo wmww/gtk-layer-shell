@@ -64,26 +64,37 @@ gtk_wayland_override_on_window_realize (GtkWindow *gtk_window, void *_data)
     // TODO: figure out how to move this to gtk_wayland_init_if_needed ()
     gdk_window_hack_init (gtk_widget_get_window (GTK_WIDGET (gtk_window)));
 
-    GtkWindow *transient_for = gtk_window_get_transient_for (gtk_window);
-    if (!transient_for) {
-        GtkWidget *attached_to = gtk_window_get_attached_to (gtk_window);
-        GtkWidget *toplevel = attached_to ? gtk_widget_get_toplevel (attached_to) : NULL;
-        transient_for = GTK_IS_WINDOW (toplevel) ? GTK_WINDOW (toplevel) : NULL;
-    }
-    CustomShellSurface *transient_for_shell_surface = gtk_window_get_custom_shell_surface (transient_for);
-
-    if (transient_for_shell_surface)
-    {
-        CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (gtk_window);
-        XdgPopupSurface *popup_surface = custom_shell_surface_get_xdg_popup (shell_surface);
-        g_return_if_fail (shell_surface == (CustomShellSurface *)popup_surface); // make sure the cast succeeded
-        if (popup_surface) {
-            shell_surface->virtual->unmap (shell_surface);
-        } else {
-            popup_surface = xdg_popup_surface_new (gtk_window);
+    GtkWidget *parent_widget = gtk_window_get_attached_to (gtk_window);
+    if (!parent_widget) {
+        // tooltips aren't attached to a widget
+        GtkWindow *transient_for = gtk_window_get_transient_for (gtk_window);
+        if (transient_for) {
+            parent_widget = GTK_WIDGET (transient_for);
         }
-        xdg_popup_surface_set_transient_for (popup_surface, transient_for_shell_surface);
     }
+
+    if (!parent_widget) // Not a popup
+        return;
+
+    GtkWindow *parent_window = GTK_WINDOW (gtk_widget_get_toplevel (parent_widget));
+    CustomShellSurface *parent_shell_surface = gtk_window_get_custom_shell_surface (parent_window);
+
+    if (!parent_shell_surface) // A popup, but not for a custom shell surface
+        return;
+
+    XdgPopupSurface *popup_surface = NULL;
+    CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (gtk_window);
+
+    if (shell_surface) {
+        popup_surface = custom_shell_surface_get_xdg_popup (shell_surface);
+        // If there's already a custom surface on the window, it better be a popup
+        g_return_if_fail (popup_surface);
+        shell_surface->virtual->unmap (shell_surface);
+    } else {
+        popup_surface = xdg_popup_surface_new (gtk_window);
+        shell_surface = (CustomShellSurface *)popup_surface;
+    }
+    xdg_popup_surface_set_parent (popup_surface, parent_shell_surface, parent_widget);
 }
 
 // This callback must override the default unmap handler, so it can run first
