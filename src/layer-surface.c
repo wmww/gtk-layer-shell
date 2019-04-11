@@ -9,6 +9,7 @@
 #include "protocol/xdg-shell-client.h"
 
 #include <gtk/gtk.h>
+#include <gdk/gdkwayland.h>
 
 struct _LayerSurface
 {
@@ -24,7 +25,7 @@ struct _LayerSurface
     gboolean keyboard_interactivity;
 
     // Need the surface to be recreated to change
-    struct wl_output *output;
+    GdkMonitor *monitor;
     enum zwlr_layer_shell_v1_layer layer;
 
     // The actual layer surface Wayland object (can be NULL)
@@ -118,9 +119,14 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     if (name == NULL)
         name = "gtk-layer-shell";
 
+    struct wl_output *output = NULL;
+    if (self->monitor) {
+        output = gdk_wayland_monitor_get_wl_output (self->monitor);
+    }
+
     self->layer_surface = zwlr_layer_shell_v1_get_layer_surface (layer_shell_global,
                                                                  wl_surface,
-                                                                 self->output,
+                                                                 output,
                                                                  self->layer,
                                                                  name);
     g_return_if_fail (self->layer_surface);
@@ -266,7 +272,7 @@ layer_surface_new (GtkWindow *gtk_window)
         .height = -1,
     };
     self->cached_layer_size = self->current_allocation;
-    self->output = NULL;
+    self->monitor = NULL;
     self->layer = ZWLR_LAYER_SHELL_V1_LAYER_TOP;
     self->exclusive_zone = 0;
     self->auto_exclusive_zone = FALSE;
@@ -293,6 +299,18 @@ layer_surface_set_layer (LayerSurface *self, enum zwlr_layer_shell_v1_layer laye
 {
     if (self->layer != layer) {
         self->layer = layer;
+        if (self->layer_surface) {
+            custom_shell_surface_remap ((CustomShellSurface *)self);
+        }
+    }
+}
+
+void
+layer_surface_set_monitor (LayerSurface *self, GdkMonitor *monitor)
+{
+    if (monitor) g_return_if_fail (GDK_IS_WAYLAND_MONITOR (monitor));
+    if (monitor != self->monitor) {
+        self->monitor = monitor;
         if (self->layer_surface) {
             custom_shell_surface_remap ((CustomShellSurface *)self);
         }

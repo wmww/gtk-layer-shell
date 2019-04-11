@@ -16,6 +16,7 @@ LayerSurface *custom_shell_surface_get_layer_surface (CustomShellSurface *shell_
 
 // Surface is remapped in order to set
 void layer_surface_set_layer (LayerSurface *self, enum zwlr_layer_shell_v1_layer layer);
+void layer_surface_set_monitor (LayerSurface *self, GdkMonitor *monitor);
 
 // Can be set without remapping the surface
 void layer_surface_set_anchor (LayerSurface *self, GtkLayerShellEdge edge, gboolean anchor_to_edge);

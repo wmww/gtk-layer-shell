@@ -26,10 +26,15 @@ typedef enum {
 // The "namespace" of the layer surface will come from the window's title
 void gtk_layer_init_for_window (GtkWindow *window);
 
-// Sets the "layer" on which the surface appears (controls if it is over top of or below other surfaces)
-// If the window has already been mapped, it will automatically remap so the change can take effect
+// Set the "layer" on which the surface appears (controls if it is over top of or below other surfaces)
+// If the window is currently mapped, it will get remapped so the change can take effect
 // Default is GTK_LAYER_SHELL_LAYER_TOP
 void gtk_layer_set_layer (GtkWindow *window, GtkLayerShellLayer layer);
+
+// Set the output for the window to be placed on, or NULL to let the compositor choose
+// If the window is currently mapped, it will get remapped so the change can take effect
+// Default is NULL
+void gtk_layer_set_monitor (GtkWindow *window, GdkMonitor *monitor);
 
 // Set if the surface is anchored to an edge
 // If two opposite edges are anchored, the window will be stretched across the screen in that direction
@@ -37,7 +42,7 @@ void gtk_layer_set_layer (GtkWindow *window, GtkLayerShellLayer layer);
 // Default is FALSE for all
 void gtk_layer_set_anchor (GtkWindow *window, GtkLayerShellEdge edge, gboolean anchor_to_edge);
 
-// Sets the margin for a specific edge of a window
+// Set the margin for a specific edge of a window
 // Effects both surface's distance from the edge and exclusive zone size (if auto exclusive zone enabled)
 // Default is 0 for all
 void gtk_layer_set_margin (GtkWindow *window, GtkLayerShellEdge edge, int margin_size);

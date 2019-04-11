@@ -37,6 +37,14 @@ gtk_layer_set_layer (GtkWindow *window, GtkLayerShellLayer layer)
 }
 
 void
+gtk_layer_set_monitor (GtkWindow *window, GdkMonitor *monitor)
+{
+    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
+    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
+    layer_surface_set_monitor (layer_surface, monitor);
+}
+
+void
 gtk_layer_set_anchor (GtkWindow *window, GtkLayerShellEdge edge, gboolean anchor_to_edge)
 {
     LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
