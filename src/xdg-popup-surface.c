@@ -119,6 +119,11 @@ xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
 
     xdg_positioner_destroy (positioner);
 
+    xdg_surface_set_window_geometry (self->xdg_surface,
+                                     popup_geom.x,
+                                     popup_geom.y,
+                                     popup_geom.width,
+                                     popup_geom.height);
     wl_surface_commit (wl_surface);
     wl_display_roundtrip (gdk_wayland_display_get_wl_display (gdk_display_get_default ()));
 }
