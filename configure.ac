@@ -23,7 +23,8 @@ AC_CONFIG_FILES([
     include/Makefile
     src/Makefile
     src/protocol/Makefile
-    demo/Makefile])
+    demo/Makefile
+    example/Makefile])
 
 PKG_INSTALLDIR
 
