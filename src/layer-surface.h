@@ -19,7 +19,7 @@ void layer_surface_set_layer (LayerSurface *self, enum zwlr_layer_shell_v1_layer
 
 // Can be set without remapping the surface
 void layer_surface_set_anchor (LayerSurface *self, GtkLayerShellEdge edge, gboolean anchor_to_edge);
-
+void layer_surface_set_margin (LayerSurface *self, GtkLayerShellEdge edge, int margin_size);
 void layer_surface_set_exclusive_zone (LayerSurface *self, int exclusive_zone);
 void layer_surface_auto_exclusive_zone_enable (LayerSurface *self);
 

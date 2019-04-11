@@ -34,6 +34,10 @@ void gtk_layer_set_layer (GtkWindow *window, GtkLayerShellLayer layer);
 // (unless the window's default size has been set)
 void gtk_layer_set_anchor (GtkWindow *window, GtkLayerShellEdge edge, gboolean anchor_to_edge);
 
+// Sets the margin around the layer surface
+// Effects both distance from the edge and auto exclusive zone if enabled
+void gtk_layer_set_margin (GtkWindow *window, GtkLayerShellEdge edge, int margin_size);
+
 // If auto exclusive zone is enabled, the exclusive zone will be set to the size of the window
 // To disable auto exclusive zone, just set the exclusive zone to 0 or any other fixed value
 void gtk_layer_set_exclusive_zone (GtkWindow *window, int exclusive_zone);

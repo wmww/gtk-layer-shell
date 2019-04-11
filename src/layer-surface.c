@@ -16,6 +16,7 @@ struct _LayerSurface
 
     // Can be set at any time
     gboolean anchors[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER];
+    int margins[GTK_LAYER_SHELL_LAYER_ENTRY_NUMBER];
     int exclusive_zone;
     gboolean auto_exclusive_zone; // if to automatically change the exclusive zone to match the window size
     GtkRequisition current_allocation; // Last size allocation, or (-1, -1) if there hasn't been one
@@ -91,6 +92,18 @@ layer_surface_send_set_anchor (LayerSurface *self)
 }
 
 static void
+layer_surface_send_set_margin (LayerSurface *self)
+{
+    if (self->layer_surface) {
+        zwlr_layer_surface_v1_set_margin (self->layer_surface,
+                                          self->margins[GTK_LAYER_SHELL_EDGE_TOP],
+                                          self->margins[GTK_LAYER_SHELL_EDGE_RIGHT],
+                                          self->margins[GTK_LAYER_SHELL_EDGE_BOTTOM],
+                                          self->margins[GTK_LAYER_SHELL_EDGE_LEFT]);
+    }
+}
+
+static void
 layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
 {
     LayerSurface *self = (LayerSurface *)super;
@@ -115,6 +128,7 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, self->keyboard_interactivity);
     zwlr_layer_surface_v1_set_exclusive_zone (self->layer_surface, self->exclusive_zone);
     layer_surface_send_set_anchor (self);
+    layer_surface_send_set_margin (self);
     if (self->cached_layer_size.width >= 0 && self->cached_layer_size.height >= 0) {
         zwlr_layer_surface_v1_set_size (self->layer_surface,
                                         self->cached_layer_size.width,
@@ -164,15 +178,23 @@ layer_surface_update_size (LayerSurface *self)
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
 
     if (self->auto_exclusive_zone) {
-        gboolean horiz = !!(self->anchors[GTK_LAYER_SHELL_EDGE_LEFT]) ==
-                         !!(self->anchors[GTK_LAYER_SHELL_EDGE_RIGHT]);
-        gboolean vert = !!(self->anchors[GTK_LAYER_SHELL_EDGE_TOP]) ==
-                        !!(self->anchors[GTK_LAYER_SHELL_EDGE_BOTTOM]);
+        gboolean horiz = (self->anchors[GTK_LAYER_SHELL_EDGE_LEFT] ==
+                          self->anchors[GTK_LAYER_SHELL_EDGE_RIGHT]);
+        gboolean vert = (self->anchors[GTK_LAYER_SHELL_EDGE_TOP] ==
+                         self->anchors[GTK_LAYER_SHELL_EDGE_BOTTOM]);
         int new_exclusive_zone = -1;
         if (horiz && !vert) {
             new_exclusive_zone = self->current_allocation.height;
+            if (!self->anchors[GTK_LAYER_SHELL_EDGE_TOP])
+                new_exclusive_zone += self->margins[GTK_LAYER_SHELL_EDGE_TOP];
+            if (!self->anchors[GTK_LAYER_SHELL_EDGE_BOTTOM])
+                new_exclusive_zone += self->margins[GTK_LAYER_SHELL_EDGE_BOTTOM];
         } else if (vert && !horiz) {
             new_exclusive_zone = self->current_allocation.width;
+            if (!self->anchors[GTK_LAYER_SHELL_EDGE_LEFT])
+                new_exclusive_zone += self->margins[GTK_LAYER_SHELL_EDGE_LEFT];
+            if (!self->anchors[GTK_LAYER_SHELL_EDGE_RIGHT])
+                new_exclusive_zone += self->margins[GTK_LAYER_SHELL_EDGE_RIGHT];
         }
         if (new_exclusive_zone >= 0 && self->exclusive_zone != new_exclusive_zone) {
             self->exclusive_zone = new_exclusive_zone;
@@ -288,6 +310,18 @@ layer_surface_set_anchor (LayerSurface *self, GtkLayerShellEdge edge, gboolean a
             layer_surface_update_size (self);
             custom_shell_surface_needs_commit ((CustomShellSurface *)self);
         }
+    }
+}
+
+void
+layer_surface_set_margin (LayerSurface *self, GtkLayerShellEdge edge, int margin_size)
+{
+    g_return_if_fail (edge >= 0 && edge < GTK_LAYER_SHELL_LAYER_ENTRY_NUMBER);
+    if (margin_size != self->margins[edge]) {
+        self->margins[edge] = margin_size;
+        layer_surface_send_set_margin (self);
+        layer_surface_update_size (self); // Auto exclusive zone might need to change
+        custom_shell_surface_needs_commit ((CustomShellSurface *)self);
     }
 }
 

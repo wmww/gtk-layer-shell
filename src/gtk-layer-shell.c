@@ -4,7 +4,8 @@
 #include "simple-conversions.h"
 #include "layer-surface.h"
 
-static LayerSurface* gtk_window_get_layer_surface (GtkWindow *window)
+static
+LayerSurface* gtk_window_get_layer_surface (GtkWindow *window)
 {
     g_return_val_if_fail (window, NULL);
     CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (window);
@@ -41,6 +42,14 @@ gtk_layer_set_anchor (GtkWindow *window, GtkLayerShellEdge edge, gboolean anchor
     LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
     if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
     layer_surface_set_anchor (layer_surface, edge, anchor_to_edge);
+}
+
+void
+gtk_layer_set_margin (GtkWindow *window, GtkLayerShellEdge edge, int margin_size)
+{
+    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
+    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
+    layer_surface_set_margin (layer_surface, edge, margin_size);
 }
 
 void
