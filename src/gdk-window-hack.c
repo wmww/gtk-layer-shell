@@ -73,3 +73,11 @@ GdkWinowHackPosition* gtk_window_hack_get_position (GdkWindow *gdk_window)
 {
     return g_object_get_data (G_OBJECT (gdk_window), popup_data_key);
 }
+
+GdkWindow *
+gdk_window_hack_get_transient_for (GdkWindow *gdk_window)
+{
+    // Assume the transient_for GdkWindow* is the 3rd pointer after the GObject in GdkWindow (gdkinternals:206)
+    void **transient_for = (void *)gdk_window + sizeof(GObject) + 2 * sizeof(void *);
+    return GDK_WINDOW (*transient_for);
+}

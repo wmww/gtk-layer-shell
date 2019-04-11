@@ -19,4 +19,6 @@ struct _GdkWinowHackPosition
 // Returned memory is valid for the lifetime of the window
 GdkWinowHackPosition* gtk_window_hack_get_position (GdkWindow *gdk_window);
 
+GdkWindow *gdk_window_hack_get_transient_for (GdkWindow *gdk_window);
+
 #endif // GDK_WINDOW_HACK_H
