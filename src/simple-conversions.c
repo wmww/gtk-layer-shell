@@ -5,14 +5,25 @@ gtk_layer_shell_layer_get_zwlr_layer_shell_v1_layer (GtkLayerShellLayer layer)
 {
     switch (layer)
     {
-    case GTK_LAYER_BACKGROUND: return ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND;
-    case GTK_LAYER_BOTTOM: return ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM;
-    case GTK_LAYER_TOP: return ZWLR_LAYER_SHELL_V1_LAYER_TOP;
-    case GTK_LAYER_OVERLAY: return ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY;
+    case GTK_LAYER_SHELL_LAYER_BACKGROUND: return ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND;
+    case GTK_LAYER_SHELL_LAYER_BOTTOM: return ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM;
+    case GTK_LAYER_SHELL_LAYER_TOP: return ZWLR_LAYER_SHELL_V1_LAYER_TOP;
+    case GTK_LAYER_SHELL_LAYER_OVERLAY: return ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY;
     default:
         g_critical ("Invalid GtkLayerShellLayer %d", layer);
         return ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND;
     }
+}
+
+uint32_t
+gtk_layer_shell_edge_array_get_zwlr_layer_shell_v1_anchor (gboolean edges[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER])
+{
+    uint32_t anchor = 0;
+    if (edges[GTK_LAYER_SHELL_EDGE_LEFT]) anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
+    if (edges[GTK_LAYER_SHELL_EDGE_RIGHT]) anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
+    if (edges[GTK_LAYER_SHELL_EDGE_TOP]) anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP;
+    if (edges[GTK_LAYER_SHELL_EDGE_BOTTOM]) anchor |= ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
+    return anchor;
 }
 
 enum xdg_positioner_gravity

@@ -18,8 +18,7 @@ LayerSurface *custom_shell_surface_get_layer_surface (CustomShellSurface *shell_
 void layer_surface_set_layer (LayerSurface *self, enum zwlr_layer_shell_v1_layer layer);
 
 // Can be set without remapping the surface
-uint32_t layer_surface_get_anchor (LayerSurface *self);
-void layer_surface_set_anchor (LayerSurface *self, uint32_t anchor);
+void layer_surface_set_anchor (LayerSurface *self, GtkLayerShellEdge edge, gboolean anchor_to_edge);
 
 void layer_surface_set_exclusive_zone (LayerSurface *self, int exclusive_zone);
 void layer_surface_auto_exclusive_zone_enable (LayerSurface *self);

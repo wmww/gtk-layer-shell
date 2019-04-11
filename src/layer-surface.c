@@ -1,5 +1,7 @@
 #include "layer-surface.h"
 
+#include "gtk-layer-shell.h"
+#include "simple-conversions.h"
 #include "custom-shell-surface.h"
 #include "gtk-wayland.h"
 
@@ -13,7 +15,7 @@ struct _LayerSurface
     CustomShellSurface super;
 
     // Can be set at any time
-    uint32_t anchor;
+    gboolean anchors[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER];
     int exclusive_zone;
     gboolean auto_exclusive_zone; // if to automatically change the exclusive zone to match the window size
     GtkRequisition current_allocation; // Last size allocation, or (-1, -1) if there hasn't been one
@@ -80,6 +82,15 @@ static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
 };
 
 static void
+layer_surface_send_set_anchor (LayerSurface *self)
+{
+    if (self->layer_surface) {
+        uint32_t wlr_anchor = gtk_layer_shell_edge_array_get_zwlr_layer_shell_v1_anchor (self->anchors);
+        zwlr_layer_surface_v1_set_anchor (self->layer_surface, wlr_anchor);
+    }
+}
+
+static void
 layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
 {
     LayerSurface *self = (LayerSurface *)super;
@@ -102,8 +113,8 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     g_return_if_fail (self->layer_surface);
 
     zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, self->keyboard_interactivity);
-    zwlr_layer_surface_v1_set_anchor (self->layer_surface, self->anchor);
     zwlr_layer_surface_v1_set_exclusive_zone (self->layer_surface, self->exclusive_zone);
+    layer_surface_send_set_anchor (self);
     if (self->cached_layer_size.width >= 0 && self->cached_layer_size.height >= 0) {
         zwlr_layer_surface_v1_set_size (self->layer_surface,
                                         self->cached_layer_size.width,
@@ -153,10 +164,10 @@ layer_surface_update_size (LayerSurface *self)
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
 
     if (self->auto_exclusive_zone) {
-        gboolean horiz = !!(self->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT) ==
-                         !!(self->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT);
-        gboolean vert = !!(self->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP) ==
-                        !!(self->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM);
+        gboolean horiz = !!(self->anchors[GTK_LAYER_SHELL_EDGE_LEFT]) ==
+                         !!(self->anchors[GTK_LAYER_SHELL_EDGE_RIGHT]);
+        gboolean vert = !!(self->anchors[GTK_LAYER_SHELL_EDGE_TOP]) ==
+                        !!(self->anchors[GTK_LAYER_SHELL_EDGE_BOTTOM]);
         int new_exclusive_zone = -1;
         if (horiz && !vert) {
             new_exclusive_zone = self->current_allocation.height;
@@ -174,13 +185,13 @@ layer_surface_update_size (LayerSurface *self)
     GtkRequisition request_size;
     gtk_widget_get_preferred_size (GTK_WIDGET (gtk_window), NULL, &request_size);
 
-    if ((self->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT) &&
-        (self->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT)) {
+    if ((self->anchors[GTK_LAYER_SHELL_EDGE_LEFT]) &&
+        (self->anchors[GTK_LAYER_SHELL_EDGE_RIGHT])) {
 
         request_size.width = 0;
     }
-    if ((self->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP) &&
-        (self->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM)) {
+    if ((self->anchors[GTK_LAYER_SHELL_EDGE_TOP]) &&
+        (self->anchors[GTK_LAYER_SHELL_EDGE_BOTTOM])) {
 
         request_size.height = 0;
     }
@@ -235,7 +246,6 @@ layer_surface_new (GtkWindow *gtk_window)
     self->cached_layer_size = self->current_allocation;
     self->output = NULL;
     self->layer = ZWLR_LAYER_SHELL_V1_LAYER_TOP;
-    self->anchor = 0;
     self->exclusive_zone = 0;
     self->auto_exclusive_zone = FALSE;
     self->keyboard_interactivity = FALSE;
@@ -267,19 +277,14 @@ layer_surface_set_layer (LayerSurface *self, enum zwlr_layer_shell_v1_layer laye
     }
 }
 
-uint32_t
-layer_surface_get_anchor (LayerSurface *self)
-{
-    return self->anchor;
-}
-
 void
-layer_surface_set_anchor (LayerSurface *self, uint32_t anchor)
+layer_surface_set_anchor (LayerSurface *self, GtkLayerShellEdge edge, gboolean anchor_to_edge)
 {
-    if (self->anchor != anchor) {
-        self->anchor = anchor;
+    g_return_if_fail (edge >= 0 && edge < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER);
+    if (anchor_to_edge != self->anchors[edge]) {
+        self->anchors[edge] = anchor_to_edge;
         if (self->layer_surface) {
-            zwlr_layer_surface_v1_set_anchor (self->layer_surface, self->anchor);
+            layer_surface_send_set_anchor (self);
             layer_surface_update_size (self);
             custom_shell_surface_needs_commit ((CustomShellSurface *)self);
         }
