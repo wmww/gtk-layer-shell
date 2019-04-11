@@ -3,9 +3,8 @@
 
 #include <gtk/gtk.h>
 
-G_BEGIN_DECLS // literally just the extern "C" if C++ thing
+G_BEGIN_DECLS
 
-// The layers a layer surface can be on, see the layer shell protocol for more info
 typedef enum {
     GTK_LAYER_SHELL_LAYER_BACKGROUND,
     GTK_LAYER_SHELL_LAYER_BOTTOM,
@@ -27,22 +26,30 @@ typedef enum {
 // The "namespace" of the layer surface will come from the window's title
 void gtk_layer_init_for_window (GtkWindow *window);
 
+// Sets the "layer" on which the surface appears (controls if it is over top of or below other surfaces)
+// If the window has already been mapped, it will automatically remap so the change can take effect
+// Default is GTK_LAYER_SHELL_LAYER_TOP
 void gtk_layer_set_layer (GtkWindow *window, GtkLayerShellLayer layer);
 
-// Set if the surface is anchored to an edge, defaults to FALSE for all
+// Set if the surface is anchored to an edge
 // If two opposite edges are anchored, the window will be stretched across the screen in that direction
-// (unless the window's default size has been set)
+// (unless the window's default size has been set, in which case it will be centered)
+// Default is FALSE for all
 void gtk_layer_set_anchor (GtkWindow *window, GtkLayerShellEdge edge, gboolean anchor_to_edge);
 
-// Sets the margin around the layer surface
-// Effects both distance from the edge and auto exclusive zone if enabled
+// Sets the margin for a specific edge of a window
+// Effects both surface's distance from the edge and exclusive zone size (if auto exclusive zone enabled)
+// Default is 0 for all
 void gtk_layer_set_margin (GtkWindow *window, GtkLayerShellEdge edge, int margin_size);
 
-// If auto exclusive zone is enabled, the exclusive zone will be set to the size of the window
+// If auto exclusive zone is enabled, exclusive zone will be set to the size of the window + relevant margin
 // To disable auto exclusive zone, just set the exclusive zone to 0 or any other fixed value
+// Default is 0
 void gtk_layer_set_exclusive_zone (GtkWindow *window, int exclusive_zone);
 void gtk_layer_auto_exclusive_zone_enable (GtkWindow *window);
 
+// If the window should recieve keyboard events from the compositor
+// Default is FALSE
 void gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interacitvity);
 
 G_END_DECLS
