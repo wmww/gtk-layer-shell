@@ -19,13 +19,21 @@ menu_bar_new (GtkWindow *layer_window)
             {
                 GtkWidget *submenu = gtk_menu_new ();
                 gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), submenu);
-                for (int i = 0; i < 3; i++)
                 {
-                    GString *label = g_string_new ("");
-                    g_string_printf (label, "Menu item %d", i);
-                    GtkWidget *submenu_item = gtk_menu_item_new_with_label (label->str);
-                    g_string_free (label, TRUE);
-                    gtk_menu_shell_append (GTK_MENU_SHELL (submenu), submenu_item);
+                    GtkWidget *nested_menu_item = gtk_menu_item_new_with_label ("Nested popup");
+                    gtk_menu_shell_append (GTK_MENU_SHELL (submenu), nested_menu_item);
+                    {
+                        GtkWidget *nested_menu = gtk_menu_new ();
+                        gtk_menu_item_set_submenu (GTK_MENU_ITEM (nested_menu_item), nested_menu);
+                        for (int i = 0; i < 3; i++)
+                        {
+                            GString *label = g_string_new ("");
+                            g_string_printf (label, "Menu item %d", i);
+                            GtkWidget *submenu_item = gtk_menu_item_new_with_label (label->str);
+                            g_string_free (label, TRUE);
+                            gtk_menu_shell_append (GTK_MENU_SHELL (nested_menu), submenu_item);
+                        }
+                    }
                 }
                 {
                     GtkWidget *close_item = gtk_menu_item_new_with_label ("Close");
