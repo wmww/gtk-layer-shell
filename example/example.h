@@ -10,7 +10,15 @@ typedef enum {
     WINDOW_ORIENTATION_VERTICAL,
 } WindowOrientation;
 
-// The layer_window has am "orientation-changed" signal, whos argument is WindowOrientation
+typedef struct {
+    gboolean edges[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER];
+    WindowOrientation orientation;
+} AnchorEdges;
+
+extern const char *anchor_edges_key;
+
+void
+layer_window_update_orientation (GtkWindow *layer_window);
 
 GtkWidget *
 layer_selection_new (GtkWindow *layer_window, GtkLayerShellLayer default_layer);
