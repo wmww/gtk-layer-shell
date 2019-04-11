@@ -4,10 +4,10 @@ struct {
     const char *name;
     GtkLayerShellLayer value;
 } const all_layers[] = {
-    {"Overlay", GTK_LAYER_OVERLAY},
-    {"Top", GTK_LAYER_TOP},
-    {"Bottom", GTK_LAYER_BOTTOM},
-    {"Background", GTK_LAYER_BACKGROUND},
+    {"Overlay", GTK_LAYER_SHELL_LAYER_OVERLAY},
+    {"Top", GTK_LAYER_SHELL_LAYER_TOP},
+    {"Bottom", GTK_LAYER_SHELL_LAYER_BOTTOM},
+    {"Background", GTK_LAYER_SHELL_LAYER_BACKGROUND},
 };
 
 static void

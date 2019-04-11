@@ -5,7 +5,7 @@ static const gboolean default_right = FALSE;
 static const gboolean default_top = FALSE;
 static const gboolean default_bottom = FALSE;
 
-static const GtkLayerShellLayer default_layer = GTK_LAYER_TOP;
+static const GtkLayerShellLayer default_layer = GTK_LAYER_SHELL_LAYER_TOP;
 
 static const gboolean default_auto_exclusive_zone = FALSE;
 static const gboolean default_keyboard_interactivity = FALSE;
@@ -33,10 +33,10 @@ activate (GtkApplication* app, void *_data)
 
     gtk_layer_init_for_window (gtk_window);
 
-    gtk_layer_set_anchor_left (gtk_window, default_left);
-    gtk_layer_set_anchor_right (gtk_window, default_right);
-    gtk_layer_set_anchor_top (gtk_window, default_top);
-    gtk_layer_set_anchor_bottom (gtk_window, default_bottom);
+    gtk_layer_set_anchor (gtk_window, GTK_LAYER_SHELL_EDGE_LEFT, default_left);
+    gtk_layer_set_anchor (gtk_window, GTK_LAYER_SHELL_EDGE_RIGHT, default_right);
+    gtk_layer_set_anchor (gtk_window, GTK_LAYER_SHELL_EDGE_TOP, default_top);
+    gtk_layer_set_anchor (gtk_window, GTK_LAYER_SHELL_EDGE_BOTTOM, default_bottom);
     gtk_layer_set_layer (gtk_window, default_layer);
     gtk_layer_set_exclusive_zone (gtk_window, default_auto_exclusive_zone);
     gtk_layer_set_keyboard_interactivity (gtk_window, default_keyboard_interactivity);
