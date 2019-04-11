@@ -3,6 +3,7 @@ bin_PROGRAMS = gtk-layer-shell-example
 gtk_layer_shell_example_SOURCES = \
 	main.c \
 	anchor-control.c \
+	margin-control.c \
 	layer-selection.c \
 	mscl-toggles.c \
 	menu-bar.c

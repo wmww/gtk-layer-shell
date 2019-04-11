@@ -16,11 +16,10 @@ GtkWidget *
 layer_selection_new (GtkWindow *layer_window, GtkLayerShellLayer default_layer);
 
 GtkWidget *
-anchor_control_new (GtkWindow *layer_window,
-                    gboolean default_left,
-                    gboolean default_right,
-                    gboolean default_top,
-                    gboolean default_bottom);
+anchor_control_new (GtkWindow *layer_window, const gboolean default_anchors[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER]);
+
+GtkWidget *
+margin_control_new (GtkWindow *layer_window, const int default_margins[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER]);
 
 GtkWidget *
 mscl_toggles_new (GtkWindow *layer_window,

@@ -1,14 +1,12 @@
 #include "example.h"
 
-static const gboolean default_left = FALSE;
-static const gboolean default_right = FALSE;
-static const gboolean default_top = FALSE;
-static const gboolean default_bottom = FALSE;
+static const gboolean default_anchor[] = {FALSE, FALSE, FALSE, FALSE};
+static const int default_margin[] = {0, 20, 100, 0};
 
 static const GtkLayerShellLayer default_layer = GTK_LAYER_SHELL_LAYER_TOP;
 
 static const gboolean default_auto_exclusive_zone = FALSE;
-static const gboolean default_keyboard_interactivity = FALSE;
+static const gboolean default_keyboard_interactivity = TRUE;
 
 static void
 on_orientation_changed (GtkWindow *window, WindowOrientation orientation, GtkWidget *box)
@@ -33,10 +31,10 @@ activate (GtkApplication* app, void *_data)
 
     gtk_layer_init_for_window (gtk_window);
 
-    gtk_layer_set_anchor (gtk_window, GTK_LAYER_SHELL_EDGE_LEFT, default_left);
-    gtk_layer_set_anchor (gtk_window, GTK_LAYER_SHELL_EDGE_RIGHT, default_right);
-    gtk_layer_set_anchor (gtk_window, GTK_LAYER_SHELL_EDGE_TOP, default_top);
-    gtk_layer_set_anchor (gtk_window, GTK_LAYER_SHELL_EDGE_BOTTOM, default_bottom);
+    for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++)
+        gtk_layer_set_anchor (gtk_window, i, default_anchor[i]);
+    for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++)
+        gtk_layer_set_margin (gtk_window, i, default_margin[i]);
     gtk_layer_set_layer (gtk_window, default_layer);
     gtk_layer_set_exclusive_zone (gtk_window, default_auto_exclusive_zone);
     gtk_layer_set_keyboard_interactivity (gtk_window, default_keyboard_interactivity);
@@ -53,11 +51,9 @@ activate (GtkApplication* app, void *_data)
     gtk_container_add (GTK_CONTAINER (vbox),
                        layer_selection_new (gtk_window, default_layer));
     gtk_container_add (GTK_CONTAINER (vbox),
-                       anchor_control_new (gtk_window,
-                                           default_left,
-                                           default_right,
-                                           default_top,
-                                           default_bottom));
+                       anchor_control_new (gtk_window, default_anchor));
+    gtk_container_add (GTK_CONTAINER (vbox),
+                       margin_control_new (gtk_window, default_margin));
     g_signal_connect (gtk_window, "orientation-changed", G_CALLBACK (on_orientation_changed), vbox);
     gtk_widget_show_all (GTK_WIDGET (gtk_window));
 }

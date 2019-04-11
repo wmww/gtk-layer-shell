@@ -59,17 +59,11 @@ anchor_edge_button_new (AnchorEdges *window_edges, GtkLayerShellEdge edge, const
 }
 
 GtkWidget *
-anchor_control_new (GtkWindow *layer_window,
-                    gboolean default_left,
-                    gboolean default_right,
-                    gboolean default_top,
-                    gboolean default_bottom)
+anchor_control_new (GtkWindow *layer_window, const gboolean default_anchors[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER])
 {
     AnchorEdges *anchor_edges = g_new0 (AnchorEdges, 1);
-    anchor_edges->edges[GTK_LAYER_SHELL_EDGE_LEFT] = default_left;
-    anchor_edges->edges[GTK_LAYER_SHELL_EDGE_RIGHT] = default_right;
-    anchor_edges->edges[GTK_LAYER_SHELL_EDGE_TOP] = default_top;
-    anchor_edges->edges[GTK_LAYER_SHELL_EDGE_BOTTOM] = default_bottom;
+    for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++)
+        anchor_edges->edges[i] = default_anchors[i];
     anchor_edges->layer_window = layer_window;
     anchor_edges->orientation = -1; // invalid value will force anchor_edges_update_orientation to update
     anchor_edges_update_orientation (anchor_edges);
