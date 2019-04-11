@@ -94,7 +94,7 @@ anchor_control_new (GtkWindow *layer_window,
 
     GtkWidget *outside_hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
     {
-        GtkWidget *hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
+        GtkWidget *hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
         gtk_box_pack_start (GTK_BOX (outside_hbox), hbox, TRUE, FALSE, 0);
         {
             GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
@@ -104,7 +104,7 @@ anchor_control_new (GtkWindow *layer_window,
                 gtk_box_pack_start (GTK_BOX (vbox), button, TRUE, FALSE, 0);
             }
         }{
-            GtkWidget *center_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 16);
+            GtkWidget *center_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 8);
             gtk_container_add (GTK_CONTAINER (hbox), center_vbox);
             {
                 GtkWidget *button = anchor_edge_button_new (anchor_edges, ANCHOR_EDGE_TOP, "go-top", "Anchor top");
