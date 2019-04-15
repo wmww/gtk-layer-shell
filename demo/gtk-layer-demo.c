@@ -1,12 +1,16 @@
 #include "gtk-layer-demo.h"
 
-static const gboolean default_anchors[] = {FALSE, FALSE, FALSE, FALSE};
+static gboolean default_anchors[] = {FALSE, FALSE, FALSE, FALSE};
 static const int default_margins[] = {0, 0, 0, 0};
 
 static const GtkLayerShellLayer default_layer = GTK_LAYER_SHELL_LAYER_TOP;
 
 static const gboolean default_auto_exclusive_zone = FALSE;
 static const gboolean default_keyboard_interactivity = FALSE;
+
+const char *prog_name = "gtk-layer-demo";
+const char *prog_summary = "A GTK application for demonstrating the functionality of the Layer Shell Wayland protocol";
+const char *prog_details = "See https://github.com/wmww/gtk-layer-shell for more information, and to report bugs";
 
 const char *anchor_edges_key = "anchor_edges";
 
@@ -49,6 +53,71 @@ on_orientation_changed (GtkWindow *window, WindowOrientation orientation, Toplev
     gtk_orientable_set_orientation (GTK_ORIENTABLE (data->toplevel_box), orient_toplevel);
     gtk_orientable_set_orientation (GTK_ORIENTABLE (data->first_box), orient_sub);
     gtk_orientable_set_orientation (GTK_ORIENTABLE (data->second_box), orient_sub);
+}
+
+gboolean
+anchor_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error)
+{
+    for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++) {
+        default_anchors[i] = FALSE;
+    }
+
+    if (!value || !*value || g_strcmp0 (value, "0") == 0 || g_strcmp0 (value, "none") == 0) {
+        return TRUE;
+    }
+
+    for (const char *c = value; *c; c++) {
+        if (*c == 'l') {
+            default_anchors[GTK_LAYER_SHELL_EDGE_LEFT] = TRUE;
+        } else if (*c == 'r') {
+            default_anchors[GTK_LAYER_SHELL_EDGE_RIGHT] = TRUE;
+        } else if (*c == 't') {
+            default_anchors[GTK_LAYER_SHELL_EDGE_TOP] = TRUE;
+        } else if (*c == 'b') {
+            default_anchors[GTK_LAYER_SHELL_EDGE_BOTTOM] = TRUE;
+        } else {
+            g_set_error (error,
+                         G_OPTION_ERROR,
+                         G_OPTION_ERROR_FAILED,
+                         "Invalid anchor edge '%c'", *c);
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+static const GOptionEntry options[] = {
+    {
+        .long_name = "anchor",
+        .short_name = 'a',
+        .flags = G_OPTION_FLAG_NONE,
+        .arg = G_OPTION_ARG_CALLBACK,
+        .arg_data = &anchor_option_callback,
+        .description = "A sequence of l, r, t and b to anchor to those edges, or \"0\" for no anchor",
+        .arg_description = NULL,
+    },
+    { NULL }
+};
+
+static void
+process_args (int *argc, char ***argv)
+{
+    GOptionContext *context = g_option_context_new ("");
+    g_option_context_add_group (context, gtk_get_option_group (TRUE));
+    g_option_context_set_summary (context, prog_summary);
+    g_option_context_set_description (context, prog_details);
+    g_option_context_add_main_entries (context, options, NULL);
+
+    GError *error = NULL;
+    if (!g_option_context_parse (context, argc, argv, &error)) {
+        g_printerr ("%s\n", error->message);
+        g_error_free (error);
+        g_option_context_free (context);
+        exit (1);
+    }
+
+    g_option_context_free (context);
 }
 
 static GtkWidget *
@@ -121,15 +190,18 @@ layer_window_new ()
 int
 main (int argc, char **argv)
 {
-    gtk_init(&argc, &argv);
+    g_set_prgname (prog_name);
+    gtk_init (&argc, &argv);
+    process_args (&argc, &argv);
+
     // The int arg is an enum of type WindowOrientation
     // Signal is emitted in anchor-control.c
-    g_signal_new("orientation-changed",
-                 GTK_TYPE_WINDOW,
-                 G_SIGNAL_RUN_FIRST,
-                 0, NULL, NULL,
-                 g_cclosure_marshal_VOID__INT,
-                 G_TYPE_NONE, 1, G_TYPE_INT);
+    g_signal_new ("orientation-changed",
+                  GTK_TYPE_WINDOW,
+                  G_SIGNAL_RUN_FIRST,
+                  0, NULL, NULL,
+                  g_cclosure_marshal_VOID__INT,
+                  G_TYPE_NONE, 1, G_TYPE_INT);
 
     GtkWidget *initial_window = layer_window_new ();
     gtk_widget_show_all (GTK_WIDGET (initial_window));
