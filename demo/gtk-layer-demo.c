@@ -1,18 +1,179 @@
 #include "gtk-layer-demo.h"
 
+static GtkLayerShellLayer default_layer = GTK_LAYER_SHELL_LAYER_TOP;
+
 static gboolean default_anchors[] = {FALSE, FALSE, FALSE, FALSE};
-static const int default_margins[] = {0, 0, 0, 0};
+static int default_margins[] = {0, 0, 0, 0};
 
-static const GtkLayerShellLayer default_layer = GTK_LAYER_SHELL_LAYER_TOP;
-
-static const gboolean default_auto_exclusive_zone = FALSE;
-static const gboolean default_keyboard_interactivity = FALSE;
+static gboolean default_auto_exclusive_zone = FALSE; // always set by command line option
+static gboolean default_keyboard_interactivity = FALSE; // always set by command line option
 
 const char *prog_name = "gtk-layer-demo";
 const char *prog_summary = "A GTK application for demonstrating the functionality of the Layer Shell Wayland protocol";
 const char *prog_details = "See https://github.com/wmww/gtk-layer-shell for more information, and to report bugs";
 
 const char *anchor_edges_key = "anchor_edges";
+
+gboolean layer_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error);
+gboolean anchor_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error);
+gboolean margin_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error);
+
+static const GOptionEntry options[] = {
+    {
+        .long_name = "layer",
+        .short_name = 'l',
+        .flags = G_OPTION_FLAG_NONE,
+        .arg = G_OPTION_ARG_CALLBACK,
+        .arg_data = &layer_option_callback,
+        .description = "\"overlay\", \"top\", \"bottom\" or background (or \"o\", \"t\", \"b\" or \"g\")",
+        .arg_description = NULL,
+    },
+    {
+        .long_name = "anchor",
+        .short_name = 'a',
+        .flags = G_OPTION_FLAG_OPTIONAL_ARG,
+        .arg = G_OPTION_ARG_CALLBACK,
+        .arg_data = &anchor_option_callback,
+        .description = "A sequence of 'l', 'r', 't' and 'b' to anchor to those edges, or \"0\" for no anchor",
+        .arg_description = NULL,
+    },
+    {
+        .long_name = "margin",
+        .short_name = 'm',
+        .flags = G_OPTION_FLAG_NONE,
+        .arg = G_OPTION_ARG_CALLBACK,
+        .arg_data = &margin_option_callback,
+        .description = "Comma separated list of margin values, in the order LEFT,RIGHT,TOP,BOTTOM",
+        .arg_description = NULL,
+    },
+    {
+        .long_name = "exclusive",
+        .short_name = 'e',
+        .flags = G_OPTION_FLAG_NONE,
+        .arg = G_OPTION_ARG_NONE,
+        .arg_data = &default_auto_exclusive_zone,
+        .description = "Enable auto exclusive zone",
+        .arg_description = NULL,
+    },
+    {
+        .long_name = "keyboard",
+        .short_name = 'k',
+        .flags = G_OPTION_FLAG_NONE,
+        .arg = G_OPTION_ARG_NONE,
+        .arg_data = &default_keyboard_interactivity,
+        .description = "Enable keyboard interactivity",
+        .arg_description = NULL,
+    },
+    { NULL }
+};
+
+gboolean
+layer_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error)
+{
+    if (g_strcmp0 (value, "overlay") == 0 || g_strcmp0 (value, "o") == 0) {
+        default_layer = GTK_LAYER_SHELL_LAYER_OVERLAY;
+    } else if (g_strcmp0 (value, "top") == 0 || g_strcmp0 (value, "t") == 0) {
+        default_layer = GTK_LAYER_SHELL_LAYER_TOP;
+    } else if (g_strcmp0 (value, "bottom") == 0 || g_strcmp0 (value, "b") == 0) {
+        default_layer = GTK_LAYER_SHELL_LAYER_BOTTOM;
+    } else if (g_strcmp0 (value, "background") == 0 || g_strcmp0 (value, "g") == 0) {
+        default_layer = GTK_LAYER_SHELL_LAYER_BACKGROUND;
+    } else {
+        g_set_error (error,
+                     G_OPTION_ERROR,
+                     G_OPTION_ERROR_FAILED,
+                     "Invalid layer \"%s\"", value);
+        return FALSE;
+    }
+    return TRUE;
+}
+
+gboolean
+anchor_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error)
+{
+    for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++) {
+        default_anchors[i] = FALSE;
+    }
+
+    if (!value || !*value || g_strcmp0 (value, "0") == 0 || g_strcmp0 (value, "none") == 0) {
+        return TRUE;
+    }
+
+    for (const char *c = value; *c; c++) {
+        if (*c == 'l') {
+            default_anchors[GTK_LAYER_SHELL_EDGE_LEFT] = TRUE;
+        } else if (*c == 'r') {
+            default_anchors[GTK_LAYER_SHELL_EDGE_RIGHT] = TRUE;
+        } else if (*c == 't') {
+            default_anchors[GTK_LAYER_SHELL_EDGE_TOP] = TRUE;
+        } else if (*c == 'b') {
+            default_anchors[GTK_LAYER_SHELL_EDGE_BOTTOM] = TRUE;
+        } else {
+            g_set_error (error,
+                         G_OPTION_ERROR,
+                         G_OPTION_ERROR_FAILED,
+                         "Invalid anchor edge '%c'", *c);
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+gboolean
+margin_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error)
+{
+    for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++) {
+        if (!*value) {
+            g_set_error (error,
+                         G_OPTION_ERROR,
+                         G_OPTION_ERROR_FAILED,
+                         "Not enought comma separated arguments for margin");
+            return FALSE;
+        }
+        char *end;
+        long long margin = strtol (value, &end, 10);
+        default_margins[i] = margin;
+        if (end == value) {
+            g_set_error (error,
+                         G_OPTION_ERROR,
+                         G_OPTION_ERROR_FAILED,
+                         "Unable to parse margin");
+            return FALSE;
+        }
+        value = end;
+        if (*value == ',')
+            value++;
+    }
+    if (*value) {
+        g_set_error (error,
+                     G_OPTION_ERROR,
+                     G_OPTION_ERROR_FAILED,
+                     "Too many comma separated arguments for margin");
+        return FALSE;
+    }
+    return TRUE;
+}
+
+static void
+process_args (int *argc, char ***argv)
+{
+    GOptionContext *context = g_option_context_new ("");
+    g_option_context_add_group (context, gtk_get_option_group (TRUE));
+    g_option_context_set_summary (context, prog_summary);
+    g_option_context_set_description (context, prog_details);
+    g_option_context_add_main_entries (context, options, NULL);
+
+    GError *error = NULL;
+    if (!g_option_context_parse (context, argc, argv, &error)) {
+        g_printerr ("%s\n", error->message);
+        g_error_free (error);
+        g_option_context_free (context);
+        exit (1);
+    }
+
+    g_option_context_free (context);
+}
 
 void
 layer_window_update_orientation (GtkWindow *layer_window)
@@ -53,71 +214,6 @@ on_orientation_changed (GtkWindow *window, WindowOrientation orientation, Toplev
     gtk_orientable_set_orientation (GTK_ORIENTABLE (data->toplevel_box), orient_toplevel);
     gtk_orientable_set_orientation (GTK_ORIENTABLE (data->first_box), orient_sub);
     gtk_orientable_set_orientation (GTK_ORIENTABLE (data->second_box), orient_sub);
-}
-
-gboolean
-anchor_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error)
-{
-    for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++) {
-        default_anchors[i] = FALSE;
-    }
-
-    if (!value || !*value || g_strcmp0 (value, "0") == 0 || g_strcmp0 (value, "none") == 0) {
-        return TRUE;
-    }
-
-    for (const char *c = value; *c; c++) {
-        if (*c == 'l') {
-            default_anchors[GTK_LAYER_SHELL_EDGE_LEFT] = TRUE;
-        } else if (*c == 'r') {
-            default_anchors[GTK_LAYER_SHELL_EDGE_RIGHT] = TRUE;
-        } else if (*c == 't') {
-            default_anchors[GTK_LAYER_SHELL_EDGE_TOP] = TRUE;
-        } else if (*c == 'b') {
-            default_anchors[GTK_LAYER_SHELL_EDGE_BOTTOM] = TRUE;
-        } else {
-            g_set_error (error,
-                         G_OPTION_ERROR,
-                         G_OPTION_ERROR_FAILED,
-                         "Invalid anchor edge '%c'", *c);
-            return FALSE;
-        }
-    }
-
-    return TRUE;
-}
-
-static const GOptionEntry options[] = {
-    {
-        .long_name = "anchor",
-        .short_name = 'a',
-        .flags = G_OPTION_FLAG_NONE,
-        .arg = G_OPTION_ARG_CALLBACK,
-        .arg_data = &anchor_option_callback,
-        .description = "A sequence of l, r, t and b to anchor to those edges, or \"0\" for no anchor",
-        .arg_description = NULL,
-    },
-    { NULL }
-};
-
-static void
-process_args (int *argc, char ***argv)
-{
-    GOptionContext *context = g_option_context_new ("");
-    g_option_context_add_group (context, gtk_get_option_group (TRUE));
-    g_option_context_set_summary (context, prog_summary);
-    g_option_context_set_description (context, prog_details);
-    g_option_context_add_main_entries (context, options, NULL);
-
-    GError *error = NULL;
-    if (!g_option_context_parse (context, argc, argv, &error)) {
-        g_printerr ("%s\n", error->message);
-        g_error_free (error);
-        g_option_context_free (context);
-        exit (1);
-    }
-
-    g_option_context_free (context);
 }
 
 static GtkWidget *
