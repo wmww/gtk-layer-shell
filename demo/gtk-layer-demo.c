@@ -51,11 +51,10 @@ on_orientation_changed (GtkWindow *window, WindowOrientation orientation, Toplev
     gtk_orientable_set_orientation (GTK_ORIENTABLE (data->second_box), orient_sub);
 }
 
-static void
-activate (GtkApplication* app, void *_data)
+static GtkWidget *
+layer_window_new ()
 {
-    GtkWindow *gtk_window = GTK_WINDOW (gtk_application_window_new (app));
-
+    GtkWindow *gtk_window = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
     gtk_layer_init_for_window (gtk_window);
 
     ToplevelData *data = g_new0 (ToplevelData, 1);
@@ -115,12 +114,14 @@ activate (GtkApplication* app, void *_data)
     g_signal_connect (gtk_window, "orientation-changed", G_CALLBACK (on_orientation_changed), data);
     data->orientation = -1; // invalid value will force anchor_edges_update_orientation to update
     layer_window_update_orientation (gtk_window);
-    gtk_widget_show_all (GTK_WIDGET (gtk_window));
+
+    return GTK_WIDGET (gtk_window);
 }
 
 int
 main (int argc, char **argv)
 {
+    gtk_init(&argc, &argv);
     // The int arg is an enum of type WindowOrientation
     // Signal is emitted in anchor-control.c
     g_signal_new("orientation-changed",
@@ -129,9 +130,9 @@ main (int argc, char **argv)
                  0, NULL, NULL,
                  g_cclosure_marshal_VOID__INT,
                  G_TYPE_NONE, 1, G_TYPE_INT);
-    GtkApplication * app = gtk_application_new ("sh.wmww.gtk-layer-demo", G_APPLICATION_FLAGS_NONE);
-    g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
-    int status = g_application_run (G_APPLICATION (app), argc, argv);
-    g_object_unref (app);
-    return status;
+
+    GtkWidget *initial_window = layer_window_new ();
+    gtk_widget_show_all (GTK_WIDGET (initial_window));
+
+    gtk_main ();
 }
