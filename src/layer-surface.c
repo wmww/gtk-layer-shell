@@ -243,6 +243,14 @@ layer_surface_update_size (LayerSurface *self)
                                             self->cached_layer_size.height);
         }
     }
+
+    if (self->cached_layer_size.width > 0 &&
+        self->cached_layer_size.height > 0) {
+
+        gtk_window_resize (gtk_window,
+                           self->cached_layer_size.width,
+                           self->cached_layer_size.height);
+    }
 }
 
 static void
