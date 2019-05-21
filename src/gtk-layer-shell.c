@@ -11,12 +11,12 @@ LayerSurface* gtk_window_get_layer_surface (GtkWindow *window)
     g_return_val_if_fail (window, NULL);
     CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (window);
     if (!shell_surface) {
-        g_critical ("GtkWindow is not a layer surface, make sure you called gtk_layer_init_for_window () first");
+        g_critical ("GtkWindow is not a layer surface. Make sure you called gtk_layer_init_for_window ()");
         return NULL;
     }
     LayerSurface *layer_surface = custom_shell_surface_get_layer_surface (shell_surface);
     if (!layer_surface) {
-        g_critical ("Custom wayland shell surface is not a layer surface");
+        g_critical ("Custom wayland shell surface is not a layer surface, your Wayland compositor may not support Layer Shell");
         return NULL;
     }
     return layer_surface;
@@ -27,8 +27,10 @@ gtk_layer_init_for_window (GtkWindow *window)
 {
     gtk_wayland_init_if_needed ();
     LayerSurface* layer_surface = layer_surface_new (window);
-    if (!layer_surface)
+    if (!layer_surface) {
+        g_warning ("Falling back to XDG shell instead of Layer Shell (surface should appear but layer features will not work)");
         xdg_toplevel_surface_new (window);
+    }
 }
 
 void
