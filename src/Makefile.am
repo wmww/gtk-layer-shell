@@ -6,6 +6,7 @@ libgtk_layer_shell_a_SOURCES = \
 	custom-shell-surface.c \
 	layer-surface.c \
 	xdg-popup-surface.c \
+	xdg-toplevel-surface.c \
 	gdk-window-hack.c \
 	simple-conversions.c \
 	protocol/xdg-shell.c \

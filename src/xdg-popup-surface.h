@@ -5,7 +5,7 @@
 
 typedef struct _GtkWidget GtkWidget;
 
-// a LayerSurface * can be safely cast to a CustomShellSurface *
+// an XdgPopupSurface * can be safely cast to a CustomShellSurface *
 typedef struct _XdgPopupSurface XdgPopupSurface;
 
 XdgPopupSurface *xdg_popup_surface_new (GtkWindow *gtk_window);

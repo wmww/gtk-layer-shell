@@ -3,6 +3,7 @@
 #include "custom-shell-surface.h"
 #include "simple-conversions.h"
 #include "layer-surface.h"
+#include "xdg-toplevel-surface.h"
 
 static
 LayerSurface* gtk_window_get_layer_surface (GtkWindow *window)
@@ -25,7 +26,9 @@ void
 gtk_layer_init_for_window (GtkWindow *window)
 {
     gtk_wayland_init_if_needed ();
-    layer_surface_new (window);
+    LayerSurface* layer_surface = layer_surface_new (window);
+    if (!layer_surface)
+        xdg_toplevel_surface_new (window);
 }
 
 void

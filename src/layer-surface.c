@@ -271,6 +271,8 @@ layer_surface_on_size_allocate (GtkWidget *gtk_window,
 LayerSurface *
 layer_surface_new (GtkWindow *gtk_window)
 {
+    g_return_val_if_fail (gtk_wayland_get_layer_shell_global (), NULL);
+
     LayerSurface *self = g_new0 (LayerSurface, 1);
     self->super.virtual = &layer_surface_virtual;
     custom_shell_surface_init ((CustomShellSurface *)self, gtk_window);

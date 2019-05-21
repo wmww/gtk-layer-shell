@@ -214,6 +214,7 @@ on_orientation_changed (GtkWindow *window, WindowOrientation orientation, Toplev
     gtk_orientable_set_orientation (GTK_ORIENTABLE (data->toplevel_box), orient_toplevel);
     gtk_orientable_set_orientation (GTK_ORIENTABLE (data->first_box), orient_sub);
     gtk_orientable_set_orientation (GTK_ORIENTABLE (data->second_box), orient_sub);
+    gtk_window_resize (window, 1, 1); // force the window to shrink to the smallest size it can
 }
 
 static GtkWidget *
