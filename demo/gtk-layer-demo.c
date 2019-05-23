@@ -217,6 +217,12 @@ on_orientation_changed (GtkWindow *window, WindowOrientation orientation, Toplev
     gtk_window_resize (window, 1, 1); // force the window to shrink to the smallest size it can
 }
 
+static void
+on_window_destroy(GtkWindow *window, void *data)
+{
+    gtk_main_quit ();
+}
+
 static GtkWidget *
 layer_window_new ()
 {
@@ -301,6 +307,7 @@ main (int argc, char **argv)
                   G_TYPE_NONE, 1, G_TYPE_INT);
 
     GtkWidget *initial_window = layer_window_new ();
+    g_signal_connect (initial_window, "destroy", G_CALLBACK (on_window_destroy), NULL);
     gtk_widget_show_all (GTK_WIDGET (initial_window));
 
     gtk_main ();
