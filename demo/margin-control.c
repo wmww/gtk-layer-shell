@@ -51,6 +51,12 @@ margin_spin_button_new (GtkWindow *layer_window,
     return button;
 }
 
+static void
+on_open_clicked (GtkWidget *button, GtkWidget *popover)
+{
+    gtk_popover_popup (GTK_POPOVER (popover));
+}
+
 GtkWidget *
 margin_control_new (GtkWindow *layer_window, const int default_margins[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER])
 {
@@ -82,5 +88,14 @@ margin_control_new (GtkWindow *layer_window, const int default_margins[GTK_LAYER
         }
     }
 
-    return switch_box;
+    GtkWidget *open_button = gtk_button_new_with_label ("Set margin");
+    GtkWidget *popover = gtk_popover_new (open_button);
+    gtk_popover_set_modal (GTK_POPOVER (popover), TRUE);
+    gtk_popover_set_constrain_to (GTK_POPOVER (popover), GTK_POPOVER_CONSTRAINT_WINDOW);
+    gtk_popover_set_position (GTK_POPOVER (popover), GTK_POS_BOTTOM);
+    gtk_container_add (GTK_CONTAINER (popover), switch_box);
+    gtk_widget_show_all (switch_box);
+    g_signal_connect (open_button, "clicked", G_CALLBACK (on_open_clicked), popover);
+
+    return open_button;
 }
