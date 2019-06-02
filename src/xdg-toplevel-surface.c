@@ -166,6 +166,7 @@ xdg_toplevel_surface_new (GtkWindow *gtk_window)
     self->xdg_surface = NULL;
     self->xdg_toplevel = NULL;
 
+    gtk_window_set_decorated (gtk_window, FALSE);
     g_signal_connect (gtk_window, "size-allocate", G_CALLBACK (xdg_toplevel_surface_on_size_allocate), self);
 
     return self;
