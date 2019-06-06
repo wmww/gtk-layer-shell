@@ -240,7 +240,7 @@ layer_window_new ()
     gtk_layer_set_layer (gtk_window, default_layer);
     gtk_layer_set_exclusive_zone (gtk_window, default_auto_exclusive_zone);
     gtk_layer_set_keyboard_interactivity (gtk_window, default_keyboard_interactivity);
-    gtk_window_set_title (gtk_window, "gtk-layer-shell-example"); // Used for layer namespace
+    gtk_layer_set_namespace (gtk_window, "demo");
 
     GtkWidget *centered_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add (GTK_CONTAINER (gtk_window), centered_vbox);

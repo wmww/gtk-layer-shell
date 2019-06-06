@@ -138,8 +138,8 @@ static const CustomShellSurfaceVirtual xdg_toplevel_surface_virtual = {
 
 static void
 xdg_toplevel_surface_on_size_allocate (GtkWidget *widget,
-                                    GdkRectangle *allocation,
-                                    XdgToplevelSurface *self)
+                                       GdkRectangle *allocation,
+                                       XdgToplevelSurface *self)
 {
     if (self->xdg_surface && !gdk_rectangle_equal (&self->cached_allocation, allocation)) {
         self->cached_allocation = *allocation;

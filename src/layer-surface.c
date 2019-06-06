@@ -27,6 +27,7 @@ struct _LayerSurface
     // Need the surface to be recreated to change
     GdkMonitor *monitor;
     enum zwlr_layer_shell_v1_layer layer;
+    const char* name_space; // can be null, freed on destruction
 
     // The actual layer surface Wayland object (can be NULL)
     struct zwlr_layer_surface_v1 *layer_surface;
@@ -114,10 +115,9 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     struct zwlr_layer_shell_v1 *layer_shell_global = gtk_wayland_get_layer_shell_global ();
     g_return_if_fail (layer_shell_global);
 
-    // name is either static or managed by the window widget
-    const char *name = gtk_window_get_title (custom_shell_surface_get_gtk_window (super));
-    if (name == NULL)
-        name = "gtk-layer-shell";
+    const char *name_space = self->name_space;
+    if (name_space == NULL)
+        name_space = "gtk-layer-shell";
 
     struct wl_output *output = NULL;
     if (self->monitor) {
@@ -128,7 +128,7 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
                                                                  wl_surface,
                                                                  output,
                                                                  self->layer,
-                                                                 name);
+                                                                 name_space);
     g_return_if_fail (self->layer_surface);
 
     zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, self->keyboard_interactivity);
@@ -154,6 +154,14 @@ layer_surface_unmap (CustomShellSurface *super)
     }
 }
 
+static void
+layer_surface_finalize (CustomShellSurface *super)
+{
+    LayerSurface *self = (LayerSurface *)super;
+    layer_surface_unmap (super);
+    g_free ((gpointer)self->name_space);
+}
+
 static struct xdg_popup *
 layer_surface_get_popup (CustomShellSurface *super,
                          struct xdg_surface *popup_xdg_surface,
@@ -174,7 +182,7 @@ layer_surface_get_popup (CustomShellSurface *super,
 static const CustomShellSurfaceVirtual layer_surface_virtual = {
     .map = layer_surface_map,
     .unmap = layer_surface_unmap,
-    .finalize = layer_surface_unmap, // nothing but unmapping is needed to finalize
+    .finalize = layer_surface_finalize,
     .get_popup = layer_surface_get_popup,
 };
 
@@ -284,6 +292,7 @@ layer_surface_new (GtkWindow *gtk_window)
     self->cached_layer_size = self->current_allocation;
     self->monitor = NULL;
     self->layer = ZWLR_LAYER_SHELL_V1_LAYER_TOP;
+    self->name_space = NULL;
     self->exclusive_zone = 0;
     self->auto_exclusive_zone = FALSE;
     self->keyboard_interactivity = FALSE;
@@ -321,6 +330,18 @@ layer_surface_set_monitor (LayerSurface *self, GdkMonitor *monitor)
     if (monitor) g_return_if_fail (GDK_IS_WAYLAND_MONITOR (monitor));
     if (monitor != self->monitor) {
         self->monitor = monitor;
+        if (self->layer_surface) {
+            custom_shell_surface_remap ((CustomShellSurface *)self);
+        }
+    }
+}
+
+void
+layer_surface_set_name_space (LayerSurface *self, char const* name_space)
+{
+    if (g_strcmp0(self->name_space, name_space) != 0) {
+        g_free ((gpointer)self->name_space);
+        self->name_space = g_strdup (name_space);
         if (self->layer_surface) {
             custom_shell_surface_remap ((CustomShellSurface *)self);
         }

@@ -26,6 +26,13 @@ typedef enum {
 // The "namespace" of the layer surface will come from the window's title
 void gtk_layer_init_for_window (GtkWindow *window);
 
+// Set the "namespace" of the surface
+// No one is quite sure what this is for, but it probably should be something generic ("panel", "osk", etc)
+// String is copied, and caller maintians ownership of original
+// If the window is currently mapped, it will get remapped so the change can take effect
+// Default is "gtk-layer-shell" (which will be used if set to NULL)
+void gtk_layer_set_namespace (GtkWindow *window, char const* name_space);
+
 // Set the "layer" on which the surface appears (controls if it is over top of or below other surfaces)
 // If the window is currently mapped, it will get remapped so the change can take effect
 // Default is GTK_LAYER_SHELL_LAYER_TOP

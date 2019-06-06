@@ -34,6 +34,14 @@ gtk_layer_init_for_window (GtkWindow *window)
 }
 
 void
+gtk_layer_set_namespace (GtkWindow *window, char const* name_space)
+{
+    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
+    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
+    layer_surface_set_name_space (layer_surface, name_space);
+}
+
+void
 gtk_layer_set_layer (GtkWindow *window, GtkLayerShellLayer layer)
 {
     LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
