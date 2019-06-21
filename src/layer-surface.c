@@ -365,7 +365,7 @@ layer_surface_set_anchor (LayerSurface *self, GtkLayerShellEdge edge, gboolean a
 void
 layer_surface_set_margin (LayerSurface *self, GtkLayerShellEdge edge, int margin_size)
 {
-    g_return_if_fail (edge >= 0 && edge < GTK_LAYER_SHELL_LAYER_ENTRY_NUMBER);
+    g_return_if_fail (edge >= 0 && edge < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER);
     if (margin_size != self->margins[edge]) {
         self->margins[edge] = margin_size;
         layer_surface_send_set_margin (self);
