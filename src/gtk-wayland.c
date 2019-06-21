@@ -61,21 +61,18 @@ gtk_wayland_override_on_window_realize (GtkWindow *gtk_window, void *_data)
     g_signal_chain_from_overridden (args, NULL);
     g_value_unset (&args[0]);
 
-    // TODO: figure out how to move this to gtk_wayland_init_if_needed ()
-    gdk_window_hack_init (gtk_widget_get_window (GTK_WIDGET (gtk_window)));
+    GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
 
-    GtkWindow *transient_for = gtk_window_get_transient_for (gtk_window);
-    if (!transient_for) {
-        GtkWidget *attached_to = gtk_window_get_attached_to (gtk_window);
-        if (attached_to)
-            transient_for = GTK_WINDOW (gtk_widget_get_toplevel (attached_to));
-    }
+    // TODO: figure out how to move this to gtk_wayland_init_if_needed ()
+    gdk_window_hack_init (gdk_window);
+
+    GdkWindow *transient_for = gdk_window_hack_get_transient_for (gdk_window);
     if (!transient_for) {
         // Not a popup
         return;
     }
 
-    CustomShellSurface *parent_shell_surface = gtk_window_get_custom_shell_surface (transient_for);
+    CustomShellSurface *parent_shell_surface = gdk_window_get_custom_shell_surface (transient_for);
     if (!parent_shell_surface) // A popup, but not for a custom shell surface
         return;
 
