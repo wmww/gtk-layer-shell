@@ -5,6 +5,7 @@ struct wl_surface;
 struct xdg_surface;
 struct xdg_positioner;
 typedef struct _GtkWindow GtkWindow;
+typedef struct _GdkWindow GdkWindow;
 
 typedef struct _CustomShellSurface CustomShellSurface;
 typedef struct _CustomShellSurfacePrivate CustomShellSurfacePrivate;
@@ -40,6 +41,11 @@ void custom_shell_surface_init (CustomShellSurface *self, GtkWindow *gtk_window)
 // If the window has a shell surface, return it; else return NULL
 // NULL input is handled gracefully
 CustomShellSurface *gtk_window_get_custom_shell_surface (GtkWindow *gtk_window);
+
+// Used for getting shell surface of parent of popup
+// If the window has a shell surface, return it; else return NULL
+// NULL input is handled gracefully
+CustomShellSurface *gdk_window_get_custom_shell_surface (GdkWindow *gdk_window);
 
 GtkWindow *custom_shell_surface_get_gtk_window (CustomShellSurface *self);
 
