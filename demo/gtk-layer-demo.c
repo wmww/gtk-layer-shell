@@ -197,6 +197,9 @@ static void
 on_orientation_changed (GtkWindow *window, WindowOrientation orientation, ToplevelData *data)
 {
     GtkOrientation orient_toplevel, orient_sub;
+    orient_toplevel = GTK_ORIENTATION_HORIZONTAL;
+    orient_sub = GTK_ORIENTATION_VERTICAL;
+
     switch (orientation) {
         case WINDOW_ORIENTATION_HORIZONTAL:
             orient_toplevel = GTK_ORIENTATION_HORIZONTAL;
