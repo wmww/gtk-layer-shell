@@ -209,8 +209,7 @@ void
 xdg_popup_surface_update_position (XdgPopupSurface *self, XdgPopupPosition const* position)
 {
     self->position = *position;
-    if (self->xdg_surface)
-        custom_shell_surface_remap ((CustomShellSurface *)self);
+    // Don't bother trying to remap. It's not needed and breaks shit
 }
 
 XdgPopupSurface *
