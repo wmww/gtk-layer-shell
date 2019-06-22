@@ -29,11 +29,6 @@ custom_shell_surface_on_window_realize (GtkWidget *widget, CustomShellSurface *s
     g_return_if_fail (gdk_window);
 
     gdk_window_hack_init (gdk_window);
-
-    g_object_set_data (G_OBJECT (gdk_window),
-                       custom_shell_surface_key,
-                       self);
-
     gdk_wayland_window_set_use_custom_surface (gdk_window);
 }
 
@@ -90,15 +85,6 @@ gtk_window_get_custom_shell_surface (GtkWindow *gtk_window)
         return NULL;
 
     return g_object_get_data (G_OBJECT (gtk_window), custom_shell_surface_key);
-}
-
-CustomShellSurface *
-gdk_window_get_custom_shell_surface (GdkWindow *gdk_window)
-{
-    if (!gdk_window)
-        return NULL;
-
-    return g_object_get_data (G_OBJECT (gdk_window), custom_shell_surface_key);
 }
 
 GtkWindow *

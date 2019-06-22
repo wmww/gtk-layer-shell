@@ -151,10 +151,16 @@ gtk_wayland_init_if_needed ()
     has_initialized = TRUE;
 }
 
+GtkWindow *
+gtk_wayland_gdk_to_gtk_window (GdkWindow *gdk_window)
+{
+    return GTK_WINDOW (g_object_get_data (G_OBJECT (gdk_window), gtk_window_key));
+}
+
 void
 gtk_wayland_setup_window_as_custom_popup (GdkWindow *gdk_window, XdgPopupPosition const *position)
 {
-    GtkWindow *gtk_window = g_object_get_data (G_OBJECT (gdk_window), gtk_window_key);
+    GtkWindow *gtk_window = gtk_wayland_gdk_to_gtk_window (gdk_window);
     if (GTK_IS_WINDOW (gtk_window)) {
         // The GDK window has been connected to a GTK window
         gtk_wayland_setup_custom_popup (gtk_window, position);

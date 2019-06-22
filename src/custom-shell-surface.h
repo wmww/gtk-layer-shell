@@ -42,11 +42,6 @@ void custom_shell_surface_init (CustomShellSurface *self, GtkWindow *gtk_window)
 // NULL input is handled gracefully
 CustomShellSurface *gtk_window_get_custom_shell_surface (GtkWindow *gtk_window);
 
-// Used for getting shell surface of parent of popup
-// If the window has a shell surface, return it; else return NULL
-// NULL input is handled gracefully
-CustomShellSurface *gdk_window_get_custom_shell_surface (GdkWindow *gdk_window);
-
 GtkWindow *custom_shell_surface_get_gtk_window (CustomShellSurface *self);
 
 // In theory this could commit once on next event loop, but for now it will just commit every time it is called

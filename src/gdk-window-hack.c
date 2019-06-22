@@ -42,8 +42,9 @@ gdk_window_move_to_rect_impl_override (GdkWindow *window,
                                   rect_anchor_dy);
 
     GdkWindow *transient_for_gdk_window = gdk_window_hack_get_transient_for (window);
-    CustomShellSurface *transient_for_shell_surface =
-        gdk_window_get_custom_shell_surface (gdk_window_get_toplevel (transient_for_gdk_window));
+    GdkWindow *toplevel_transient_for_gdk_window = gdk_window_get_toplevel (transient_for_gdk_window);
+    GtkWindow *transient_for_gtk_window = gtk_wayland_gdk_to_gtk_window (toplevel_transient_for_gdk_window);
+    CustomShellSurface *transient_for_shell_surface = gtk_window_get_custom_shell_surface (transient_for_gtk_window);
     if (transient_for_shell_surface) {
         g_return_if_fail (rect);
         XdgPopupPosition position = {
