@@ -2,7 +2,6 @@
 
 #include "custom-shell-surface.h"
 #include "gtk-wayland.h"
-#include "gdk-window-hack.h"
 #include "simple-conversions.h"
 
 #include "protocol/xdg-shell-client.h"
@@ -15,7 +14,8 @@ struct _XdgPopupSurface
 {
     CustomShellSurface super;
 
-    CustomShellSurface *parent_shell_surface;
+    XdgPopupPosition position;
+
     GdkRectangle cached_allocation;
 
     // These can be NULL
@@ -77,34 +77,26 @@ xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
 
     g_return_if_fail (!self->xdg_popup);
     g_return_if_fail (!self->xdg_surface);
-    g_return_if_fail (self->parent_shell_surface);
-    GtkWidget *parent_toplevel_widget = GTK_WIDGET (custom_shell_surface_get_gtk_window(self->parent_shell_surface));
-    g_return_if_fail (parent_toplevel_widget);
 
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window (super);
     GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
     g_return_if_fail (gdk_window);
-    GdkWindow *parent_window = gdk_window_hack_get_transient_for (gdk_window);
     GdkPoint parent_origin;
-    gdk_window_get_origin (parent_window, &parent_origin.x, &parent_origin.y);
-    GdkWinowHackPosition *position = gtk_window_hack_get_position (gdk_window);
-    g_return_if_fail (position);
-    position->rect.x += parent_origin.x;
-    position->rect.y += parent_origin.y;
+    gdk_window_get_origin (self->position.transient_for_gdk_window, &parent_origin.x, &parent_origin.y);
+    GdkRectangle rect = self->position.rect;
+    rect.x += parent_origin.x;
+    rect.y += parent_origin.y;
     struct xdg_wm_base *xdg_wm_base_global = gtk_wayland_get_xdg_wm_base_global ();
     g_return_if_fail (xdg_wm_base_global);
     struct xdg_positioner *positioner = xdg_wm_base_create_positioner (xdg_wm_base_global);
     GdkRectangle popup_geom = gtk_wayland_get_logical_geom (gtk_window);
-    enum xdg_positioner_anchor anchor = gdk_gravity_get_xdg_positioner_anchor(position->rect_anchor);
-    enum xdg_positioner_gravity gravity = gdk_gravity_get_xdg_positioner_gravity(position->window_anchor);
+    enum xdg_positioner_anchor anchor = gdk_gravity_get_xdg_positioner_anchor(self->position.rect_anchor);
+    enum xdg_positioner_gravity gravity = gdk_gravity_get_xdg_positioner_gravity(self->position.window_anchor);
     enum xdg_positioner_constraint_adjustment constraint_adjustment =
-        gdk_anchor_hints_get_xdg_positioner_constraint_adjustment (position->anchor_hints);
-
+        gdk_anchor_hints_get_xdg_positioner_constraint_adjustment (self->position.anchor_hints);
     xdg_positioner_set_size (positioner, popup_geom.width, popup_geom.height);
-    xdg_positioner_set_anchor_rect (positioner,
-                                    position->rect.x, position->rect.y,
-                                    position->rect.width, position->rect.height);
-    xdg_positioner_set_offset (positioner, position->rect_anchor_dx, position->rect_anchor_dy);
+    xdg_positioner_set_anchor_rect (positioner, rect.x, rect.y, rect.width, rect.height);
+    xdg_positioner_set_offset (positioner, self->position.rect_anchor_d.x, self->position.rect_anchor_d.y);
     xdg_positioner_set_anchor (positioner, anchor);
     xdg_positioner_set_gravity (positioner, gravity);
     xdg_positioner_set_constraint_adjustment (positioner, constraint_adjustment);
@@ -113,9 +105,10 @@ xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     g_return_if_fail (self->xdg_surface);
     xdg_surface_add_listener (self->xdg_surface, &xdg_surface_listener, self);
 
-    self->xdg_popup = self->parent_shell_surface->virtual->get_popup (self->parent_shell_surface,
-                                                                      self->xdg_surface,
-                                                                      positioner);
+    CustomShellSurface *transient_for_shell_surface = self->position.transient_for_shell_surface;
+    self->xdg_popup = transient_for_shell_surface->virtual->get_popup (transient_for_shell_surface,
+                                                                       self->xdg_surface,
+                                                                       positioner);
     g_return_if_fail (self->xdg_popup);
     xdg_popup_add_listener (self->xdg_popup, &xdg_popup_listener, self);
 
@@ -146,6 +139,12 @@ xdg_popup_surface_unmap (CustomShellSurface *super)
     }
 }
 
+static void
+xdg_popup_surface_finalize (CustomShellSurface *super)
+{
+    xdg_popup_surface_unmap (super);
+}
+
 static struct xdg_popup *
 xdg_popup_surface_get_popup (CustomShellSurface *super,
                              struct xdg_surface *popup_xdg_surface,
@@ -164,7 +163,7 @@ xdg_popup_surface_get_popup (CustomShellSurface *super,
 static const CustomShellSurfaceVirtual xdg_popup_surface_virtual = {
     .map = xdg_popup_surface_map,
     .unmap = xdg_popup_surface_unmap,
-    .finalize = xdg_popup_surface_unmap, // nothing but unmapping is needed to finalize
+    .finalize = xdg_popup_surface_finalize,
     .get_popup = xdg_popup_surface_get_popup,
 };
 
@@ -183,13 +182,15 @@ xdg_popup_surface_on_size_allocate (GtkWidget *widget,
 }
 
 XdgPopupSurface *
-xdg_popup_surface_new (GtkWindow *gtk_window)
+xdg_popup_surface_new (GtkWindow *gtk_window, XdgPopupPosition const* position)
 {
     XdgPopupSurface *self = g_new0 (XdgPopupSurface, 1);
+    g_assert (gtk_window);
+    g_assert (position);
     self->super.virtual = &xdg_popup_surface_virtual;
     custom_shell_surface_init ((CustomShellSurface *)self, gtk_window);
 
-    self->parent_shell_surface = NULL;
+    self->position = *position;
     self->cached_allocation = (GdkRectangle) {
         .x = 0,
         .y = 0,
@@ -204,6 +205,14 @@ xdg_popup_surface_new (GtkWindow *gtk_window)
     return self;
 }
 
+void
+xdg_popup_surface_update_position (XdgPopupSurface *self, XdgPopupPosition const* position)
+{
+    self->position = *position;
+    if (self->xdg_surface)
+        custom_shell_surface_remap ((CustomShellSurface *)self);
+}
+
 XdgPopupSurface *
 custom_shell_surface_get_xdg_popup (CustomShellSurface *shell_surface)
 {
@@ -212,11 +221,3 @@ custom_shell_surface_get_xdg_popup (CustomShellSurface *shell_surface)
     else
         return NULL;
 }
-
-void
-xdg_popup_surface_set_parent (XdgPopupSurface *self,
-                              CustomShellSurface *parent_shell_surface)
-{
-    self->parent_shell_surface = parent_shell_surface;
-}
-

@@ -2,18 +2,30 @@
 #define XDG_POPUP_SURFACE_H
 
 #include "custom-shell-surface.h"
+#include <gdk/gdk.h>
 
 typedef struct _GtkWidget GtkWidget;
 
 // an XdgPopupSurface * can be safely cast to a CustomShellSurface *
 typedef struct _XdgPopupSurface XdgPopupSurface;
 
-XdgPopupSurface *xdg_popup_surface_new (GtkWindow *gtk_window);
+typedef struct
+{
+    CustomShellSurface *transient_for_shell_surface;
+    GdkWindow *transient_for_gdk_window;
+    GdkRectangle rect;
+    GdkGravity rect_anchor,  window_anchor;
+    GdkAnchorHints anchor_hints;
+    GdkPoint rect_anchor_d;
+} XdgPopupPosition;
+
+// Copies position, does not take ownership
+XdgPopupSurface *xdg_popup_surface_new (GtkWindow *gtk_window, XdgPopupPosition const* position);
+
+// Copies position, does not take ownership
+void xdg_popup_surface_update_position (XdgPopupSurface *self, XdgPopupPosition const* position);
 
 // Safe cast, returns NULL if wrong type sent
 XdgPopupSurface *custom_shell_surface_get_xdg_popup (CustomShellSurface *shell_surface);
-
-void xdg_popup_surface_set_parent (XdgPopupSurface *self,
-                                   CustomShellSurface *parent_shell_surface);
 
 #endif // XDG_POPUP_SURFACE_H

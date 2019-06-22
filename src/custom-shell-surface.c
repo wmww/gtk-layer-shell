@@ -1,4 +1,5 @@
 #include "custom-shell-surface.h"
+#include "gdk-window-hack.h"
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -26,6 +27,8 @@ custom_shell_surface_on_window_realize (GtkWidget *widget, CustomShellSurface *s
 
     GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (self->private->gtk_window));
     g_return_if_fail (gdk_window);
+
+    gdk_window_hack_init (gdk_window);
 
     g_object_set_data (G_OBJECT (gdk_window),
                        custom_shell_surface_key,

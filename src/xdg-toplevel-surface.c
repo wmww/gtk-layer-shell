@@ -115,6 +115,12 @@ xdg_toplevel_surface_unmap (CustomShellSurface *super)
     }
 }
 
+static void
+xdg_toplevel_surface_finalize (CustomShellSurface *super)
+{
+    xdg_toplevel_surface_unmap (super);
+}
+
 static struct xdg_popup *
 xdg_toplevel_surface_get_popup (CustomShellSurface *super,
                              struct xdg_surface *popup_xdg_surface,
@@ -133,7 +139,7 @@ xdg_toplevel_surface_get_popup (CustomShellSurface *super,
 static const CustomShellSurfaceVirtual xdg_toplevel_surface_virtual = {
     .map = xdg_toplevel_surface_map,
     .unmap = xdg_toplevel_surface_unmap,
-    .finalize = xdg_toplevel_surface_unmap, // nothing but unmapping is needed to finalize
+    .finalize = xdg_toplevel_surface_finalize,
     .get_popup = xdg_toplevel_surface_get_popup,
 };
 

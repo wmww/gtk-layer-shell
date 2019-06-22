@@ -11,6 +11,9 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkwayland.h>
 
+static const char *gtk_window_key = "linked-gtk-window";
+static const char *popup_position_key = "custom-popup-position";
+
 static struct wl_registry *wl_registry_global = NULL;
 static struct xdg_wm_base *xdg_wm_base_global = NULL;
 static struct zwlr_layer_shell_v1 *layer_shell_global = NULL;
@@ -21,6 +24,18 @@ gboolean
 gtk_wayland_get_has_initialized (void)
 {
     return has_initialized;
+}
+
+struct zwlr_layer_shell_v1 *
+gtk_wayland_get_layer_shell_global ()
+{
+    return layer_shell_global;
+}
+
+struct xdg_wm_base *
+gtk_wayland_get_xdg_wm_base_global ()
+{
+    return xdg_wm_base_global;
 }
 
 static void
@@ -51,7 +66,23 @@ static const struct wl_registry_listener wl_registry_listener = {
     .global_remove = wl_registry_handle_global_remove,
 };
 
-// This callback only does anything for popups of Wayland surfaces
+// Does not take ownership of position
+static void
+gtk_wayland_setup_custom_popup (GtkWindow *gtk_window, XdgPopupPosition const *position)
+{
+    CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (gtk_window);
+    if (shell_surface) {
+        XdgPopupSurface *popup_surface = custom_shell_surface_get_xdg_popup (shell_surface);
+        // If there's already a custom surface on the window, it better be a popup
+        g_return_if_fail (popup_surface);
+        xdg_popup_surface_update_position (popup_surface, position);
+    } else {
+        xdg_popup_surface_new (gtk_window, position);
+    }
+}
+
+// This function associates a GTK window with a GDK window
+// It overrides the default so it can run for EVERY window without needed to be attached to each one
 static void
 gtk_wayland_override_on_window_realize (GtkWindow *gtk_window, void *_data)
 {
@@ -62,33 +93,14 @@ gtk_wayland_override_on_window_realize (GtkWindow *gtk_window, void *_data)
     g_value_unset (&args[0]);
 
     GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
+    g_object_set_data (G_OBJECT (gdk_window), gtk_window_key, gtk_window);
 
-    // TODO: figure out how to move this to gtk_wayland_init_if_needed ()
-    gdk_window_hack_init (gdk_window);
-
-    GdkWindow *transient_for = gdk_window_hack_get_transient_for (gdk_window);
-    if (!transient_for) {
-        // Not a popup
-        return;
+    XdgPopupPosition *position = g_object_get_data (G_OBJECT (gdk_window), popup_position_key);
+    if (position) {
+        // This is a custom popup waiting to be realized
+        gtk_wayland_setup_custom_popup (gtk_window, position);
+        g_object_set_data (G_OBJECT (gdk_window), popup_position_key, NULL);
     }
-
-    CustomShellSurface *parent_shell_surface = gdk_window_get_custom_shell_surface (transient_for);
-    if (!parent_shell_surface) // A popup, but not for a custom shell surface
-        return;
-
-    XdgPopupSurface *popup_surface = NULL;
-    CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (gtk_window);
-
-    if (shell_surface) {
-        popup_surface = custom_shell_surface_get_xdg_popup (shell_surface);
-        // If there's already a custom surface on the window, it better be a popup
-        g_return_if_fail (popup_surface);
-        shell_surface->virtual->unmap (shell_surface);
-    } else {
-        popup_surface = xdg_popup_surface_new (gtk_window);
-        shell_surface = (CustomShellSurface *)popup_surface;
-    }
-    xdg_popup_surface_set_parent (popup_surface, parent_shell_surface);
 }
 
 // This callback must override the default unmap handler, so it can run first
@@ -139,16 +151,19 @@ gtk_wayland_init_if_needed ()
     has_initialized = TRUE;
 }
 
-struct zwlr_layer_shell_v1 *
-gtk_wayland_get_layer_shell_global ()
+void
+gtk_wayland_setup_window_as_custom_popup (GdkWindow *gdk_window, XdgPopupPosition const *position)
 {
-    return layer_shell_global;
-}
-
-struct xdg_wm_base *
-gtk_wayland_get_xdg_wm_base_global ()
-{
-    return xdg_wm_base_global;
+    GtkWindow *gtk_window = g_object_get_data (G_OBJECT (gdk_window), gtk_window_key);
+    if (GTK_IS_WINDOW (gtk_window)) {
+        // The GDK window has been connected to a GTK window
+        gtk_wayland_setup_custom_popup (gtk_window, position);
+    } else {
+        // We need to hold the position and wait for a connected GTK window to be realized
+        XdgPopupPosition *position_owned = g_new (XdgPopupPosition, 1);
+        *position_owned = *position;
+        g_object_set_data_full (G_OBJECT (gdk_window), popup_position_key, position_owned, g_free);
+    }
 }
 
 // Gets the upper left and size of the portion of the window that is actually used (not shadows and whatnot)
