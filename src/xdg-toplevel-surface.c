@@ -160,6 +160,8 @@ xdg_toplevel_surface_on_size_allocate (GtkWidget *widget,
 XdgToplevelSurface *
 xdg_toplevel_surface_new (GtkWindow *gtk_window)
 {
+    g_return_val_if_fail (gtk_wayland_get_xdg_wm_base_global (), NULL);
+
     XdgToplevelSurface *self = g_new0 (XdgToplevelSurface, 1);
     self->super.virtual = &xdg_toplevel_surface_virtual;
     custom_shell_surface_init ((CustomShellSurface *)self, gtk_window);

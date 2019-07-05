@@ -29,7 +29,11 @@ gtk_layer_init_for_window (GtkWindow *window)
     LayerSurface* layer_surface = layer_surface_new (window);
     if (!layer_surface) {
         g_warning ("Falling back to XDG shell instead of Layer Shell (surface should appear but layer features will not work)");
-        xdg_toplevel_surface_new (window);
+        XdgToplevelSurface* toplevel_surface = xdg_toplevel_surface_new (window);
+        if (!toplevel_surface)
+        {
+            g_warning ("Shell does not support XDG shell stable. Falling back to default GTK behavior");
+        }
     }
 }
 
