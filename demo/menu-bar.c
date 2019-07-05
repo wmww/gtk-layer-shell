@@ -33,6 +33,18 @@ menu_bar_new (GtkWindow *layer_window)
                             g_string_free (label, TRUE);
                             gtk_menu_shell_append (GTK_MENU_SHELL (nested_menu), submenu_item);
                         }
+                        {
+                            GtkWidget *submenu_item = gtk_menu_item_new_with_label ("Nested again");
+                            gtk_menu_shell_append (GTK_MENU_SHELL (nested_menu), submenu_item);
+                            {
+                                GtkWidget *nested_menu = gtk_menu_new ();
+                                gtk_menu_item_set_submenu (GTK_MENU_ITEM (submenu_item), nested_menu);
+                                {
+                                    GtkWidget *submenu_item = gtk_menu_item_new_with_label ("Final item");
+                                    gtk_menu_shell_append (GTK_MENU_SHELL (nested_menu), submenu_item);
+                                }
+                            }
+                        }
                     }
                 }
                 {
