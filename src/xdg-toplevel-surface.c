@@ -15,6 +15,7 @@ struct _XdgToplevelSurface
     CustomShellSurface super;
 
     GdkRectangle cached_allocation;
+    GdkRectangle geom;
 
     // These can be NULL
     struct xdg_surface *xdg_surface;
@@ -87,12 +88,12 @@ xdg_toplevel_surface_map (CustomShellSurface *super, struct wl_surface *wl_surfa
     xdg_toplevel_set_title (self->xdg_toplevel, name);
 
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window (super);
-    GdkRectangle geom = gtk_wayland_get_logical_geom (gtk_window);
+    self->geom = gtk_wayland_get_logical_geom (gtk_window);
     xdg_surface_set_window_geometry (self->xdg_surface,
-                                     geom.x,
-                                     geom.y,
-                                     geom.width,
-                                     geom.height);
+                                     self->geom.x,
+                                     self->geom.y,
+                                     self->geom.width,
+                                     self->geom.height);
     xdg_toplevel_add_listener (self->xdg_toplevel, &xdg_toplevel_listener, self);
 
     wl_surface_commit (wl_surface);
@@ -136,11 +137,19 @@ xdg_toplevel_surface_get_popup (CustomShellSurface *super,
     return xdg_surface_get_popup (popup_xdg_surface, self->xdg_surface, positioner);
 }
 
+static GdkRectangle
+xdg_toplevel_surface_get_logical_geom (CustomShellSurface *super)
+{
+    XdgToplevelSurface *self = (XdgToplevelSurface *)super;
+    return self->geom;
+}
+
 static const CustomShellSurfaceVirtual xdg_toplevel_surface_virtual = {
     .map = xdg_toplevel_surface_map,
     .unmap = xdg_toplevel_surface_unmap,
     .finalize = xdg_toplevel_surface_finalize,
     .get_popup = xdg_toplevel_surface_get_popup,
+    .get_logical_geom = xdg_toplevel_surface_get_logical_geom,
 };
 
 static void
@@ -152,8 +161,12 @@ xdg_toplevel_surface_on_size_allocate (GtkWidget *widget,
         self->cached_allocation = *allocation;
         // allocation only used for catching duplicate calls. To get the correct geom we need to check something else
         GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
-        GdkRectangle new_geom = gtk_wayland_get_logical_geom (gtk_window);
-        xdg_surface_set_window_geometry (self->xdg_surface, new_geom.x, new_geom.y, new_geom.width, new_geom.height);
+        self->geom = gtk_wayland_get_logical_geom (gtk_window);
+        xdg_surface_set_window_geometry (self->xdg_surface,
+                                         self->geom.x,
+                                         self->geom.y,
+                                         self->geom.width,
+                                         self->geom.height);
     }
 }
 

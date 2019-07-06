@@ -179,11 +179,19 @@ layer_surface_get_popup (CustomShellSurface *super,
     return xdg_popup;
 }
 
+static GdkRectangle
+layer_surface_get_logical_geom (CustomShellSurface *super)
+{
+    (void)super;
+    return (GdkRectangle){0, 0, 0, 0};
+}
+
 static const CustomShellSurfaceVirtual layer_surface_virtual = {
     .map = layer_surface_map,
     .unmap = layer_surface_unmap,
     .finalize = layer_surface_finalize,
     .get_popup = layer_surface_get_popup,
+    .get_logical_geom = layer_surface_get_logical_geom,
 };
 
 static void
