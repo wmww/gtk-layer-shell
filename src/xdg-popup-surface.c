@@ -71,6 +71,36 @@ static const struct xdg_popup_listener xdg_popup_listener = {
 };
 
 static void
+xdg_popup_surface_get_anchor_rect (XdgPopupSurface *self, GdkRectangle *rect)
+{
+    // The anchor rect is given relative to the actual top-left of the parent GDK window surface
+    // We need it realative to the logical geometry of the transient-for window, which may be sevel layers up
+    *rect = self->position.rect;
+    // It is a protocol error for size to be <= 0
+    rect->width = MAX (rect->width, 1);
+    rect->height = MAX (rect->height, 1);
+    GdkWindow *parent_window = self->position.transient_for_gdk_window;
+    CustomShellSurface *transient_for_shell_surface = self->position.transient_for_shell_surface;
+    GtkWidget *transient_for_widget = GTK_WIDGET (custom_shell_surface_get_gtk_window (transient_for_shell_surface));
+    GdkWindow *transient_for_window = gtk_widget_get_window (transient_for_widget);
+    g_return_if_fail (parent_window);
+    g_return_if_fail (transient_for_window);
+    // Traverse up to the transient-for window adding each window's position relative to it's parent along the way
+    while (parent_window && parent_window != transient_for_window) {
+        gint x, y;
+        gdk_window_get_position (parent_window, &x, &y);
+        rect->x += x;
+        rect->y += y;
+        parent_window = gdk_window_get_parent (parent_window);
+    }
+    GdkRectangle geom;
+    // Subtract the transient-for window's logical top-left
+    custom_shell_surface_get_window_geom (transient_for_shell_surface, &geom);
+    rect->x -= geom.x;
+    rect->y -= geom.y;
+}
+
+static void
 xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
 {
     XdgPopupSurface *self = (XdgPopupSurface *)super;
@@ -81,11 +111,8 @@ xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window (super);
     GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
     g_return_if_fail (gdk_window);
-    GdkPoint parent_origin;
-    gdk_window_get_origin (self->position.transient_for_gdk_window, &parent_origin.x, &parent_origin.y);
-    GdkRectangle rect = self->position.rect;
-    rect.x += parent_origin.x;
-    rect.y += parent_origin.y;
+    GdkRectangle rect;
+    xdg_popup_surface_get_anchor_rect (self, &rect);
     struct xdg_wm_base *xdg_wm_base_global = gtk_wayland_get_xdg_wm_base_global ();
     g_return_if_fail (xdg_wm_base_global);
     struct xdg_positioner *positioner = xdg_wm_base_create_positioner (xdg_wm_base_global);

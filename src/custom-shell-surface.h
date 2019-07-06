@@ -1,11 +1,12 @@
 #ifndef CUSTOM_SHELL_SURFACE_H
 #define CUSTOM_SHELL_SURFACE_H
 
+#include <gtk/gtk.h>
+#include <gdk/gdk.h>
+
 struct wl_surface;
 struct xdg_surface;
 struct xdg_positioner;
-typedef struct _GtkWindow GtkWindow;
-typedef struct _GdkWindow GdkWindow;
 
 typedef struct _CustomShellSurface CustomShellSurface;
 typedef struct _CustomShellSurfacePrivate CustomShellSurfacePrivate;
@@ -43,6 +44,8 @@ void custom_shell_surface_init (CustomShellSurface *self, GtkWindow *gtk_window)
 CustomShellSurface *gtk_window_get_custom_shell_surface (GtkWindow *gtk_window);
 
 GtkWindow *custom_shell_surface_get_gtk_window (CustomShellSurface *self);
+
+void custom_shell_surface_get_window_geom (CustomShellSurface *self, GdkRectangle *geom);
 
 // In theory this could commit once on next event loop, but for now it will just commit every time it is called
 // Does nothing is the shell surface does not currently have a GdkWindow with a wl_surface

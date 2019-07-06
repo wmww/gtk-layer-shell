@@ -1,4 +1,5 @@
 #include "custom-shell-surface.h"
+#include "gtk-wayland.h"
 #include "gdk-window-hack.h"
 
 #include <gtk/gtk.h>
@@ -92,6 +93,14 @@ custom_shell_surface_get_gtk_window (CustomShellSurface *self)
 {
     g_return_val_if_fail (self, NULL);
     return self->private->gtk_window;
+}
+
+void
+custom_shell_surface_get_window_geom (CustomShellSurface *self, GdkRectangle *geom)
+{
+    g_return_if_fail (self);
+    // TODO: Store the actual window geometry used
+    *geom = gtk_wayland_get_logical_geom (self->private->gtk_window);
 }
 
 void
