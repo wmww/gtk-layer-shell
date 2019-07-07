@@ -4,8 +4,8 @@
 #include "xdg-popup-surface.h"
 #include "gdk-window-hack.h"
 
-#include "protocol/xdg-shell-client.h"
-#include "protocol/wlr-layer-shell-unstable-v1-client.h"
+#include "xdg-shell-client.h"
+#include "wlr-layer-shell-unstable-v1-client.h"
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>

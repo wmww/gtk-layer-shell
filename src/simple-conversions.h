@@ -1,8 +1,8 @@
 #ifndef SIMPLE_CONVERSIONS_H
 #define SIMPLE_CONVERSIONS_H
 
-#include "protocol/xdg-shell-client.h"
-#include "protocol/wlr-layer-shell-unstable-v1-client.h"
+#include "xdg-shell-client.h"
+#include "wlr-layer-shell-unstable-v1-client.h"
 #include "gtk-layer-shell.h"
 #include <gdk/gdk.h>
 

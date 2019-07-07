@@ -4,7 +4,7 @@
 #include "gtk-wayland.h"
 #include "simple-conversions.h"
 
-#include "protocol/xdg-shell-client.h"
+#include "xdg-shell-client.h"
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
