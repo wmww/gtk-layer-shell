@@ -1,0 +1,12 @@
+demo = executable('gtk-layer-demo',
+    'gtk-layer-demo.c',
+    'anchor-control.c',
+    'margin-control.c',
+    'layer-selection.c',
+    'monitor-selection.c',
+    'mscl-toggles.c',
+    'menu-bar.c',
+    dependencies: [gtk],
+    include_directories: [gtk_layer_shell_inc],
+    link_with: [gtk_layer_shell_lib],
+    install: true)

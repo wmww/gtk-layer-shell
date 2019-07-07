@@ -2,7 +2,7 @@
 #define LAYER_SHELL_SURFACE_H
 
 #include "custom-shell-surface.h"
-#include "protocol/wlr-layer-shell-unstable-v1-client.h"
+#include "wlr-layer-shell-unstable-v1-client.h"
 #include "gtk-layer-shell.h"
 #include <gtk/gtk.h>
 
