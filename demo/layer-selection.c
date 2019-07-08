@@ -17,7 +17,7 @@ on_layer_selected (GtkComboBox *widget, GtkWindow *layer_window)
 
     gchar *layer = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT (combo_box));
     gboolean layer_was_set = FALSE;
-    for (int i = 0; i < sizeof(all_layers) / sizeof(all_layers[0]); i++) {
+    for (unsigned i = 0; i < sizeof(all_layers) / sizeof(all_layers[0]); i++) {
         if (g_strcmp0 (layer, all_layers[i].name) == 0) {
             gtk_layer_set_layer (layer_window, all_layers[i].value);
             layer_was_set = TRUE;
@@ -35,7 +35,7 @@ layer_selection_new (GtkWindow *layer_window, GtkLayerShellLayer default_layer)
     {
         GtkWidget *combo_box = gtk_combo_box_text_new ();
         gtk_widget_set_tooltip_text (combo_box, "Layer");
-        for (int i = 0; i < sizeof(all_layers) / sizeof(all_layers[0]); i++) {
+        for (unsigned i = 0; i < sizeof(all_layers) / sizeof(all_layers[0]); i++) {
             gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_box), all_layers[i].name);
             if (all_layers[i].value == default_layer)
                 gtk_combo_box_set_active (GTK_COMBO_BOX (combo_box), i);

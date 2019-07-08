@@ -31,12 +31,8 @@ anchor_edge_button_new (GtkWindow *layer_window,
         .edge = edge,
         .layer_window = layer_window,
     };
-    g_signal_connect_data (button,
-                           "clicked",
-                           G_CALLBACK (on_anchor_toggled),
-                           data,
-                           (GClosureNotify)g_free,
-                           (GConnectFlags)0);
+    g_object_set_data_full(G_OBJECT (button), "clicked_signal_data", data, (GDestroyNotify)g_free);
+    g_signal_connect (button, "clicked", G_CALLBACK (on_anchor_toggled), data);
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), defaults[edge]);
     return button;
 }

@@ -37,7 +37,7 @@ mscl_toggles_new (GtkWindow *layer_window,
                   gboolean default_keyboard_interactivity)
 {
     GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-    for (int i = 0; i < sizeof (mscl_toggles) / sizeof (mscl_toggles[0]); i++) {
+    for (unsigned i = 0; i < sizeof (mscl_toggles) / sizeof (mscl_toggles[0]); i++) {
         GtkWidget *hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
         gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
         {
