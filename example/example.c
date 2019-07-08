@@ -4,6 +4,8 @@
 static void
 activate (GtkApplication* app, void *_data)
 {
+    (void)_data;
+
     // Create a normal GTK window however you like
     GtkWindow *gtk_window = GTK_WINDOW (gtk_application_window_new (app));
 

@@ -1,8 +1,10 @@
 #include "gtk-layer-demo.h"
 
 static void
-on_close_clicked (GtkMenuItem *item, GtkWindow *layer_window)
+on_close_clicked (GtkMenuItem *_item, GtkWindow *layer_window)
 {
+    (void)_item;
+
     gtk_window_close (layer_window);
 }
 

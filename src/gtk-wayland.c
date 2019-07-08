@@ -39,12 +39,14 @@ gtk_wayland_get_xdg_wm_base_global ()
 }
 
 static void
-wl_registry_handle_global (void *data,
+wl_registry_handle_global (void *_data,
                            struct wl_registry *registry,
                            uint32_t id,
                            const char *interface,
                            uint32_t version)
 {
+    (void)_data;
+
     // pull out needed globals
     if (strcmp (interface, zwlr_layer_shell_v1_interface.name) == 0) {
         g_warn_if_fail (zwlr_layer_shell_v1_interface.version == 1);
@@ -62,10 +64,14 @@ wl_registry_handle_global (void *data,
 }
 
 static void
-wl_registry_handle_global_remove (void *data,
-                  struct wl_registry *registry,
-                  uint32_t id)
+wl_registry_handle_global_remove (void *_data,
+                                  struct wl_registry *_registry,
+                                  uint32_t _id)
 {
+    (void)_data;
+    (void)_registry;
+    (void)_id;
+
     // TODO
 }
 
@@ -94,6 +100,8 @@ gtk_wayland_setup_custom_popup (GtkWindow *gtk_window, XdgPopupPosition const *p
 static void
 gtk_wayland_override_on_window_realize (GtkWindow *gtk_window, void *_data)
 {
+    (void)_data;
+
     // Call the super class's realize handler
     GValue args[1] = { G_VALUE_INIT };
     g_value_init_from_instance (&args[0], gtk_window);
@@ -116,6 +124,8 @@ gtk_wayland_override_on_window_realize (GtkWindow *gtk_window, void *_data)
 static void
 gtk_wayland_override_on_window_unmap (GtkWindow *gtk_window, void *_data)
 {
+    (void)_data;
+
     CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (gtk_window);
     if (shell_surface)
         shell_surface->virtual->unmap (shell_surface);

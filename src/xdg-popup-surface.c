@@ -26,10 +26,13 @@ struct _XdgPopupSurface
 
 static void
 xdg_surface_handle_configure (void *data,
-                              struct xdg_surface *xdg_surface,
+                              struct xdg_surface *_xdg_surface,
                               uint32_t serial)
 {
-    xdg_surface_ack_configure (xdg_surface, serial);
+    XdgPopupSurface *self = data;
+    (void)_xdg_surface;
+
+    xdg_surface_ack_configure (self->xdg_surface, serial);
 }
 
 static const struct xdg_surface_listener xdg_surface_listener = {
@@ -38,15 +41,18 @@ static const struct xdg_surface_listener xdg_surface_listener = {
 
 static void
 xdg_popup_handle_configure (void *data,
-                            struct xdg_popup *xdg_popup,
-                            int32_t x,
-                            int32_t y,
+                            struct xdg_popup *_xdg_popup,
+                            int32_t _x,
+                            int32_t _y,
                             int32_t width,
                             int32_t height)
 {
-    g_return_if_fail(width >= 0 && height >= 0); // Protocol error
-
     XdgPopupSurface *self = data;
+    (void)_xdg_popup;
+    (void)_x;
+    (void)_y;
+
+    g_return_if_fail(width >= 0 && height >= 0); // Protocol error
 
     // Technically this should not be applied until we get a xdg_surface.configure
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
@@ -59,8 +65,10 @@ xdg_popup_handle_configure (void *data,
 
 static void
 xdg_popup_handle_popup_done (void *data,
-                             struct xdg_popup *xdg_popup)
+                             struct xdg_popup *_xdg_popup)
 {
+    (void)_xdg_popup;
+
     XdgPopupSurface *self = data;
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
     gtk_widget_unmap (GTK_WIDGET (gtk_window));
@@ -209,10 +217,12 @@ static const CustomShellSurfaceVirtual xdg_popup_surface_virtual = {
 };
 
 static void
-xdg_popup_surface_on_size_allocate (GtkWidget *widget,
+xdg_popup_surface_on_size_allocate (GtkWidget *_widget,
                                     GdkRectangle *allocation,
                                     XdgPopupSurface *self)
 {
+    (void)_widget;
+
     if (self->xdg_surface && !gdk_rectangle_equal (&self->cached_allocation, allocation)) {
         self->cached_allocation = *allocation;
         // allocation only used for catching duplicate calls. To get the correct geom we need to check something else

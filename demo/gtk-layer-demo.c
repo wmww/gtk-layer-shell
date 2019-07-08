@@ -68,8 +68,11 @@ static const GOptionEntry options[] = {
 };
 
 gboolean
-layer_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error)
+layer_option_callback (const gchar *_option_name, const gchar *value, void *_data, GError **error)
 {
+    (void)_option_name;
+    (void)_data;
+
     if (g_strcmp0 (value, "overlay") == 0 || g_strcmp0 (value, "o") == 0) {
         default_layer = GTK_LAYER_SHELL_LAYER_OVERLAY;
     } else if (g_strcmp0 (value, "top") == 0 || g_strcmp0 (value, "t") == 0) {
@@ -89,8 +92,11 @@ layer_option_callback (const gchar *option_name, const gchar *value, void *data,
 }
 
 gboolean
-anchor_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error)
+anchor_option_callback (const gchar *_option_name, const gchar *value, void *_data, GError **error)
 {
+    (void)_option_name;
+    (void)_data;
+
     for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++) {
         default_anchors[i] = FALSE;
     }
@@ -121,8 +127,11 @@ anchor_option_callback (const gchar *option_name, const gchar *value, void *data
 }
 
 gboolean
-margin_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error)
+margin_option_callback (const gchar *_option_name, const gchar *value, void *_data, GError **error)
 {
+    (void)_option_name;
+    (void)_data;
+
     for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++) {
         if (!*value) {
             g_set_error (error,
@@ -221,8 +230,11 @@ on_orientation_changed (GtkWindow *window, WindowOrientation orientation, Toplev
 }
 
 static void
-on_window_destroy(GtkWindow *window, void *data)
+on_window_destroy(GtkWindow *_window, void *_data)
 {
+    (void)_window;
+    (void)_data;
+
     gtk_main_quit ();
 }
 

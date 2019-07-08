@@ -47,13 +47,14 @@ layer_surface_get_gtk_window_size (LayerSurface *self)
 }
 
 static void
-layer_surface_handle_configure (void *wayland_shell_surface,
+layer_surface_handle_configure (void *data,
                                 struct zwlr_layer_surface_v1 *surface,
                                 uint32_t serial,
                                 uint32_t w,
                                 uint32_t h)
 {
-    LayerSurface *self = wayland_shell_surface;
+    LayerSurface *self = data;
+
     if (w > 0 || h > 0) {
         GtkRequisition requested = {
             .width = w,
@@ -71,10 +72,12 @@ layer_surface_handle_configure (void *wayland_shell_surface,
 }
 
 static void
-layer_surface_handle_closed (void *wayland_shell_surface,
-                             struct zwlr_layer_surface_v1 *surface)
+layer_surface_handle_closed (void *data,
+                             struct zwlr_layer_surface_v1 *_surface)
 {
-    LayerSurface *self = wayland_shell_surface;
+    LayerSurface *self = data;
+    (void)_surface;
+
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
     gtk_window_close (gtk_window);
 }
@@ -270,10 +273,12 @@ layer_surface_update_size (LayerSurface *self)
 }
 
 static void
-layer_surface_on_size_allocate (GtkWidget *gtk_window,
+layer_surface_on_size_allocate (GtkWidget *_gtk_window,
                                 GdkRectangle *allocation,
                                 LayerSurface *self)
 {
+    (void)_gtk_window;
+
     if (self->current_allocation.width != allocation->width ||
         self->current_allocation.height != allocation->height) {
 

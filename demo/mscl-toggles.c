@@ -1,8 +1,10 @@
 #include "gtk-layer-demo.h"
 
 gboolean
-on_exclusive_zone_state_set (GtkToggleButton *toggle_button, gboolean state, GtkWindow *layer_window)
+on_exclusive_zone_state_set (GtkToggleButton *_toggle_button, gboolean state, GtkWindow *layer_window)
 {
+    (void)_toggle_button;
+
     if (state) {
         gtk_layer_auto_exclusive_zone_enable (layer_window);
     } else {
@@ -12,8 +14,10 @@ on_exclusive_zone_state_set (GtkToggleButton *toggle_button, gboolean state, Gtk
 }
 
 gboolean
-on_keyboard_interactivity_state_set (GtkToggleButton *toggle_button, gboolean state, GtkWindow *layer_window)
+on_keyboard_interactivity_state_set (GtkToggleButton *_toggle_button, gboolean state, GtkWindow *layer_window)
 {
+    (void)_toggle_button;
+
     gtk_layer_set_keyboard_interactivity (layer_window, state);
     return FALSE;
 }

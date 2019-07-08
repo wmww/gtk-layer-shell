@@ -23,10 +23,12 @@ struct _XdgToplevelSurface
 };
 
 static void
-xdg_surface_handle_configure (void *data,
+xdg_surface_handle_configure (void *_data,
                               struct xdg_surface *xdg_surface,
                               uint32_t serial)
 {
+    (void)_data;
+
     xdg_surface_ack_configure (xdg_surface, serial);
 }
 
@@ -36,12 +38,15 @@ static const struct xdg_surface_listener xdg_surface_listener = {
 
 static void
 xdg_toplevel_handle_configure (void *data,
-                               struct xdg_toplevel *xdg_toplevel,
+                               struct xdg_toplevel *_xdg_toplevel,
                                int32_t width,
                                int32_t height,
-                               struct wl_array *states)
+                               struct wl_array *_states)
 {
     XdgToplevelSurface *self = data;
+    (void)_xdg_toplevel;
+    (void)_states;
+
     // Technically this should not be applied until we get a xdg_surface.configure
     if (width > 0 || height > 0) {
         GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
@@ -52,9 +57,11 @@ xdg_toplevel_handle_configure (void *data,
 
 static void
 xdg_toplevel_handle_close (void *data,
-                           struct xdg_toplevel *xdg_toplevel)
+                           struct xdg_toplevel *_xdg_toplevel)
 {
     XdgToplevelSurface *self = data;
+    (void)_xdg_toplevel;
+
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
     gtk_window_close (gtk_window);
 }
@@ -153,10 +160,12 @@ static const CustomShellSurfaceVirtual xdg_toplevel_surface_virtual = {
 };
 
 static void
-xdg_toplevel_surface_on_size_allocate (GtkWidget *widget,
+xdg_toplevel_surface_on_size_allocate (GtkWidget *_widget,
                                        GdkRectangle *allocation,
                                        XdgToplevelSurface *self)
 {
+    (void)_widget;
+
     if (self->xdg_surface && !gdk_rectangle_equal (&self->cached_allocation, allocation)) {
         self->cached_allocation = *allocation;
         // allocation only used for catching duplicate calls. To get the correct geom we need to check something else

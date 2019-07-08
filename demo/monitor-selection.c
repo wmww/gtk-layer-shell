@@ -19,6 +19,8 @@ on_monitor_selected (GtkComboBox *combo_box, GtkWindow *layer_window)
 void
 on_monitors_changed (GdkDisplay *display, GdkMonitor *_monitor, GtkComboBox *combo_box)
 {
+    (void)_monitor;
+
     gtk_combo_box_text_remove_all (GTK_COMBO_BOX_TEXT (combo_box));
     gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_box), "Default");
     GdkMonitor *current_monitor = g_object_get_data (G_OBJECT (combo_box), current_monitor_key);

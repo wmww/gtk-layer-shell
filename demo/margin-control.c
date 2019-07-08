@@ -1,8 +1,10 @@
 #include "gtk-layer-demo.h"
 
 static void
-on_orientation_changed (GtkWindow *window, WindowOrientation orientation, GtkWidget *box)
+on_orientation_changed (GtkWindow *_window, WindowOrientation orientation, GtkWidget *box)
 {
+    (void)_window;
+
     switch (orientation) {
         case WINDOW_ORIENTATION_HORIZONTAL:
             gtk_orientable_set_orientation (GTK_ORIENTABLE (box), GTK_ORIENTATION_HORIZONTAL);
@@ -52,8 +54,10 @@ margin_spin_button_new (GtkWindow *layer_window,
 }
 
 static void
-on_open_clicked (GtkWidget *button, GtkWidget *popover)
+on_open_clicked (GtkWidget *_button, GtkWidget *popover)
 {
+    (void)_button;
+
     gtk_popover_popup (GTK_POPOVER (popover));
 }
 
