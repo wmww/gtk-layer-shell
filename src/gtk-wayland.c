@@ -47,9 +47,17 @@ wl_registry_handle_global (void *data,
 {
     // pull out needed globals
     if (strcmp (interface, zwlr_layer_shell_v1_interface.name) == 0) {
-        layer_shell_global = wl_registry_bind (registry, id, &zwlr_layer_shell_v1_interface, 1);
+        g_warn_if_fail (zwlr_layer_shell_v1_interface.version == 1);
+        layer_shell_global = wl_registry_bind (registry,
+                                               id,
+                                               &zwlr_layer_shell_v1_interface,
+                                               MIN((uint32_t)zwlr_layer_shell_v1_interface.version, version));
     } else if (strcmp (interface, xdg_wm_base_interface.name) == 0) {
-        xdg_wm_base_global = wl_registry_bind (registry, id, &xdg_wm_base_interface, 1);
+        g_warn_if_fail (xdg_wm_base_interface.version == 2);
+        xdg_wm_base_global = wl_registry_bind (registry,
+                                               id,
+                                               &xdg_wm_base_interface,
+                                               MIN((uint32_t)xdg_wm_base_interface.version, version));
     }
 }
 
