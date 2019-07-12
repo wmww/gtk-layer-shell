@@ -24,7 +24,7 @@ static const GOptionEntry options[] = {
         .short_name = 'l',
         .flags = G_OPTION_FLAG_NONE,
         .arg = G_OPTION_ARG_CALLBACK,
-        .arg_data = &layer_option_callback,
+        .arg_data = (void *)&layer_option_callback,
         .description = "\"overlay\", \"top\", \"bottom\" or background (or \"o\", \"t\", \"b\" or \"g\")",
         .arg_description = NULL,
     },
@@ -33,7 +33,7 @@ static const GOptionEntry options[] = {
         .short_name = 'a',
         .flags = G_OPTION_FLAG_OPTIONAL_ARG,
         .arg = G_OPTION_ARG_CALLBACK,
-        .arg_data = &anchor_option_callback,
+        .arg_data = (void *)&anchor_option_callback,
         .description = "A sequence of 'l', 'r', 't' and 'b' to anchor to those edges, or \"0\" for no anchor",
         .arg_description = NULL,
     },
@@ -42,7 +42,7 @@ static const GOptionEntry options[] = {
         .short_name = 'm',
         .flags = G_OPTION_FLAG_NONE,
         .arg = G_OPTION_ARG_CALLBACK,
-        .arg_data = &margin_option_callback,
+        .arg_data = (void *)&margin_option_callback,
         .description = "Comma separated list of margin values, in the order LEFT,RIGHT,TOP,BOTTOM",
         .arg_description = NULL,
     },
@@ -64,7 +64,7 @@ static const GOptionEntry options[] = {
         .description = "Enable keyboard interactivity",
         .arg_description = NULL,
     },
-    { NULL }
+    { NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
 gboolean

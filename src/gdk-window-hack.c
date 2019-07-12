@@ -19,7 +19,7 @@ static GdkWindow *
 gdk_window_hack_get_transient_for (GdkWindow *gdk_window)
 {
     // Assume the transient_for GdkWindow* is the 3rd pointer after the GObject in GdkWindow (gdkinternals.h:206)
-    void **transient_for = (void *)gdk_window + sizeof(GObject) + 2 * sizeof(void *);
+    void **transient_for = (void**)((char *)gdk_window + sizeof(GObject) + 2 * sizeof(void *));
     return GDK_WINDOW (*transient_for);
 }
 
@@ -78,13 +78,13 @@ gdk_window_hack_init (GdkWindow *gdk_window)
         return;
 
     // Assume a GdkWindowImpl* is the first thing in a GdkWindow after the parent GObject (gdkinternals.h:203)
-    void *gdk_window_impl = *(void **)((void *)gdk_window + sizeof(GObject));
+    void *gdk_window_impl = *(void **)((char *)gdk_window + sizeof(GObject));
 
     // Assume a GdkWindowImplClass* is the first thing in a GdkWindowImpl (a class pointer is the first thing in a GObject)
     void *gdk_window_impl_class = *(void **)gdk_window_impl;
 
     // Assume there is a GObjectClass and 10 function pointers in GdkWindowImplClass before move_to_rect (gdkwindowimpl.h:78)
-    MoveToRectFunc *move_to_rect_func_ptr_ptr = gdk_window_impl_class + sizeof(GObjectClass) + 10 * sizeof(void *);
+    MoveToRectFunc *move_to_rect_func_ptr_ptr = (MoveToRectFunc *)((char *)gdk_window_impl_class + sizeof(GObjectClass) + 10 * sizeof(void *));
 
     // If we have not already done the override, set the window's function to be the override and our "real" fp to the one that was there before
     if (*move_to_rect_func_ptr_ptr != gdk_window_move_to_rect_impl_override) {

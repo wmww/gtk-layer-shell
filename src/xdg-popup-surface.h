@@ -2,9 +2,6 @@
 #define XDG_POPUP_SURFACE_H
 
 #include "custom-shell-surface.h"
-#include <gdk/gdk.h>
-
-typedef struct _GtkWidget GtkWidget;
 
 // an XdgPopupSurface * can be safely cast to a CustomShellSurface *
 typedef struct _XdgPopupSurface XdgPopupSurface;

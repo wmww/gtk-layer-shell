@@ -104,8 +104,8 @@ xdg_popup_surface_get_anchor_rect (XdgPopupSurface *self, GdkRectangle *rect)
     }
     if (parent_window != transient_for_window) {
         g_warning ("Could not find position of child window %p relative to parent window %p",
-                   self->position.transient_for_gdk_window,
-                   transient_for_window);
+                   (void *)self->position.transient_for_gdk_window,
+                   (void *)transient_for_window);
     }
     // Subtract the transient-for window's logical top-left
     GdkRectangle transient_for_geom =

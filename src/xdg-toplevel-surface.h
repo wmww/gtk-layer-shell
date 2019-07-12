@@ -3,8 +3,6 @@
 
 #include "custom-shell-surface.h"
 
-typedef struct _GtkWidget GtkWidget;
-
 // an XdgToplevelSurface * can be safely cast to a CustomShellSurface *
 typedef struct _XdgToplevelSurface XdgToplevelSurface;
 
