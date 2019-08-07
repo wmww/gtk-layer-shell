@@ -17,3 +17,7 @@ subdir('include')
 subdir('src')
 subdir('example')
 subdir('demo')
+
+gtk_layer_shell_dep = declare_dependency(
+    link_with: gtk_layer_shell_lib,
+    include_directories: gtk_layer_shell_inc)
