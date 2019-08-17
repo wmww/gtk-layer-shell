@@ -198,36 +198,40 @@ static const CustomShellSurfaceVirtual layer_surface_virtual = {
 };
 
 static void
+layer_surface_update_auto_exclusive_zone (LayerSurface *self)
+{
+    gboolean horiz = (self->anchors[GTK_LAYER_SHELL_EDGE_LEFT] ==
+                      self->anchors[GTK_LAYER_SHELL_EDGE_RIGHT]);
+    gboolean vert = (self->anchors[GTK_LAYER_SHELL_EDGE_TOP] ==
+                     self->anchors[GTK_LAYER_SHELL_EDGE_BOTTOM]);
+    int new_exclusive_zone = -1;
+
+    if (horiz && !vert) {
+        new_exclusive_zone = self->current_allocation.height;
+        if (!self->anchors[GTK_LAYER_SHELL_EDGE_TOP])
+            new_exclusive_zone += self->margins[GTK_LAYER_SHELL_EDGE_TOP];
+        if (!self->anchors[GTK_LAYER_SHELL_EDGE_BOTTOM])
+            new_exclusive_zone += self->margins[GTK_LAYER_SHELL_EDGE_BOTTOM];
+    } else if (vert && !horiz) {
+        new_exclusive_zone = self->current_allocation.width;
+        if (!self->anchors[GTK_LAYER_SHELL_EDGE_LEFT])
+            new_exclusive_zone += self->margins[GTK_LAYER_SHELL_EDGE_LEFT];
+        if (!self->anchors[GTK_LAYER_SHELL_EDGE_RIGHT])
+            new_exclusive_zone += self->margins[GTK_LAYER_SHELL_EDGE_RIGHT];
+    }
+
+    if (new_exclusive_zone >= 0 && self->exclusive_zone != new_exclusive_zone) {
+        self->exclusive_zone = new_exclusive_zone;
+        if (self->layer_surface) {
+            zwlr_layer_surface_v1_set_exclusive_zone (self->layer_surface, self->exclusive_zone);
+        }
+    }
+}
+
+static void
 layer_surface_update_size (LayerSurface *self)
 {
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
-
-    if (self->auto_exclusive_zone) {
-        gboolean horiz = (self->anchors[GTK_LAYER_SHELL_EDGE_LEFT] ==
-                          self->anchors[GTK_LAYER_SHELL_EDGE_RIGHT]);
-        gboolean vert = (self->anchors[GTK_LAYER_SHELL_EDGE_TOP] ==
-                         self->anchors[GTK_LAYER_SHELL_EDGE_BOTTOM]);
-        int new_exclusive_zone = -1;
-        if (horiz && !vert) {
-            new_exclusive_zone = self->current_allocation.height;
-            if (!self->anchors[GTK_LAYER_SHELL_EDGE_TOP])
-                new_exclusive_zone += self->margins[GTK_LAYER_SHELL_EDGE_TOP];
-            if (!self->anchors[GTK_LAYER_SHELL_EDGE_BOTTOM])
-                new_exclusive_zone += self->margins[GTK_LAYER_SHELL_EDGE_BOTTOM];
-        } else if (vert && !horiz) {
-            new_exclusive_zone = self->current_allocation.width;
-            if (!self->anchors[GTK_LAYER_SHELL_EDGE_LEFT])
-                new_exclusive_zone += self->margins[GTK_LAYER_SHELL_EDGE_LEFT];
-            if (!self->anchors[GTK_LAYER_SHELL_EDGE_RIGHT])
-                new_exclusive_zone += self->margins[GTK_LAYER_SHELL_EDGE_RIGHT];
-        }
-        if (new_exclusive_zone >= 0 && self->exclusive_zone != new_exclusive_zone) {
-            self->exclusive_zone = new_exclusive_zone;
-            if (self->layer_surface) {
-                zwlr_layer_surface_v1_set_exclusive_zone (self->layer_surface, self->exclusive_zone);
-            }
-        }
-    }
 
     GtkRequisition request_size;
     gtk_widget_get_preferred_size (GTK_WIDGET (gtk_window), NULL, &request_size);
@@ -286,6 +290,8 @@ layer_surface_on_size_allocate (GtkWidget *_gtk_window,
         self->current_allocation.height = allocation->height;
 
         layer_surface_update_size (self);
+        if (self->auto_exclusive_zone)
+            layer_surface_update_auto_exclusive_zone (self);
     }
 }
 
@@ -370,6 +376,8 @@ layer_surface_set_anchor (LayerSurface *self, GtkLayerShellEdge edge, gboolean a
         if (self->layer_surface) {
             layer_surface_send_set_anchor (self);
             layer_surface_update_size (self);
+            if (self->auto_exclusive_zone)
+                layer_surface_update_auto_exclusive_zone (self);
             custom_shell_surface_needs_commit ((CustomShellSurface *)self);
         }
     }
@@ -382,7 +390,8 @@ layer_surface_set_margin (LayerSurface *self, GtkLayerShellEdge edge, int margin
     if (margin_size != self->margins[edge]) {
         self->margins[edge] = margin_size;
         layer_surface_send_set_margin (self);
-        layer_surface_update_size (self); // Auto exclusive zone might need to change
+        if (self->auto_exclusive_zone)
+            layer_surface_update_auto_exclusive_zone (self);
         custom_shell_surface_needs_commit ((CustomShellSurface *)self);
     }
 }
@@ -405,7 +414,7 @@ layer_surface_auto_exclusive_zone_enable (LayerSurface *self)
 {
     if (!self->auto_exclusive_zone) {
         self->auto_exclusive_zone = TRUE;
-        layer_surface_update_size (self);
+        layer_surface_update_auto_exclusive_zone (self);
     }
 }
 
