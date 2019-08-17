@@ -20,8 +20,9 @@ struct _LayerSurface
     int margins[GTK_LAYER_SHELL_LAYER_ENTRY_NUMBER];
     int exclusive_zone;
     gboolean auto_exclusive_zone; // if to automatically change the exclusive zone to match the window size
-    GtkRequisition current_allocation; // Last size allocation, or (-1, -1) if there hasn't been one
-    GtkRequisition cached_layer_size; // Last size sent to zwlr_layer_surface_v1_set_size, or (-1, -1) if never called
+    GtkRequisition current_allocation; // Last size allocation, or (0, 0) if there hasn't been one
+    GtkRequisition cached_layer_size; // Last size sent to zwlr_layer_surface_v1_set_size (starts as 0, 0)
+
     gboolean keyboard_interactivity;
 
     // Need the surface to be recreated to change
@@ -305,8 +306,8 @@ layer_surface_new (GtkWindow *gtk_window)
     custom_shell_surface_init ((CustomShellSurface *)self, gtk_window);
 
     self->current_allocation = (GtkRequisition) {
-        .width = -1,
-        .height = -1,
+        .width = 0,
+        .height = 0,
     };
     self->cached_layer_size = self->current_allocation;
     self->monitor = NULL;
