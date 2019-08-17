@@ -22,6 +22,7 @@ struct _LayerSurface
     gboolean auto_exclusive_zone; // if to automatically change the exclusive zone to match the window size
     GtkRequisition current_allocation; // Last size allocation, or (0, 0) if there hasn't been one
     GtkRequisition cached_layer_size; // Last size sent to zwlr_layer_surface_v1_set_size (starts as 0, 0)
+    GtkRequisition last_configure_size; // Last size received from a configure event
 
     gboolean keyboard_interactivity;
 
@@ -34,17 +35,29 @@ struct _LayerSurface
     struct zwlr_layer_surface_v1 *layer_surface;
 };
 
-static GtkRequisition
-layer_surface_get_gtk_window_size (LayerSurface *self)
+static void
+layer_surface_update_size (LayerSurface *self)
 {
-    if (self->current_allocation.width >= 0 && self->current_allocation.height >= 0) {
-        return self->current_allocation;
-    } else {
-        GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
-        GtkRequisition natural_size;
-        gtk_widget_get_preferred_size (GTK_WIDGET (gtk_window), NULL, &natural_size);
-        return natural_size;
+    GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
+
+    GtkRequisition size_request = (GtkRequisition) {
+        .width = -1,
+        .height = -1,
+    };
+
+    if ((self->anchors[GTK_LAYER_SHELL_EDGE_LEFT]) &&
+        (self->anchors[GTK_LAYER_SHELL_EDGE_RIGHT])) {
+
+        size_request.width = self->last_configure_size.width;
     }
+    if ((self->anchors[GTK_LAYER_SHELL_EDGE_TOP]) &&
+        (self->anchors[GTK_LAYER_SHELL_EDGE_BOTTOM])) {
+
+        size_request.height = self->last_configure_size.height;
+    }
+
+    gtk_widget_set_size_request (GTK_WIDGET (gtk_window), size_request.width, size_request.height);
+    gtk_window_resize (gtk_window, 1, 1); // shrink the window to its size request
 }
 
 static void
@@ -56,20 +69,14 @@ layer_surface_handle_configure (void *data,
 {
     LayerSurface *self = data;
 
-    if (w > 0 || h > 0) {
-        GtkRequisition requested = {
-            .width = w,
-            .height = h,
-        };
-        GtkRequisition current_size = layer_surface_get_gtk_window_size (self);
-        if (requested.width == 0)
-            requested.width = current_size.width;
-        if (requested.height == 0)
-            requested.height = current_size.height;
-        GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
-        gtk_window_resize (gtk_window, requested.width, requested.height);
-    }
     zwlr_layer_surface_v1_ack_configure (surface, serial);
+
+    self->last_configure_size = (GtkRequisition) {
+        .width = (gint)w,
+        .height = (gint)h,
+    };
+
+    layer_surface_update_size(self);
 }
 
 static void
@@ -230,54 +237,6 @@ layer_surface_update_auto_exclusive_zone (LayerSurface *self)
 }
 
 static void
-layer_surface_update_size (LayerSurface *self)
-{
-    GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
-
-    GtkRequisition request_size;
-    gtk_widget_get_preferred_size (GTK_WIDGET (gtk_window), NULL, &request_size);
-
-    if ((self->anchors[GTK_LAYER_SHELL_EDGE_LEFT]) &&
-        (self->anchors[GTK_LAYER_SHELL_EDGE_RIGHT])) {
-
-        request_size.width = 0;
-    }
-    if ((self->anchors[GTK_LAYER_SHELL_EDGE_TOP]) &&
-        (self->anchors[GTK_LAYER_SHELL_EDGE_BOTTOM])) {
-
-        request_size.height = 0;
-    }
-
-    GtkRequisition window_default_size;
-    gtk_window_get_default_size (gtk_window,
-                                 &window_default_size.width,
-                                 &window_default_size.height);
-    if (window_default_size.width >= 0)
-        request_size.width = window_default_size.width;
-    if (window_default_size.height >= 0)
-        request_size.height = window_default_size.height;
-
-    if (request_size.width != self->cached_layer_size.width ||
-        request_size.height != self->cached_layer_size.height) {
-
-        self->cached_layer_size = request_size;
-        if (self->layer_surface) {
-            zwlr_layer_surface_v1_set_size (self->layer_surface,
-                                            self->cached_layer_size.width,
-                                            self->cached_layer_size.height);
-        }
-    }
-
-    if (self->cached_layer_size.width > 0 &&
-        self->cached_layer_size.height > 0) {
-
-        gtk_window_resize (gtk_window,
-                           self->cached_layer_size.width,
-                           self->cached_layer_size.height);
-    }
-}
-
-static void
 layer_surface_on_size_allocate (GtkWidget *_gtk_window,
                                 GdkRectangle *allocation,
                                 LayerSurface *self)
@@ -287,10 +246,35 @@ layer_surface_on_size_allocate (GtkWidget *_gtk_window,
     if (self->current_allocation.width != allocation->width ||
         self->current_allocation.height != allocation->height) {
 
-        self->current_allocation.width = allocation->width;
-        self->current_allocation.height = allocation->height;
+        self->current_allocation = (GtkRequisition) {
+            .width = allocation->width,
+            .height = allocation->height,
+        };
+        GtkRequisition request_size = self->current_allocation;
 
-        layer_surface_update_size (self);
+        if ((self->anchors[GTK_LAYER_SHELL_EDGE_LEFT]) &&
+            (self->anchors[GTK_LAYER_SHELL_EDGE_RIGHT])) {
+
+            request_size.width = 0;
+        }
+
+        if ((self->anchors[GTK_LAYER_SHELL_EDGE_TOP]) &&
+            (self->anchors[GTK_LAYER_SHELL_EDGE_BOTTOM])) {
+
+            request_size.height = 0;
+        }
+
+        if (request_size.width != self->cached_layer_size.width ||
+            request_size.height != self->cached_layer_size.height) {
+
+            self->cached_layer_size = request_size;
+            if (self->layer_surface) {
+                zwlr_layer_surface_v1_set_size (self->layer_surface,
+                                                self->cached_layer_size.width,
+                                                self->cached_layer_size.height);
+            }
+        }
+
         if (self->auto_exclusive_zone)
             layer_surface_update_auto_exclusive_zone (self);
     }
@@ -310,6 +294,7 @@ layer_surface_new (GtkWindow *gtk_window)
         .height = 0,
     };
     self->cached_layer_size = self->current_allocation;
+    self->last_configure_size = self->current_allocation;
     self->monitor = NULL;
     self->layer = ZWLR_LAYER_SHELL_V1_LAYER_TOP;
     self->name_space = NULL;
