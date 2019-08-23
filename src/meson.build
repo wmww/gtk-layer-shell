@@ -16,6 +16,7 @@ gtk_layer_shell_lib = library('gtk-layer-shell',
     layer_shell_client_header, layer_shell_private_code,
     include_directories: [gtk_layer_shell_inc],
     dependencies: [gtk, wayland_client],
+    version: meson.project_version(),
     install: true)
 
 pkg_config_name = 'gtk-layer-shell-0'
