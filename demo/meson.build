@@ -6,7 +6,8 @@ demo = executable('gtk-layer-demo',
     'monitor-selection.c',
     'mscl-toggles.c',
     'menu-bar.c',
+    build_by_default: get_option('examples'),
     dependencies: [gtk],
     include_directories: [gtk_layer_shell_inc],
     link_with: [gtk_layer_shell_lib],
-    install: true)
+    install: get_option('examples'))
