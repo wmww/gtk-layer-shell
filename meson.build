@@ -5,7 +5,7 @@ project('gtk-layer-shell',
     meson_version: '>=0.45.1',
     default_options: ['c_std=c99', 'warning_level=3'])
 
-add_global_arguments(
+add_project_arguments(
     ['-Wno-pedantic'],
     language: 'c')
 
