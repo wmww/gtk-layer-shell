@@ -7,7 +7,7 @@ A library to write [GTK](https://www.gtk.org/) applications that use [Layer Shel
 ## To install
 1. Clone this repo
 2. Install build dependencies (see below)
-3. `$ meson build`
+3. `$ meson build -Dexamples=true` (examples are disabled by default)
 4. `$ ninja -C build`
 5. `$ sudo ninja -C build install`
 6. `$ sudo ldconfig`
@@ -26,8 +26,8 @@ sudo apt install meson libwayland-dev libgtk-3-dev gobject-introspection libgire
 ```
 
 ## To use
-* `gtk-layer-demo` is installed with this library. Its UI exposes all features of the library, and it's useful for testing layer shell support in compositors
-* [gtk-layer-shell.h](include/gtk-layer-shell.h) has everything you need to use Layer Shell in a GTK app
+* `gtk-layer-demo` is installed if examples are enabled. Its UI exposes all features of the library, and it's useful for testing layer shell support in compositors
+* [gtk-layer-shell.h](include/gtk-layer-shell.h) contains the full API
 * [example/example.c](example/example.c) is a minimal working app
-* [demo/](demo/) contains a more complex app
+* [demo/](demo/) contains the code for `gtk-layer-demo` (a more complex app)
 * The easiest way to build is to use the `gtk-layer-shell-0` pkg-config package. Refer to your build system or the pkg-config docs for further instructions
