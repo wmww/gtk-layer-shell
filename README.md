@@ -12,8 +12,6 @@ A library to write [GTK](https://www.gtk.org/) applications that use [Layer Shel
 5. `$ sudo ninja -C build install`
 6. `$ sudo ldconfig`
 
-To build the examples, use `meson -Dexamples=true [...]`.
-
 ### Build dependencies
 * [Meson](https://mesonbuild.com/) (>=0.45.1)
 * [libwayland](https://gitlab.freedesktop.org/wayland/wayland) (>=1.10.0)
