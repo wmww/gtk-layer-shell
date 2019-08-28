@@ -3,7 +3,7 @@ project('gtk-layer-shell',
     version: '0.1.0',
     license: 'MIT',
     meson_version: '>=0.45.1',
-    default_options: ['c_std=c99', 'warning_level=3'])
+    default_options: ['c_std=gnu11', 'warning_level=3'])
 
 add_project_arguments(
     ['-Wno-pedantic'],
