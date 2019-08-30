@@ -28,11 +28,11 @@ on_fixed_size_set (GtkToggleButton *_toggle_button, gboolean state, GtkWindow *l
     (void)_toggle_button;
 
     if (state) {
-        gtk_window_set_default_size (layer_window, 600, 600);
+        gtk_widget_set_size_request (GTK_WIDGET (layer_window), 600, 500);
     } else {
-        gtk_window_set_default_size (layer_window, -1, -1);
+        gtk_widget_set_size_request (GTK_WIDGET (layer_window), -1, -1);
     }
-    gtk_widget_queue_resize (GTK_WIDGET (layer_window));
+    gtk_window_resize (layer_window, 1, 1);
     return FALSE;
 }
 
