@@ -22,6 +22,20 @@ on_keyboard_interactivity_state_set (GtkToggleButton *_toggle_button, gboolean s
     return FALSE;
 }
 
+gboolean
+on_fixed_size_set (GtkToggleButton *_toggle_button, gboolean state, GtkWindow *layer_window)
+{
+    (void)_toggle_button;
+
+    if (state) {
+        gtk_window_set_default_size (layer_window, 600, 600);
+    } else {
+        gtk_window_set_default_size (layer_window, -1, -1);
+    }
+    gtk_widget_queue_resize (GTK_WIDGET (layer_window));
+    return FALSE;
+}
+
 struct {
     const char *name;
     const char *tooltip;
@@ -29,12 +43,14 @@ struct {
 } const mscl_toggles[] = {
     {"Exclusive", "Create an exclusive zone when anchored", on_exclusive_zone_state_set},
     {"Keyboard", "Get keyboard events", on_keyboard_interactivity_state_set},
+    {"Set Size", "Set a fixed window size", on_fixed_size_set},
 };
 
 GtkWidget *
 mscl_toggles_new (GtkWindow *layer_window,
                   gboolean default_auto_exclusive_zone,
-                  gboolean default_keyboard_interactivity)
+                  gboolean default_keyboard_interactivity,
+                  gboolean default_fixed_size)
 {
     GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
     for (unsigned i = 0; i < sizeof (mscl_toggles) / sizeof (mscl_toggles[0]); i++) {
@@ -51,6 +67,8 @@ mscl_toggles_new (GtkWindow *layer_window,
                 default_value = default_auto_exclusive_zone;
             else if (mscl_toggles[i].callback == on_keyboard_interactivity_state_set)
                 default_value = default_keyboard_interactivity;
+            else if (mscl_toggles[i].callback == on_fixed_size_set)
+                default_value = default_fixed_size;
             else
                 g_assert_not_reached ();
             gtk_switch_set_active (GTK_SWITCH (toggle), default_value);
