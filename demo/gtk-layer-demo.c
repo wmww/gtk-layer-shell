@@ -235,7 +235,7 @@ on_orientation_changed (GtkWindow *window, WindowOrientation orientation, Toplev
     }
     gtk_orientable_set_orientation (GTK_ORIENTABLE (data->toplevel_box), orient_toplevel);
     gtk_orientable_set_orientation (GTK_ORIENTABLE (data->first_box), orient_sub);
-    // gtk_orientable_set_orientation (GTK_ORIENTABLE (data->second_box), orient_sub);
+    gtk_orientable_set_orientation (GTK_ORIENTABLE (data->second_box), orient_sub);
     gtk_window_resize (window, 1, 1); // force the window to shrink to the smallest size it can
 }
 
@@ -293,16 +293,17 @@ layer_window_new ()
                                 FALSE, FALSE, 0);
         }
     }{
-        GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-        gtk_box_pack_start (GTK_BOX (data->toplevel_box), vbox, FALSE, FALSE, 0);
+        data->second_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
+        gtk_box_pack_start (GTK_BOX (data->toplevel_box), data->second_box, FALSE, FALSE, 0);
         {
-            data->second_box = mscl_toggles_new (gtk_window,
+            GtkWidget *toggles_box = mscl_toggles_new (gtk_window,
                                                  default_auto_exclusive_zone,
-                                                 default_keyboard_interactivity);
-            gtk_box_pack_start (GTK_BOX (vbox),
-                                data->second_box,
+                                                 default_keyboard_interactivity,
+                                                 default_fixed_size);
+            gtk_box_pack_start (GTK_BOX (data->second_box),
+                                toggles_box,
                                 FALSE, FALSE, 0);
-            gtk_box_pack_start (GTK_BOX (vbox),
+            gtk_box_pack_start (GTK_BOX (data->second_box),
                                 margin_control_new (gtk_window, default_margins),
                                 FALSE, FALSE, 0);
         }
