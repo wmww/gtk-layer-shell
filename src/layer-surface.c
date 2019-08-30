@@ -40,24 +40,25 @@ layer_surface_update_size (LayerSurface *self)
 {
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
 
-    GtkRequisition size_request = (GtkRequisition) {
-        .width = -1,
-        .height = -1,
-    };
+    GdkGeometry hints;
+    hints.min_width = -1;
+    hints.min_height = -1;
 
     if ((self->anchors[GTK_LAYER_SHELL_EDGE_LEFT]) &&
         (self->anchors[GTK_LAYER_SHELL_EDGE_RIGHT])) {
 
-        size_request.width = self->last_configure_size.width;
+        hints.min_width = self->last_configure_size.width;
     }
     if ((self->anchors[GTK_LAYER_SHELL_EDGE_TOP]) &&
         (self->anchors[GTK_LAYER_SHELL_EDGE_BOTTOM])) {
 
-        size_request.height = self->last_configure_size.height;
+        hints.min_height = self->last_configure_size.height;
     }
 
-    gtk_widget_set_size_request (GTK_WIDGET (gtk_window), size_request.width, size_request.height);
-    gtk_window_resize (gtk_window, 1, 1); // shrink the window to its size request
+    gtk_window_set_geometry_hints (gtk_window,
+                                   NULL,
+                                   &hints,
+                                   GDK_HINT_MIN_SIZE);
 }
 
 static void
