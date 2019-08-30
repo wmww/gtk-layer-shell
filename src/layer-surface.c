@@ -209,6 +209,9 @@ static const CustomShellSurfaceVirtual layer_surface_virtual = {
 static void
 layer_surface_update_auto_exclusive_zone (LayerSurface *self)
 {
+    if (!self->auto_exclusive_zone)
+        return;
+
     gboolean horiz = (self->anchors[GTK_LAYER_SHELL_EDGE_LEFT] ==
                       self->anchors[GTK_LAYER_SHELL_EDGE_RIGHT]);
     gboolean vert = (self->anchors[GTK_LAYER_SHELL_EDGE_TOP] ==
@@ -276,8 +279,7 @@ layer_surface_on_size_allocate (GtkWidget *_gtk_window,
             }
         }
 
-        if (self->auto_exclusive_zone)
-            layer_surface_update_auto_exclusive_zone (self);
+        layer_surface_update_auto_exclusive_zone (self);
     }
 }
 
@@ -363,8 +365,7 @@ layer_surface_set_anchor (LayerSurface *self, GtkLayerShellEdge edge, gboolean a
         if (self->layer_surface) {
             layer_surface_send_set_anchor (self);
             layer_surface_update_size (self);
-            if (self->auto_exclusive_zone)
-                layer_surface_update_auto_exclusive_zone (self);
+            layer_surface_update_auto_exclusive_zone (self);
             custom_shell_surface_needs_commit ((CustomShellSurface *)self);
         }
     }
@@ -377,8 +378,7 @@ layer_surface_set_margin (LayerSurface *self, GtkLayerShellEdge edge, int margin
     if (margin_size != self->margins[edge]) {
         self->margins[edge] = margin_size;
         layer_surface_send_set_margin (self);
-        if (self->auto_exclusive_zone)
-            layer_surface_update_auto_exclusive_zone (self);
+        layer_surface_update_auto_exclusive_zone (self);
         custom_shell_surface_needs_commit ((CustomShellSurface *)self);
     }
 }
