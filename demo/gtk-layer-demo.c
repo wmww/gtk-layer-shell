@@ -7,6 +7,7 @@ static int default_margins[] = {0, 0, 0, 0};
 
 static gboolean default_auto_exclusive_zone = FALSE; // always set by command line option
 static gboolean default_keyboard_interactivity = FALSE; // always set by command line option
+static gboolean default_fixed_size = FALSE; // always set by command line option
 
 const char *prog_name = "gtk-layer-demo";
 const char *prog_summary = "A GTK application for demonstrating the functionality of the Layer Shell Wayland protocol";
@@ -62,6 +63,15 @@ static const GOptionEntry options[] = {
         .arg = G_OPTION_ARG_NONE,
         .arg_data = &default_keyboard_interactivity,
         .description = "Enable keyboard interactivity",
+        .arg_description = NULL,
+    },
+    {
+        .long_name = "fixed-size",
+        .short_name = 'f',
+        .flags = G_OPTION_FLAG_NONE,
+        .arg = G_OPTION_ARG_NONE,
+        .arg_data = &default_fixed_size,
+        .description = "Enable a fixed window size",
         .arg_description = NULL,
     },
     { NULL, 0, 0, 0, NULL, NULL, NULL }

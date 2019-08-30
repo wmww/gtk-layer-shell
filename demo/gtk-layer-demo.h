@@ -38,7 +38,8 @@ margin_control_new (GtkWindow *layer_window, const int default_margins[GTK_LAYER
 GtkWidget *
 mscl_toggles_new (GtkWindow *layer_window,
                   gboolean default_auto_exclusive_zone,
-                  gboolean default_keyboard_interactivity);
+                  gboolean default_keyboard_interactivity,
+                  gboolean default_fixed_size);
 
 GtkWidget *
 menu_bar_new (GtkWindow *layer_window);
