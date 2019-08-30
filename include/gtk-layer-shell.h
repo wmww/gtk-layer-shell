@@ -21,6 +21,16 @@ typedef enum {
     GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER, // Should not be used except to get the number of entries
 } GtkLayerShellEdge;
 
+// FORCING WINDOW SIZE
+// If you wish to force your layer surface window to be a different size than it is by default:
+/*
+gtk_widget_set_size_request (GTK_WIDGET (layer_gtk_window), width, height);
+gtk_window_resize (layer_gtk_window, 1, 1); // force the window to resize to the new request
+*/
+// If width or height is -1, the default is used for that axis. If the window is anchored to opposite edges of the
+// output (see gtk_layer_set_anchor ()), the size request is ignored. If you later wish to use the default window size,
+// simply repeat the two calls but with both width and height as -1.
+
 // Set the window up to be a layer surface once it is mapped
 // This must be called before the window is realized
 void gtk_layer_init_for_window (GtkWindow *window);
