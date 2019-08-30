@@ -36,6 +36,35 @@ struct _LayerSurface
 };
 
 static void
+layer_surface_send_set_size (LayerSurface *self)
+{
+    GtkRequisition request_size = self->current_allocation;
+
+    if ((self->anchors[GTK_LAYER_SHELL_EDGE_LEFT]) &&
+        (self->anchors[GTK_LAYER_SHELL_EDGE_RIGHT])) {
+
+        request_size.width = 0;
+    }
+
+    if ((self->anchors[GTK_LAYER_SHELL_EDGE_TOP]) &&
+        (self->anchors[GTK_LAYER_SHELL_EDGE_BOTTOM])) {
+
+        request_size.height = 0;
+    }
+
+    if (request_size.width != self->cached_layer_size.width ||
+        request_size.height != self->cached_layer_size.height) {
+
+        self->cached_layer_size = request_size;
+        if (self->layer_surface) {
+            zwlr_layer_surface_v1_set_size (self->layer_surface,
+                                            self->cached_layer_size.width,
+                                            self->cached_layer_size.height);
+        }
+    }
+}
+
+static void
 layer_surface_update_size (LayerSurface *self)
 {
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
@@ -59,6 +88,13 @@ layer_surface_update_size (LayerSurface *self)
                                    NULL,
                                    &hints,
                                    GDK_HINT_MIN_SIZE);
+
+    // This will usually get called in a moment by the layer_surface_on_size_allocate () triggered by the above
+    // gtk_window_set_geometry_hints (). However in some cases (such as a streatching a window after a size request has
+    // been set), an allocate will not be triggered but the set size does need to change. For this reason we make the
+    // call here as well and let the later call clean up any mistakes this one makes. This makes the flicker problem
+    // worse, but I think it's more important that the end result is correct.
+    layer_surface_send_set_size (self);
 }
 
 static void
@@ -254,31 +290,8 @@ layer_surface_on_size_allocate (GtkWidget *_gtk_window,
             .width = allocation->width,
             .height = allocation->height,
         };
-        GtkRequisition request_size = self->current_allocation;
 
-        if ((self->anchors[GTK_LAYER_SHELL_EDGE_LEFT]) &&
-            (self->anchors[GTK_LAYER_SHELL_EDGE_RIGHT])) {
-
-            request_size.width = 0;
-        }
-
-        if ((self->anchors[GTK_LAYER_SHELL_EDGE_TOP]) &&
-            (self->anchors[GTK_LAYER_SHELL_EDGE_BOTTOM])) {
-
-            request_size.height = 0;
-        }
-
-        if (request_size.width != self->cached_layer_size.width ||
-            request_size.height != self->cached_layer_size.height) {
-
-            self->cached_layer_size = request_size;
-            if (self->layer_surface) {
-                zwlr_layer_surface_v1_set_size (self->layer_surface,
-                                                self->cached_layer_size.width,
-                                                self->cached_layer_size.height);
-            }
-        }
-
+        layer_surface_send_set_size (self);
         layer_surface_update_auto_exclusive_zone (self);
     }
 }
