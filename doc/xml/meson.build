@@ -1,0 +1,11 @@
+ent_conf = configuration_data()
+ent_conf.set('PACKAGE', 'gtk-layer-shell')
+ent_conf.set('PACKAGE_BUGREPORT', 'https://github.com/wmww/gtk-layer-shell/issues')
+ent_conf.set('PACKAGE_NAME', 'gtk-layer-shell')
+ent_conf.set('PACKAGE_STRING', 'gtk-layer-shell')
+ent_conf.set('PACKAGE_TARNAME', 'gtk-layer-shell-' + meson.project_version())
+ent_conf.set('PACKAGE_URL', 'https://github.com/wmww/gtk-layer-shell')
+ent_conf.set('PACKAGE_VERSION', meson.project_version())
+ent_conf.set('PACKAGE_API_VERSION', meson.project_version())
+configure_file(input: 'gtkdocentities.ent.in', output: 'gtkdocentities.ent', configuration: ent_conf)
+

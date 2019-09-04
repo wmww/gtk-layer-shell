@@ -1,0 +1,3 @@
+#include <gtk/gtk.h>
+
+gtk_window_get_type
