@@ -4,6 +4,8 @@ glib_prefix = dependency('glib-2.0').get_pkgconfig_variable('prefix')
 glib_docpath = join_paths(glib_prefix, 'share', 'gtk-doc', 'html')
 docpath = join_paths(get_option('datadir'), 'gtk-doc', 'html')
 
+gtk_doc_dep = dependency('gtk-doc')
+
 gnome.gtkdoc(
     'gtk-layer-shell',
     main_xml: 'gtk-layer-shell-docs.sgml',

@@ -21,7 +21,10 @@ subdir('include')
 subdir('src')
 subdir('example')
 subdir('demo')
-subdir('doc')
+
+if get_option('enable_gtk_doc')
+    subdir('doc')
+endif
 
 gtk_layer_shell_dep = declare_dependency(
     link_with: gtk_layer_shell_lib,
