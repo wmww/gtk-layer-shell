@@ -7,7 +7,7 @@ A library to write [GTK](https://www.gtk.org/) applications that use [Layer Shel
 ## To install
 1. Clone this repo
 2. Install build dependencies (see below)
-3. `$ meson build -Dexamples=true` (examples are disabled by default)
+3. `$ meson build -Dexamples=true -Ddocs=true`
 4. `$ ninja -C build`
 5. `$ sudo ninja -C build install`
 6. `$ sudo ldconfig`
@@ -17,11 +17,16 @@ A library to write [GTK](https://www.gtk.org/) applications that use [Layer Shel
 * [libwayland](https://gitlab.freedesktop.org/wayland/wayland) (>=1.10.0)
 * [GTK3](https://www.gtk.org/) (>=3.22.0)
 * [GObject introspection](https://gitlab.gnome.org/GNOME/gobject-introspection/)
+* [GTK Doc](https://www.gtk.org/gtk-doc/) (Optional)
 
 #### Install dependencies on Ubuntu 18.04 and later
 ```
 sudo apt install meson libwayland-dev libgtk-3-dev gobject-introspection libgirepository1.0-dev
 ```
+
+### Options
+* `examples`: If to build gtk-layer-example and if to build and install gtk-layer-demo (default false)
+* `docs`: If to generate the docs (default false)
 
 ## To use
 * `gtk-layer-demo` is installed if examples are enabled. Its UI exposes all features of the library, and it's useful for testing layer shell support in compositors
