@@ -1,2 +1,2 @@
 option('examples', type: 'boolean', value: false, description: 'Build example applications')
-option('enable_gtk_doc', type: 'boolean', value: false, description: 'Build devhelp API documentation')
+option('docs', type: 'boolean', value: false, description: 'Build devhelp API documentation')

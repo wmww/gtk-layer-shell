@@ -22,7 +22,7 @@ subdir('src')
 subdir('example')
 subdir('demo')
 
-if get_option('enable_gtk_doc')
+if get_option('docs')
     subdir('doc')
 endif
 
