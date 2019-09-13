@@ -70,24 +70,28 @@ layer_surface_update_size (LayerSurface *self)
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
 
     GdkGeometry hints;
-    hints.min_width = -1;
-    hints.min_height = -1;
+    hints.min_width =
+    hints.max_width =
+    hints.min_height =
+    hints.max_height = -1;
 
     if ((self->anchors[GTK_LAYER_SHELL_EDGE_LEFT]) &&
         (self->anchors[GTK_LAYER_SHELL_EDGE_RIGHT])) {
 
-        hints.min_width = self->last_configure_size.width;
+        hints.min_width =
+        hints.max_width = self->last_configure_size.width;
     }
     if ((self->anchors[GTK_LAYER_SHELL_EDGE_TOP]) &&
         (self->anchors[GTK_LAYER_SHELL_EDGE_BOTTOM])) {
 
-        hints.min_height = self->last_configure_size.height;
+        hints.min_height =
+        hints.max_height = self->last_configure_size.height;
     }
 
     gtk_window_set_geometry_hints (gtk_window,
                                    NULL,
                                    &hints,
-                                   GDK_HINT_MIN_SIZE);
+                                   GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE);
 
     // This will usually get called in a moment by the layer_surface_on_size_allocate () triggered by the above
     // gtk_window_set_geometry_hints (). However in some cases (such as a streatching a window after a size request has
@@ -113,7 +117,7 @@ layer_surface_handle_configure (void *data,
         .height = (gint)h,
     };
 
-    layer_surface_update_size(self);
+    layer_surface_update_size (self);
 }
 
 static void
