@@ -35,6 +35,11 @@ struct _LayerSurface
     struct zwlr_layer_surface_v1 *layer_surface;
 };
 
+/*
+ * Sends the .set_size request if the current allocation differs from the last size sent
+ * Needs to be called whenever current_allocation or anchors are changed
+ * If .set_size is sent, it should trigger the compositor to send a .configure event
+ */
 static void
 layer_surface_send_set_size (LayerSurface *self)
 {
@@ -64,6 +69,12 @@ layer_surface_send_set_size (LayerSurface *self)
     }
 }
 
+/*
+ * Sets the window's geometry hints (used to force the window to be a specific size)
+ * Needs to be called whenever last_configure_size or anchors are changed
+ * Lets windows decide their own size along any axis the surface is not stretched along
+ * Forces window (by setting the max and min hints) to be of configured size along axises they are stretched along
+ */
 static void
 layer_surface_update_size (LayerSurface *self)
 {
