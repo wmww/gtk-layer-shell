@@ -147,7 +147,7 @@ margin_option_callback (const gchar *_option_name, const gchar *value, void *_da
             g_set_error (error,
                          G_OPTION_ERROR,
                          G_OPTION_ERROR_FAILED,
-                         "Not enought comma separated arguments for margin");
+                         "Not enough comma separated arguments for margin");
             return FALSE;
         }
         char *end;
