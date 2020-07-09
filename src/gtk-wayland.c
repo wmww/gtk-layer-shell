@@ -49,7 +49,7 @@ wl_registry_handle_global (void *_data,
 
     // pull out needed globals
     if (strcmp (interface, zwlr_layer_shell_v1_interface.name) == 0) {
-        g_warn_if_fail (zwlr_layer_shell_v1_interface.version == 1);
+        g_warn_if_fail (zwlr_layer_shell_v1_interface.version == 3);
         layer_shell_global = wl_registry_bind (registry,
                                                id,
                                                &zwlr_layer_shell_v1_interface,
