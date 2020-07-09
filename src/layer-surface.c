@@ -356,7 +356,13 @@ layer_surface_set_layer (LayerSurface *self, enum zwlr_layer_shell_v1_layer laye
     if (self->layer != layer) {
         self->layer = layer;
         if (self->layer_surface) {
-            custom_shell_surface_remap ((CustomShellSurface *)self);
+            uint32_t version = zwlr_layer_surface_v1_get_version (self->layer_surface);
+            if (version >= ZWLR_LAYER_SURFACE_V1_SET_LAYER_SINCE_VERSION) {
+                zwlr_layer_surface_v1_set_layer (self->layer_surface, self->layer);
+                custom_shell_surface_needs_commit ((CustomShellSurface *)self);
+            } else {
+                custom_shell_surface_remap ((CustomShellSurface *)self);
+            }
         }
     }
 }
