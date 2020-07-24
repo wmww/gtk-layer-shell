@@ -305,18 +305,28 @@ layer_window_new ()
         }
     }{
         data->second_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-        gtk_box_pack_start (GTK_BOX (data->toplevel_box), data->second_box, FALSE, FALSE, 0);
+        gtk_box_pack_start (GTK_BOX (data->toplevel_box), data->second_box, TRUE, TRUE, 0);
         {
             GtkWidget *toggles_box = mscl_toggles_new (gtk_window,
-                                                 default_auto_exclusive_zone,
-                                                 default_keyboard_interactivity,
-                                                 default_fixed_size);
+                                                       default_auto_exclusive_zone,
+                                                       default_keyboard_interactivity,
+                                                       default_fixed_size);
             gtk_box_pack_start (GTK_BOX (data->second_box),
                                 toggles_box,
                                 FALSE, FALSE, 0);
-            gtk_box_pack_start (GTK_BOX (data->second_box),
+
+        }
+        {
+            GtkWidget *margin_and_version_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
+            gtk_box_pack_start (GTK_BOX (margin_and_version_box),
                                 margin_control_new (gtk_window, default_margins),
-                                FALSE, FALSE, 0);
+                                TRUE, FALSE, 0);
+            gtk_box_pack_start (GTK_BOX (margin_and_version_box),
+                                version_info_new (),
+                                TRUE, TRUE, 0);
+            gtk_box_pack_start (GTK_BOX (data->second_box),
+                                margin_and_version_box,
+                                TRUE, TRUE, 0);
         }
     }
 
