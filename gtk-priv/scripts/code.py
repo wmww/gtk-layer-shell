@@ -234,25 +234,28 @@ class Property:
             lambda type_name: 'return FALSE;')
         return c_function(ret_type, fn_name, [], body)
 
+    def emit_not_supported_error(self, type_name):
+        msg = '"' + self.struct.typedef + '::' + self.name + ' not supported on this GTK"'
+        return 'g_error(' + msg + '); g_abort();'
+
     def emit_getter(self):
         ret_type = self.c_type
         suffix = '' if self.all_versions_supported() else 'or_abort'
         fn_name = self.get_fn_name('get', suffix)
         arg_list = [(self.struct.get_ptr_type(), 'self')]
-        error_msg = '"' + self.struct.typedef + '::' + self.name + ' not supported on this GTK"'
         body = self.emit_version_id_switch(
             lambda type_name: 'return ((' + type_name + '*)self)->' + self.name + ';',
-            lambda type_name: 'g_error(' + error_msg + '); g_abort();')
+            self.emit_not_supported_error)
         return c_function(ret_type, fn_name, arg_list, body)
 
     def emit_setter(self):
         ret_type = StdType('void')
-        suffix = '' if self.all_versions_supported() else 'or_ignore'
+        suffix = '' if self.all_versions_supported() else 'or_abort'
         fn_name = self.get_fn_name('set', suffix)
         arg_list = [(self.struct.get_ptr_type(), 'self'), (self.c_type, self.get_id_name())]
         body = self.emit_version_id_switch(
             lambda type_name: '((' + type_name + '*)self)->' + self.name + ' = ' + self.get_id_name() + '; break;',
-            lambda type_name: 'break;')
+            self.emit_not_supported_error)
         return c_function(ret_type, fn_name, arg_list, body)
 
     def emit_functions(self):
