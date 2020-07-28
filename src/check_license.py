@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 '''
-This entire file is licensed under MIT. By publishing or contributing changes to this file without specifying otherwise, you agree for those changes to be MIT licensed as well.
+This entire file is licensed under MIT.
 
 Copyright 2020 William Wold
 
