@@ -67,7 +67,7 @@ def get_project_root():
 def ignored_by_git(file_path):
     result = subprocess.run(
         ['git','-C', get_project_root(), 'check-ignore', file_path],
-        capture_output=True)
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return result.returncode == 0
 
 def get_files(search_path):
