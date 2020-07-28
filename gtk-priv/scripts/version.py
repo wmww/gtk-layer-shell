@@ -22,14 +22,10 @@ COMBO_FACTOR = 1000
 
 @functools.total_ordering # implement all comparisons with just eq and lt
 class Version:
-    def __init__(self, tag):
-        self.tag = tag
-        match = re.search(r'^3\.(\d+)\.(\d+)$', tag)
-        if match:
-            self.minor = int(match.group(1))
-            self.micro = int(match.group(2))
-        else:
-            raise RuntimeError(tag + ' is not a valid version')
+    def __init__(self, git_name, minor, micro):
+        self.git_name = git_name
+        self.minor = minor
+        self.micro = micro
 
     def __eq__(self, other):
         return self.minor == other.minor and self.micro == other.micro
@@ -39,6 +35,9 @@ class Version:
             return self.micro < other.micro
         else:
             return self.minor < other.minor
+
+    def get_checkout_name(self):
+        return self.git_name
 
     def is_supported(self):
         '''Returns if the version is one we support'''
@@ -51,25 +50,31 @@ class Version:
         return self.minor * 1000 + self.micro
 
     def __str__(self):
-        return 'v' + self.tag
+        return 'v3.' + str(self.minor) + '.' + str(self.micro)
 
     def c_id(self):
         '''a string suitable for a C identifier'''
         return 'v3_' + str(self.minor) + '_' + str(self.micro)
 
-min_supported_version = Version(MIN_SUPPORTED_GTK)
-max_supported_version = Version(MAX_SUPPORTED_GTK)
-bad_release_3_24_19 = Version('3.24.19') # this is not a good release
+def parse_tag(tag):
+    match = re.search(r'^3\.(\d+)\.(\d+)$', tag)
+    if match:
+        minor = int(match.group(1))
+        micro = int(match.group(2))
+        return Version(tag, minor, micro)
+    else:
+        return None
+
+min_supported_version = parse_tag(MIN_SUPPORTED_GTK)
+max_supported_version = parse_tag(MAX_SUPPORTED_GTK)
+bad_release_3_24_19 = parse_tag('3.24.19') # this is not a good release
 
 def parse_tag_list(tags):
     result = []
     for tag in tags:
-        try:
-            version = Version(tag)
-            if version.is_supported():
-                result.append(version)
-        except RuntimeError as e:
-            pass
-    logger.info('Found ' + str(len(result)) + ' supported versions')
+        version = parse_tag(tag)
+        if version and version.is_supported():
+            result.append(version)
     result.sort()
+    logger.info('Found ' + str(len(result)) + ' supported versions')
     return result

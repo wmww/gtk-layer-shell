@@ -44,7 +44,7 @@ def build():
     for i, v in enumerate(versions):
         percent = int(((i + 1) / len(versions)) * 1000) / 10
         logger.info('[' + str(percent) + '%] Checking out ' + str(v))
-        repo.checkout(v.tag)
+        repo.checkout(v.get_checkout_name())
         project.update(v)
     project.simplify()
     project.write(OUTPUT_DIR)
