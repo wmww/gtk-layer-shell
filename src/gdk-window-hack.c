@@ -13,6 +13,20 @@
 #include "gtk-wayland.h"
 #include "xdg-popup-surface.h"
 
+#include "wayland-client.h"
+
+typedef enum _PositionMethod
+{
+  POSITION_METHOD_ENUM
+} PositionMethod;
+typedef void *EGLSurface;
+typedef void *GdkWaylandWindowExported;
+
+#include "gdk_window_impl_priv.h"
+#include "gdk_window_priv.h"
+#include "gdk_window_impl_wayland_priv.h"
+#include "gdk_window_impl_class_priv.h"
+
 #include <glib-2.0/glib.h>
 
 // The type of the function pointer of GdkWindowImpl's move_to_rect method (gdkwindowimpl.h:78)'
@@ -29,9 +43,17 @@ static MoveToRectFunc gdk_window_move_to_rect_real = NULL;
 static GdkWindow *
 gdk_window_hack_get_transient_for (GdkWindow *gdk_window)
 {
-    // Assume the transient_for GdkWindow* is the 3rd pointer after the GObject in GdkWindow (gdkinternals.h:206)
-    void **transient_for = (void**)((char *)gdk_window + sizeof(GObject) + 2 * sizeof(void *));
-    return GDK_WINDOW (*transient_for);
+    GdkWindow *window_transient_for = gdk_window_priv_get_transient_for (gdk_window);
+    GdkWindowImplWayland *window_impl = (GdkWindowImplWayland *)gdk_window_priv_get_impl (gdk_window);
+    GdkWindow *wayland_transient_for = gdk_window_impl_wayland_priv_get_transient_for (window_impl);
+    if (window_transient_for != wayland_transient_for) {
+        g_warning ("Wayland transient_for (%p) != generic transient_for (%p)",
+                   wayland_transient_for,
+                   window_transient_for);
+        if (!window_transient_for)
+            return wayland_transient_for;
+    }
+    return window_transient_for;
 }
 
 static void
@@ -88,18 +110,12 @@ gdk_window_hack_init (GdkWindow *gdk_window)
     if (gdk_window_move_to_rect_real)
         return;
 
-    // Assume a GdkWindowImpl* is the first thing in a GdkWindow after the parent GObject (gdkinternals.h:203)
-    void *gdk_window_impl = *(void **)((char *)gdk_window + sizeof(GObject));
-
-    // Assume a GdkWindowImplClass* is the first thing in a GdkWindowImpl (a class pointer is the first thing in a GObject)
-    void *gdk_window_impl_class = *(void **)gdk_window_impl;
-
-    // Assume there is a GObjectClass and 10 function pointers in GdkWindowImplClass before move_to_rect (gdkwindowimpl.h:78)
-    MoveToRectFunc *move_to_rect_func_ptr_ptr = (MoveToRectFunc *)((char *)gdk_window_impl_class + sizeof(GObjectClass) + 10 * sizeof(void *));
+    GdkWindowImplWayland *window_impl = (GdkWindowImplWayland *)gdk_window_priv_get_impl (gdk_window);
+    GdkWindowImplClass *window_class = (GdkWindowImplClass *)G_OBJECT_GET_CLASS(window_impl);
 
     // If we have not already done the override, set the window's function to be the override and our "real" fp to the one that was there before
-    if (*move_to_rect_func_ptr_ptr != gdk_window_move_to_rect_impl_override) {
-        gdk_window_move_to_rect_real = *move_to_rect_func_ptr_ptr;
-        *move_to_rect_func_ptr_ptr = gdk_window_move_to_rect_impl_override;
+    if (gdk_window_impl_class_priv_get_move_to_rect (window_class) != gdk_window_move_to_rect_impl_override) {
+        gdk_window_move_to_rect_real = gdk_window_impl_class_priv_get_move_to_rect (window_class);
+        gdk_window_impl_class_priv_set_move_to_rect (window_class, gdk_window_move_to_rect_impl_override);
     }
 }
