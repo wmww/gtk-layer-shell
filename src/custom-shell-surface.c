@@ -11,7 +11,7 @@
 
 #include "custom-shell-surface.h"
 #include "gtk-wayland.h"
-#include "gdk-window-hack.h"
+#include "gtk-priv-access.h"
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>

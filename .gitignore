@@ -1,1 +1,4 @@
 build/
+gtk-priv/build/
+*/__pycache__
+*.pyc

@@ -7,14 +7,14 @@ srcs = files(
     'layer-surface.c',
     'xdg-popup-surface.c',
     'xdg-toplevel-surface.c',
-    'gdk-window-hack.c',
+    'gtk-priv-access.c',
     'simple-conversions.c')
 
 gtk_layer_shell_lib = library('gtk-layer-shell',
     srcs,
     xdg_shell_client_header, xdg_shell_private_code,
     layer_shell_client_header, layer_shell_private_code,
-    include_directories: [gtk_layer_shell_inc],
+    include_directories: [gtk_layer_shell_inc, gtk_priv_inc],
     dependencies: [gtk, wayland_client],
     version: meson.project_version(),
     install: true)

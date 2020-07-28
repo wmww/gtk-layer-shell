@@ -13,7 +13,7 @@
 
 #include "custom-shell-surface.h"
 #include "xdg-popup-surface.h"
-#include "gdk-window-hack.h"
+#include "gtk-priv-access.h"
 
 #include "xdg-shell-client.h"
 #include "wlr-layer-shell-unstable-v1-client.h"

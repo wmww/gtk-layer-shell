@@ -17,6 +17,8 @@ wayland_scanner = dependency('wayland-scanner', version: '>=1.10.0', required: f
 pkg_config = import('pkgconfig')
 gnome = import('gnome')
 
+gtk_priv_inc = include_directories('./gtk-priv/h')
+
 subdir('include')
 subdir('src')
 subdir('example')
