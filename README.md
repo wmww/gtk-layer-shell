@@ -6,6 +6,7 @@ A library to write [GTK](https://www.gtk.org/) applications that use [Layer Shel
 
 ## Installing with your package manager
 GTK Layer Shell is packaged for the following distros
+- [Debian](https://packages.debian.org/source/sid/gtk-layer-shell) (>=11)
 - [Ubuntu](https://packages.ubuntu.com/source/focal/gtk-layer-shell) (>=20.04)
 - [Fedora](https://src.fedoraproject.org/rpms/gtk-layer-shell) (>=31)
 - [Arch](https://www.archlinux.org/packages/community/x86_64/gtk-layer-shell/)
