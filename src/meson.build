@@ -7,7 +7,7 @@ srcs = files(
     'layer-surface.c',
     'xdg-popup-surface.c',
     'xdg-toplevel-surface.c',
-    'gdk-window-hack.c',
+    'gtk-priv-access.c',
     'simple-conversions.c')
 
 gtk_layer_shell_lib = library('gtk-layer-shell',
