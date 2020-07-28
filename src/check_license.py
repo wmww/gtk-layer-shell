@@ -15,9 +15,24 @@ import logging
 import re
 import os
 from os import path
+import subprocess
+from fnmatch import fnmatch
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
+
+IGNORE_PATTERNS = [
+    '*/.git',
+    '*/.gitignore',
+    '*/.github',
+    '*/doc',
+    '*.md',
+    '*.editorconfig',
+    '*.txt',
+    '*/src/protocol',
+    '*/check_license.py',
+    '*/meson.build',
+]
 
 MIT_EXAMPLE = '''
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -49,29 +64,35 @@ def canonify_str(s):
 def get_project_root():
     return path.dirname(path.dirname(path.realpath(__file__)))
 
-def get_files(search_dir):
-    result = []
-    for item in os.listdir(search_dir):
-        p = path.join(search_dir, item)
-        if (item.startswith('.') or
-            item == 'check_license.py' or
-            item == 'meson.build' or
-            item.endswith('.xml')):
-            continue
-        elif path.isdir(p):
-            result += get_files(p)
-        else:
-            result.append(p)
-    return result
+def ignored_by_git(file_path):
+    result = subprocess.run(
+        ['git','-C', get_project_root(), 'check-ignore', file_path],
+        capture_output=True)
+    return result.returncode == 0
+
+def get_files(search_path):
+    for pattern in IGNORE_PATTERNS:
+        if fnmatch(search_path, pattern):
+            logger.info(search_path + ' explicitly ignored (' + pattern + ')')
+            return []
+    if ignored_by_git(search_path):
+        logger.info(search_path + ' ignored by git')
+        return []
+    if search_path.endswith('/build.ninja'):
+        raise RuntimeError('Should not have tried to search a build dir')
+
+    if path.isfile(search_path):
+        logger.info('Found ' + search_path)
+        return [search_path]
+    elif path.isdir(search_path):
+        logger.info('Scanning ' + search_path)
+        result = []
+        for item in os.listdir(search_path):
+            result += get_files(path.join(search_path, item))
+        return result
 
 def get_important_files():
-    root = get_project_root()
-    result = []
-    result += get_files(path.join(root, 'src'))
-    result += get_files(path.join(root, 'include'))
-    result += get_files(path.join(root, 'example'))
-    result += get_files(path.join(root, 'demo'))
-    return result
+    return get_files(get_project_root())
 
 def print_list(name, files):
     if files:
@@ -112,6 +133,7 @@ def main():
     print_list('no license', none_files)
     print_list('multiple licenses', multiples_files)
     if none_files or multiples_files:
+        print('If some files should be excluded from the license check, add them to IGNORE_PATTERNS in ' + __file__)
         print('Failed license check')
         exit(1)
     else:
