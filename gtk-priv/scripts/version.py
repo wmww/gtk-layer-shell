@@ -22,10 +22,11 @@ COMBO_FACTOR = 1000
 
 @functools.total_ordering # implement all comparisons with just eq and lt
 class Version:
-    def __init__(self, git_name, minor, micro):
+    def __init__(self, git_name, minor, micro, released):
         self.git_name = git_name
         self.minor = minor
         self.micro = micro
+        self.released = released
 
     def __eq__(self, other):
         return self.minor == other.minor and self.micro == other.micro
@@ -46,11 +47,17 @@ class Version:
             self <= max_supported_version and
             self != bad_release_3_24_19)
 
+    def is_released(self):
+        return self.released
+
     def get_combo(self):
         return self.minor * 1000 + self.micro
 
     def __str__(self):
-        return 'v3.' + str(self.minor) + '.' + str(self.micro)
+        result = 'v3.' + str(self.minor) + '.' + str(self.micro)
+        if not self.is_released():
+            result += ' (unreleased)'
+        return result
 
     def c_id(self):
         '''a string suitable for a C identifier'''
@@ -61,7 +68,15 @@ def parse_tag(tag):
     if match:
         minor = int(match.group(1))
         micro = int(match.group(2))
-        return Version(tag, minor, micro)
+        return Version(tag, minor, micro, True)
+    else:
+        return None
+
+def parse_branch(branch):
+    match = re.search(r'^gtk\-3\-(\d+)$', branch)
+    if match:
+        minor = int(match.group(1))
+        return minor
     else:
         return None
 
@@ -69,12 +84,22 @@ min_supported_version = parse_tag(MIN_SUPPORTED_GTK)
 max_supported_version = parse_tag(MAX_SUPPORTED_GTK)
 bad_release_3_24_19 = parse_tag('3.24.19') # this is not a good release
 
-def parse_tag_list(tags):
+def parse_tags_and_branches(tags, branches):
     result = []
     for tag in tags:
         version = parse_tag(tag)
         if version and version.is_supported():
             result.append(version)
+    highest_micro = {}
+    for v in result:
+        highest_micro[v.minor] = max(v.micro, highest_micro.get(v.minor, -1))
+    for branch in branches:
+        minor = parse_branch(branch)
+        if minor is not None:
+            micro = highest_micro.get(minor, -1) + 1
+            version = Version(branch, minor, micro, False)
+            if version.is_supported():
+                result.append(version)
     result.sort()
     logger.info('Found ' + str(len(result)) + ' supported versions')
     return result

@@ -31,6 +31,19 @@ class Repo:
                 cwd=self.repo_dir
                 ).check_returncode()
 
+    def get_branches(self):
+        result = subprocess.run(
+            ['git', 'branch', '-r'],
+            capture_output=True,
+            encoding='utf-8',
+            cwd=self.repo_dir)
+        result.check_returncode()
+        branches = result.stdout.splitlines()
+        # strip of origin/
+        branches = [branch.split('/')[-1] for branch in branches]
+        logger.info('Found ' + str(len(branches)) + ' git branches')
+        return branches
+
     def get_tags(self):
         '''Returns a list of git tags'''
         result = subprocess.run(

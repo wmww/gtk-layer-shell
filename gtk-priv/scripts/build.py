@@ -17,7 +17,7 @@ from os import path
 import os
 import sys
 
-from version import parse_tag_list
+from version import parse_tags_and_branches
 from repo import Repo
 from code import Project
 from config import STRUCT_LIST
@@ -39,11 +39,12 @@ def build():
         os.makedirs(BUILD_DIR)
     repo = Repo(GTK_GIT_URL, REPO_DIR)
     tags = repo.get_tags()
-    versions = parse_tag_list(tags)
+    branches = repo.get_branches()
+    versions = parse_tags_and_branches(tags, branches)
     project = Project(REPO_DIR, STRUCT_LIST)
     for i, v in enumerate(versions):
         percent = int(((i + 1) / len(versions)) * 1000) / 10
-        logger.info('[' + str(percent) + '%] Checking out ' + str(v))
+        logger.info('[' + str(percent) + '%] Checking out ' + v.get_checkout_name())
         repo.checkout(v.get_checkout_name())
         project.update(v)
     project.simplify()

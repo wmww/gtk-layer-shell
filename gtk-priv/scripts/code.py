@@ -358,7 +358,8 @@ class Struct:
         body += '\n'
         body += INDENT + 'switch (combo) {\n'
         for v in self.supported_versions:
-            body += INDENT * 2 + 'case ' + str(v.get_combo()) + ':\n'
+            if v.is_released():
+                body += INDENT * 2 + 'case ' + str(v.get_combo()) + ':\n'
         body += INDENT * 3 + 'break;\n'
         body += '\n'
         body += INDENT * 2 + 'default:\n'
