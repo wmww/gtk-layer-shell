@@ -31,7 +31,7 @@ GTK Layer Shell is packaged for the following distros. If you've packaged it for
 
 To install these dependencies on Ubuntu 18.04 and later:
 ```
-sudo apt install meson libwayland-dev libgtk-3-dev gobject-introspection libgirepository1.0-dev
+sudo apt install meson libwayland-dev libgtk-3-dev gobject-introspection libgirepository1.0-dev gtk-doc-tools
 ```
 
 ### Meson options
