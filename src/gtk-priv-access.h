@@ -16,6 +16,6 @@
 
 // This only has an effect the first time it's called
 // It enables gtk_window_hack_get_position () working later
-void gdk_window_hack_init (GdkWindow *gdk_window);
+void gtk_priv_access_init (GdkWindow *gdk_window);
 
 #endif // GDK_WINDOW_HACK_H

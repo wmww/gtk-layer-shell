@@ -41,7 +41,7 @@ typedef void (*MoveToRectFunc) (GdkWindow *window,
 static MoveToRectFunc gdk_window_move_to_rect_real = NULL;
 
 static GdkWindow *
-gdk_window_hack_get_transient_for (GdkWindow *gdk_window)
+gdk_window_get_priv_transient_for (GdkWindow *gdk_window)
 {
     GdkWindow *window_transient_for = gdk_window_priv_get_transient_for (gdk_window);
     GdkWindowImplWayland *window_impl = (GdkWindowImplWayland *)gdk_window_priv_get_impl (gdk_window);
@@ -74,7 +74,7 @@ gdk_window_move_to_rect_impl_override (GdkWindow *window,
                                   rect_anchor_dx,
                                   rect_anchor_dy);
 
-    GdkWindow *transient_for_gdk_window = gdk_window_hack_get_transient_for (window);
+    GdkWindow *transient_for_gdk_window = gdk_window_get_priv_transient_for (window);
     CustomShellSurface *transient_for_shell_surface = NULL;
     GdkWindow *toplevel_gdk_window = transient_for_gdk_window;
     while (toplevel_gdk_window) {
@@ -83,7 +83,7 @@ gdk_window_move_to_rect_impl_override (GdkWindow *window,
         transient_for_shell_surface = gtk_window_get_custom_shell_surface (toplevel_gtk_window);
         if (transient_for_shell_surface)
             break;
-        toplevel_gdk_window = gdk_window_hack_get_transient_for (toplevel_gdk_window);
+        toplevel_gdk_window = gdk_window_get_priv_transient_for (toplevel_gdk_window);
     }
     if (transient_for_shell_surface) {
         g_return_if_fail (rect);
@@ -104,7 +104,7 @@ gdk_window_move_to_rect_impl_override (GdkWindow *window,
 }
 
 void
-gdk_window_hack_init (GdkWindow *gdk_window)
+gtk_priv_access_init (GdkWindow *gdk_window)
 {
     // Don't do anything once this has run successfully once
     if (gdk_window_move_to_rect_real)
