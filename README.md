@@ -10,6 +10,9 @@ GTK Layer Shell is packaged for the following distros
 - [Ubuntu](https://packages.ubuntu.com/source/focal/gtk-layer-shell) (>=20.04)
 - [Fedora](https://src.fedoraproject.org/rpms/gtk-layer-shell) (>=31)
 - [Arch](https://www.archlinux.org/packages/community/x86_64/gtk-layer-shell/)
+- [Gentoo](https://packages.gentoo.org/packages/gui-libs/gtk-layer-shell)
+- [Alpine](https://pkgs.alpinelinux.org/package/edge/community/x86/gtk-layer-shell)
+- [SUSE](https://packagehub.suse.com/packages/gtk-layer-shell/)
 
 ## Building from source
 1. Clone this repo
