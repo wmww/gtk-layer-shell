@@ -13,9 +13,17 @@
 #define GDK_WINDOW_HACK_H
 
 #include <gdk/gdk.h>
+#include <stdint.h>
 
 // This only has an effect the first time it's called
 // It enables gtk_window_hack_get_position () working later
-void gdk_window_hack_init (GdkWindow *gdk_window);
+void gtk_priv_access_init (GdkWindow *gdk_window);
+
+// Returns the laster serial from a user input event
+// Can be used for popups grabs and such
+uint32_t gdk_window_get_priv_latest_serial (GdkSeat *seat);
+
+// Returns the GdkSeat that can be used for popup grabs
+GdkSeat *gdk_window_get_priv_grab_seat (GdkWindow *gdk_window);
 
 #endif // GDK_WINDOW_HACK_H

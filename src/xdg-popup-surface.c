@@ -14,6 +14,7 @@
 #include "custom-shell-surface.h"
 #include "gtk-wayland.h"
 #include "simple-conversions.h"
+#include "gtk-priv-access.h"
 
 #include "xdg-shell-client.h"
 
@@ -126,6 +127,26 @@ xdg_popup_surface_get_anchor_rect (XdgPopupSurface *self, GdkRectangle *rect)
 }
 
 static void
+xdg_popup_surface_maybe_grab (XdgPopupSurface *self, GdkWindow *gdk_window)
+{
+    GdkSeat *grab_gdk_seat = gdk_window_get_priv_grab_seat (gdk_window);
+    if (!grab_gdk_seat) {
+        // If we really wanted a seat we could get the default one
+        // but grab_gdk_seat being null is an indication we should not grab
+        return;
+    }
+
+    struct wl_seat *grab_wl_seat = gdk_wayland_seat_get_wl_seat (grab_gdk_seat);
+    if (!grab_wl_seat)
+        return; // unlikely
+
+    uint32_t serial = gdk_window_get_priv_latest_serial (grab_gdk_seat);
+
+    // serial might be 0, but the compositor might not care; YOLO
+    xdg_popup_grab(self->xdg_popup, grab_wl_seat, serial);
+}
+
+static void
 xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
 {
     XdgPopupSurface *self = (XdgPopupSurface *)super;
@@ -166,6 +187,7 @@ xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
 
     xdg_positioner_destroy (positioner);
 
+    xdg_popup_surface_maybe_grab (self, gdk_window);
     xdg_surface_set_window_geometry (self->xdg_surface,
                                      self->geom.x,
                                      self->geom.y,

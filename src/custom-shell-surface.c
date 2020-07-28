@@ -40,7 +40,7 @@ custom_shell_surface_on_window_realize (GtkWidget *widget, CustomShellSurface *s
     GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (self->private->gtk_window));
     g_return_if_fail (gdk_window);
 
-    gdk_window_hack_init (gdk_window);
+    gtk_priv_access_init (gdk_window);
     gdk_wayland_window_set_use_custom_surface (gdk_window);
 }
 
