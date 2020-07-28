@@ -21,11 +21,17 @@ typedef enum _PositionMethod
 } PositionMethod;
 typedef void *EGLSurface;
 typedef void *GdkWaylandWindowExported;
+typedef void *GdkWaylandTabletToolData;
 
 #include "gdk_window_impl_priv.h"
 #include "gdk_window_priv.h"
 #include "gdk_window_impl_wayland_priv.h"
 #include "gdk_window_impl_class_priv.h"
+#include "gdk_wayland_pointer_frame_data_priv.h"
+#include "gdk_wayland_pointer_data_priv.h"
+#include "gdk_wayland_seat_priv.h"
+#include "gdk_wayland_touch_data_priv.h"
+#include "gdk_wayland_tablet_data_priv.h"
 
 #include <glib-2.0/glib.h>
 
@@ -54,6 +60,69 @@ gdk_window_get_priv_transient_for (GdkWindow *gdk_window)
             return wayland_transient_for;
     }
     return window_transient_for;
+}
+
+uint32_t
+gdk_window_get_priv_latest_serial (GdkSeat *seat)
+{
+    uint32_t serial = 0;
+    GdkWaylandSeat *wayland_seat = (GdkWaylandSeat *)seat;
+
+    serial = MAX(serial, gdk_wayland_seat_priv_get_keyboard_key_serial (wayland_seat));
+
+    GdkWaylandPointerData* pointer_data = gdk_wayland_seat_priv_get_pointer_info_ptr (wayland_seat);
+    serial = MAX(serial, gdk_wayland_pointer_data_priv_get_press_serial (pointer_data));
+
+    GHashTableIter i;
+    GdkWaylandTouchData *touch;
+    g_hash_table_iter_init (&i, gdk_wayland_seat_priv_get_touches (wayland_seat));
+    while (g_hash_table_iter_next (&i, NULL, (gpointer *)&touch))
+        serial = MAX(serial, gdk_wayland_touch_data_priv_get_touch_down_serial (touch));
+
+    for (GList *l = gdk_wayland_seat_priv_get_tablets (wayland_seat); l; l = l->next) {
+        GdkWaylandTabletData *tablet_data = l->data;
+        GdkWaylandPointerData *pointer_data = gdk_wayland_tablet_data_priv_get_pointer_info_ptr (tablet_data);
+        serial = MAX(serial, gdk_wayland_pointer_data_priv_get_press_serial (pointer_data));
+    }
+
+    return serial;
+}
+
+static GdkSeat *
+gdk_window_get_priv_grab_seat_for_single_window (GdkWindow *gdk_window)
+{
+    if (!gdk_window)
+        return NULL;
+
+    GdkWindowImplWayland *window_impl = (GdkWindowImplWayland *)gdk_window_priv_get_impl (gdk_window);
+    return gdk_window_impl_wayland_priv_get_grab_input_seat (window_impl);
+}
+
+GdkSeat *
+gdk_window_get_priv_grab_seat (GdkWindow *gdk_window)
+{
+    GdkSeat *seat = NULL;
+
+    seat = gdk_window_get_priv_grab_seat_for_single_window (gdk_window);
+    if (seat)
+        return seat;
+
+    // see the comment in find_grab_input_seat ()
+    GdkWindow* grab_window = g_object_get_data (G_OBJECT (gdk_window), "gdk-attached-grab-window");
+    seat = gdk_window_get_priv_grab_seat_for_single_window (grab_window);
+    if (seat)
+        return seat;
+
+    while (gdk_window)
+    {
+        gdk_window = gdk_window_get_priv_transient_for (gdk_window);
+
+        seat = gdk_window_get_priv_grab_seat_for_single_window (gdk_window);
+        if (seat)
+            return seat;
+    }
+
+    return NULL;
 }
 
 static void
