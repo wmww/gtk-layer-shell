@@ -840,6 +840,106 @@ struct _GdkWindowImplWayland_v3_24_17
   GHashTable *shortcuts_inhibitors;
 };
 
+// Version ID 9
+// Valid for GTK v3.24.22 (unreleased)
+struct _GdkWindowImplWayland_v3_24_22
+{
+  struct _GdkWindowImpl_v3_22_0 parent_instance;
+  GdkWindow *wrapper;
+  struct {
+    GSList *outputs;
+    struct wl_surface *wl_surface;
+    struct xdg_surface *xdg_surface;
+    struct xdg_toplevel *xdg_toplevel;
+    struct xdg_popup *xdg_popup;
+    struct zxdg_surface_v6 *zxdg_surface_v6;
+    struct zxdg_toplevel_v6 *zxdg_toplevel_v6;
+    struct zxdg_popup_v6 *zxdg_popup_v6;
+    struct gtk_surface1 *gtk_surface;
+    struct wl_subsurface *wl_subsurface;
+    struct wl_egl_window *egl_window;
+    struct wl_egl_window *dummy_egl_window;
+    struct zxdg_exported_v1 *xdg_exported;
+    struct org_kde_kwin_server_decoration *server_decoration;
+  } display_server;
+  EGLSurface egl_surface;
+  EGLSurface dummy_egl_surface;
+  unsigned int initial_configure_received : 1;
+  unsigned int configuring_popup : 1;
+  unsigned int mapped : 1;
+  unsigned int use_custom_surface : 1;
+  unsigned int pending_buffer_attached : 1;
+  unsigned int pending_commit : 1;
+  unsigned int awaiting_frame : 1;
+  unsigned int using_csd : 1;
+  GdkWindowTypeHint hint;
+  GdkWindow *transient_for;
+  GdkWindow *popup_parent;
+  PositionMethod position_method;
+  cairo_surface_t *staging_cairo_surface;
+  cairo_surface_t *committed_cairo_surface;
+  cairo_surface_t *backfill_cairo_surface;
+  int pending_buffer_offset_x;
+  int pending_buffer_offset_y;
+  int subsurface_x;
+  int subsurface_y;
+  gchar *title;
+  struct {
+    gboolean was_set;
+    gchar *application_id;
+    gchar *app_menu_path;
+    gchar *menubar_path;
+    gchar *window_object_path;
+    gchar *application_object_path;
+    gchar *unique_bus_name;
+  } application;
+  GdkGeometry geometry_hints;
+  GdkWindowHints geometry_mask;
+  GdkSeat *grab_input_seat;
+  gint64 pending_frame_counter;
+  guint32 scale;
+  int margin_left;
+  int margin_right;
+  int margin_top;
+  int margin_bottom;
+  gboolean margin_dirty;
+  int initial_fullscreen_monitor;
+  cairo_region_t *opaque_region;
+  gboolean opaque_region_dirty;
+  cairo_region_t *input_region;
+  gboolean input_region_dirty;
+  cairo_region_t *staged_updates_region;
+  int saved_width;
+  int saved_height;
+  gboolean saved_size_changed;
+  int unconfigured_width;
+  int unconfigured_height;
+  int fixed_size_width;
+  int fixed_size_height;
+  gulong parent_surface_committed_handler;
+  struct {
+    GdkRectangle rect;
+    GdkGravity rect_anchor;
+    GdkGravity window_anchor;
+    GdkAnchorHints anchor_hints;
+    gint rect_anchor_dx;
+    gint rect_anchor_dy;
+  } pending_move_to_rect;
+  struct {
+    int width;
+    int height;
+    GdkWindowState state;
+  } pending;
+  struct {
+    char *handle;
+    int export_count;
+    GList *closures;
+    guint idle_source_id;
+  } exported;
+  struct zxdg_imported_v1 *imported_transient_for;
+  GHashTable *shortcuts_inhibitors;
+};
+
 // For internal use only
 int gdk_window_impl_wayland_priv_get_version_id() {
   static int version_id = -1;
@@ -919,7 +1019,9 @@ int gdk_window_impl_wayland_priv_get_version_id() {
           gtk_get_micro_version());
     }
   
-    if (combo >= 24017) {
+    if (combo >= 24022) {
+      version_id = 9;
+    } else if (combo >= 24017) {
       version_id = 8;
     } else if (combo >= 24004) {
       version_id = 7;
@@ -956,6 +1058,7 @@ GdkWindowImpl * gdk_window_impl_wayland_priv_get_parent_instance_ptr(GdkWindowIm
     case 6: return (GdkWindowImpl *)&((struct _GdkWindowImplWayland_v3_23_3*)self)->parent_instance;
     case 7: return (GdkWindowImpl *)&((struct _GdkWindowImplWayland_v3_24_4*)self)->parent_instance;
     case 8: return (GdkWindowImpl *)&((struct _GdkWindowImplWayland_v3_24_17*)self)->parent_instance;
+    case 9: return (GdkWindowImpl *)&((struct _GdkWindowImplWayland_v3_24_22*)self)->parent_instance;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -973,6 +1076,7 @@ GdkWindow * gdk_window_impl_wayland_priv_get_wrapper(GdkWindowImplWayland * self
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->wrapper;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->wrapper;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->wrapper;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->wrapper;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -988,6 +1092,7 @@ void gdk_window_impl_wayland_priv_set_wrapper(GdkWindowImplWayland * self, GdkWi
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->wrapper = wrapper; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->wrapper = wrapper; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->wrapper = wrapper; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->wrapper = wrapper; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1005,6 +1110,7 @@ GSList * gdk_window_impl_wayland_priv_get_display_server_outputs(GdkWindowImplWa
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.outputs;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.outputs;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.outputs;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.outputs;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1020,6 +1126,7 @@ void gdk_window_impl_wayland_priv_set_display_server_outputs(GdkWindowImplWaylan
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.outputs = display_server_outputs; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.outputs = display_server_outputs; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.outputs = display_server_outputs; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.outputs = display_server_outputs; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1037,6 +1144,7 @@ struct wl_surface * gdk_window_impl_wayland_priv_get_display_server_wl_surface(G
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.wl_surface;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.wl_surface;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.wl_surface;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.wl_surface;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1052,6 +1160,7 @@ void gdk_window_impl_wayland_priv_set_display_server_wl_surface(GdkWindowImplWay
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.wl_surface = display_server_wl_surface; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.wl_surface = display_server_wl_surface; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.wl_surface = display_server_wl_surface; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.wl_surface = display_server_wl_surface; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1069,6 +1178,7 @@ struct gtk_surface1 * gdk_window_impl_wayland_priv_get_display_server_gtk_surfac
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.gtk_surface;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.gtk_surface;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.gtk_surface;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.gtk_surface;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1084,6 +1194,7 @@ void gdk_window_impl_wayland_priv_set_display_server_gtk_surface(GdkWindowImplWa
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.gtk_surface = display_server_gtk_surface; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.gtk_surface = display_server_gtk_surface; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.gtk_surface = display_server_gtk_surface; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.gtk_surface = display_server_gtk_surface; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1101,6 +1212,7 @@ struct wl_subsurface * gdk_window_impl_wayland_priv_get_display_server_wl_subsur
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.wl_subsurface;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.wl_subsurface;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.wl_subsurface;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.wl_subsurface;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1116,6 +1228,7 @@ void gdk_window_impl_wayland_priv_set_display_server_wl_subsurface(GdkWindowImpl
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.wl_subsurface = display_server_wl_subsurface; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.wl_subsurface = display_server_wl_subsurface; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.wl_subsurface = display_server_wl_subsurface; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.wl_subsurface = display_server_wl_subsurface; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1133,6 +1246,7 @@ struct wl_egl_window * gdk_window_impl_wayland_priv_get_display_server_egl_windo
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.egl_window;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.egl_window;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.egl_window;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.egl_window;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1148,6 +1262,7 @@ void gdk_window_impl_wayland_priv_set_display_server_egl_window(GdkWindowImplWay
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.egl_window = display_server_egl_window; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.egl_window = display_server_egl_window; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.egl_window = display_server_egl_window; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.egl_window = display_server_egl_window; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1165,6 +1280,7 @@ struct wl_egl_window * gdk_window_impl_wayland_priv_get_display_server_dummy_egl
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.dummy_egl_window;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.dummy_egl_window;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.dummy_egl_window;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.dummy_egl_window;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1180,6 +1296,7 @@ void gdk_window_impl_wayland_priv_set_display_server_dummy_egl_window(GdkWindowI
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.dummy_egl_window = display_server_dummy_egl_window; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.dummy_egl_window = display_server_dummy_egl_window; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.dummy_egl_window = display_server_dummy_egl_window; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.dummy_egl_window = display_server_dummy_egl_window; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1197,6 +1314,7 @@ struct zxdg_exported_v1 * gdk_window_impl_wayland_priv_get_display_server_xdg_ex
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.xdg_exported;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.xdg_exported;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.xdg_exported;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.xdg_exported;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1212,6 +1330,7 @@ void gdk_window_impl_wayland_priv_set_display_server_xdg_exported(GdkWindowImplW
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.xdg_exported = display_server_xdg_exported; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.xdg_exported = display_server_xdg_exported; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.xdg_exported = display_server_xdg_exported; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.xdg_exported = display_server_xdg_exported; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1229,6 +1348,7 @@ EGLSurface * gdk_window_impl_wayland_priv_get_egl_surface_ptr(GdkWindowImplWayla
     case 6: return (EGLSurface *)&((struct _GdkWindowImplWayland_v3_23_3*)self)->egl_surface;
     case 7: return (EGLSurface *)&((struct _GdkWindowImplWayland_v3_24_4*)self)->egl_surface;
     case 8: return (EGLSurface *)&((struct _GdkWindowImplWayland_v3_24_17*)self)->egl_surface;
+    case 9: return (EGLSurface *)&((struct _GdkWindowImplWayland_v3_24_22*)self)->egl_surface;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1246,6 +1366,7 @@ EGLSurface * gdk_window_impl_wayland_priv_get_dummy_egl_surface_ptr(GdkWindowImp
     case 6: return (EGLSurface *)&((struct _GdkWindowImplWayland_v3_23_3*)self)->dummy_egl_surface;
     case 7: return (EGLSurface *)&((struct _GdkWindowImplWayland_v3_24_4*)self)->dummy_egl_surface;
     case 8: return (EGLSurface *)&((struct _GdkWindowImplWayland_v3_24_17*)self)->dummy_egl_surface;
+    case 9: return (EGLSurface *)&((struct _GdkWindowImplWayland_v3_24_22*)self)->dummy_egl_surface;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1263,6 +1384,7 @@ unsigned int gdk_window_impl_wayland_priv_get_initial_configure_received(GdkWind
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->initial_configure_received;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->initial_configure_received;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->initial_configure_received;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->initial_configure_received;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1278,6 +1400,7 @@ void gdk_window_impl_wayland_priv_set_initial_configure_received(GdkWindowImplWa
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->initial_configure_received = initial_configure_received; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->initial_configure_received = initial_configure_received; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->initial_configure_received = initial_configure_received; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->initial_configure_received = initial_configure_received; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1295,6 +1418,7 @@ unsigned int gdk_window_impl_wayland_priv_get_mapped(GdkWindowImplWayland * self
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->mapped;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->mapped;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->mapped;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->mapped;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1310,6 +1434,7 @@ void gdk_window_impl_wayland_priv_set_mapped(GdkWindowImplWayland * self, unsign
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->mapped = mapped; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->mapped = mapped; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->mapped = mapped; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->mapped = mapped; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1327,6 +1452,7 @@ unsigned int gdk_window_impl_wayland_priv_get_use_custom_surface(GdkWindowImplWa
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->use_custom_surface;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->use_custom_surface;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->use_custom_surface;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->use_custom_surface;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1342,6 +1468,7 @@ void gdk_window_impl_wayland_priv_set_use_custom_surface(GdkWindowImplWayland * 
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->use_custom_surface = use_custom_surface; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->use_custom_surface = use_custom_surface; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->use_custom_surface = use_custom_surface; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->use_custom_surface = use_custom_surface; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1359,6 +1486,7 @@ unsigned int gdk_window_impl_wayland_priv_get_pending_buffer_attached(GdkWindowI
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->pending_buffer_attached;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->pending_buffer_attached;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->pending_buffer_attached;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->pending_buffer_attached;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1374,6 +1502,7 @@ void gdk_window_impl_wayland_priv_set_pending_buffer_attached(GdkWindowImplWayla
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->pending_buffer_attached = pending_buffer_attached; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->pending_buffer_attached = pending_buffer_attached; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->pending_buffer_attached = pending_buffer_attached; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->pending_buffer_attached = pending_buffer_attached; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1391,6 +1520,7 @@ unsigned int gdk_window_impl_wayland_priv_get_pending_commit(GdkWindowImplWaylan
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->pending_commit;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->pending_commit;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->pending_commit;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->pending_commit;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1406,6 +1536,7 @@ void gdk_window_impl_wayland_priv_set_pending_commit(GdkWindowImplWayland * self
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->pending_commit = pending_commit; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->pending_commit = pending_commit; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->pending_commit = pending_commit; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->pending_commit = pending_commit; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1423,6 +1554,7 @@ unsigned int gdk_window_impl_wayland_priv_get_awaiting_frame(GdkWindowImplWaylan
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->awaiting_frame;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->awaiting_frame;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->awaiting_frame;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->awaiting_frame;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1438,6 +1570,7 @@ void gdk_window_impl_wayland_priv_set_awaiting_frame(GdkWindowImplWayland * self
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->awaiting_frame = awaiting_frame; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->awaiting_frame = awaiting_frame; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->awaiting_frame = awaiting_frame; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->awaiting_frame = awaiting_frame; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1455,6 +1588,7 @@ GdkWindowTypeHint * gdk_window_impl_wayland_priv_get_hint_ptr(GdkWindowImplWayla
     case 6: return (GdkWindowTypeHint *)&((struct _GdkWindowImplWayland_v3_23_3*)self)->hint;
     case 7: return (GdkWindowTypeHint *)&((struct _GdkWindowImplWayland_v3_24_4*)self)->hint;
     case 8: return (GdkWindowTypeHint *)&((struct _GdkWindowImplWayland_v3_24_17*)self)->hint;
+    case 9: return (GdkWindowTypeHint *)&((struct _GdkWindowImplWayland_v3_24_22*)self)->hint;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1472,6 +1606,7 @@ GdkWindow * gdk_window_impl_wayland_priv_get_transient_for(GdkWindowImplWayland 
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->transient_for;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->transient_for;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->transient_for;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->transient_for;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1487,6 +1622,7 @@ void gdk_window_impl_wayland_priv_set_transient_for(GdkWindowImplWayland * self,
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->transient_for = transient_for; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->transient_for = transient_for; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->transient_for = transient_for; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->transient_for = transient_for; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1504,6 +1640,7 @@ GdkWindow * gdk_window_impl_wayland_priv_get_popup_parent(GdkWindowImplWayland *
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->popup_parent;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->popup_parent;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->popup_parent;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->popup_parent;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1519,6 +1656,7 @@ void gdk_window_impl_wayland_priv_set_popup_parent(GdkWindowImplWayland * self, 
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->popup_parent = popup_parent; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->popup_parent = popup_parent; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->popup_parent = popup_parent; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->popup_parent = popup_parent; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1536,6 +1674,7 @@ PositionMethod * gdk_window_impl_wayland_priv_get_position_method_ptr(GdkWindowI
     case 6: return (PositionMethod *)&((struct _GdkWindowImplWayland_v3_23_3*)self)->position_method;
     case 7: return (PositionMethod *)&((struct _GdkWindowImplWayland_v3_24_4*)self)->position_method;
     case 8: return (PositionMethod *)&((struct _GdkWindowImplWayland_v3_24_17*)self)->position_method;
+    case 9: return (PositionMethod *)&((struct _GdkWindowImplWayland_v3_24_22*)self)->position_method;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1553,6 +1692,7 @@ cairo_surface_t * gdk_window_impl_wayland_priv_get_staging_cairo_surface(GdkWind
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->staging_cairo_surface;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->staging_cairo_surface;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->staging_cairo_surface;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->staging_cairo_surface;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1568,6 +1708,7 @@ void gdk_window_impl_wayland_priv_set_staging_cairo_surface(GdkWindowImplWayland
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->staging_cairo_surface = staging_cairo_surface; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->staging_cairo_surface = staging_cairo_surface; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->staging_cairo_surface = staging_cairo_surface; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->staging_cairo_surface = staging_cairo_surface; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1585,6 +1726,7 @@ cairo_surface_t * gdk_window_impl_wayland_priv_get_committed_cairo_surface(GdkWi
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->committed_cairo_surface;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->committed_cairo_surface;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->committed_cairo_surface;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->committed_cairo_surface;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1600,6 +1742,7 @@ void gdk_window_impl_wayland_priv_set_committed_cairo_surface(GdkWindowImplWayla
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->committed_cairo_surface = committed_cairo_surface; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->committed_cairo_surface = committed_cairo_surface; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->committed_cairo_surface = committed_cairo_surface; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->committed_cairo_surface = committed_cairo_surface; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1617,6 +1760,7 @@ cairo_surface_t * gdk_window_impl_wayland_priv_get_backfill_cairo_surface(GdkWin
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->backfill_cairo_surface;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->backfill_cairo_surface;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->backfill_cairo_surface;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->backfill_cairo_surface;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1632,6 +1776,7 @@ void gdk_window_impl_wayland_priv_set_backfill_cairo_surface(GdkWindowImplWaylan
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->backfill_cairo_surface = backfill_cairo_surface; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->backfill_cairo_surface = backfill_cairo_surface; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->backfill_cairo_surface = backfill_cairo_surface; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->backfill_cairo_surface = backfill_cairo_surface; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1649,6 +1794,7 @@ int gdk_window_impl_wayland_priv_get_pending_buffer_offset_x(GdkWindowImplWaylan
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->pending_buffer_offset_x;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->pending_buffer_offset_x;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->pending_buffer_offset_x;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->pending_buffer_offset_x;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1664,6 +1810,7 @@ void gdk_window_impl_wayland_priv_set_pending_buffer_offset_x(GdkWindowImplWayla
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->pending_buffer_offset_x = pending_buffer_offset_x; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->pending_buffer_offset_x = pending_buffer_offset_x; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->pending_buffer_offset_x = pending_buffer_offset_x; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->pending_buffer_offset_x = pending_buffer_offset_x; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1681,6 +1828,7 @@ int gdk_window_impl_wayland_priv_get_pending_buffer_offset_y(GdkWindowImplWaylan
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->pending_buffer_offset_y;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->pending_buffer_offset_y;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->pending_buffer_offset_y;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->pending_buffer_offset_y;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1696,6 +1844,7 @@ void gdk_window_impl_wayland_priv_set_pending_buffer_offset_y(GdkWindowImplWayla
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->pending_buffer_offset_y = pending_buffer_offset_y; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->pending_buffer_offset_y = pending_buffer_offset_y; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->pending_buffer_offset_y = pending_buffer_offset_y; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->pending_buffer_offset_y = pending_buffer_offset_y; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1713,6 +1862,7 @@ gchar * gdk_window_impl_wayland_priv_get_title(GdkWindowImplWayland * self) {
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->title;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->title;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->title;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->title;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1728,6 +1878,7 @@ void gdk_window_impl_wayland_priv_set_title(GdkWindowImplWayland * self, gchar *
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->title = title; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->title = title; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->title = title; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->title = title; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1745,6 +1896,7 @@ gboolean gdk_window_impl_wayland_priv_get_application_was_set(GdkWindowImplWayla
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->application.was_set;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->application.was_set;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->application.was_set;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->application.was_set;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1760,6 +1912,7 @@ void gdk_window_impl_wayland_priv_set_application_was_set(GdkWindowImplWayland *
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->application.was_set = application_was_set; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->application.was_set = application_was_set; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->application.was_set = application_was_set; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->application.was_set = application_was_set; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1777,6 +1930,7 @@ gchar * gdk_window_impl_wayland_priv_get_application_application_id(GdkWindowImp
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->application.application_id;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->application.application_id;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->application.application_id;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->application.application_id;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1792,6 +1946,7 @@ void gdk_window_impl_wayland_priv_set_application_application_id(GdkWindowImplWa
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->application.application_id = application_application_id; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->application.application_id = application_application_id; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->application.application_id = application_application_id; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->application.application_id = application_application_id; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1809,6 +1964,7 @@ gchar * gdk_window_impl_wayland_priv_get_application_app_menu_path(GdkWindowImpl
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->application.app_menu_path;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->application.app_menu_path;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->application.app_menu_path;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->application.app_menu_path;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1824,6 +1980,7 @@ void gdk_window_impl_wayland_priv_set_application_app_menu_path(GdkWindowImplWay
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->application.app_menu_path = application_app_menu_path; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->application.app_menu_path = application_app_menu_path; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->application.app_menu_path = application_app_menu_path; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->application.app_menu_path = application_app_menu_path; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1841,6 +1998,7 @@ gchar * gdk_window_impl_wayland_priv_get_application_menubar_path(GdkWindowImplW
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->application.menubar_path;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->application.menubar_path;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->application.menubar_path;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->application.menubar_path;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1856,6 +2014,7 @@ void gdk_window_impl_wayland_priv_set_application_menubar_path(GdkWindowImplWayl
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->application.menubar_path = application_menubar_path; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->application.menubar_path = application_menubar_path; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->application.menubar_path = application_menubar_path; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->application.menubar_path = application_menubar_path; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1873,6 +2032,7 @@ gchar * gdk_window_impl_wayland_priv_get_application_window_object_path(GdkWindo
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->application.window_object_path;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->application.window_object_path;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->application.window_object_path;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->application.window_object_path;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1888,6 +2048,7 @@ void gdk_window_impl_wayland_priv_set_application_window_object_path(GdkWindowIm
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->application.window_object_path = application_window_object_path; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->application.window_object_path = application_window_object_path; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->application.window_object_path = application_window_object_path; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->application.window_object_path = application_window_object_path; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1905,6 +2066,7 @@ gchar * gdk_window_impl_wayland_priv_get_application_application_object_path(Gdk
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->application.application_object_path;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->application.application_object_path;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->application.application_object_path;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->application.application_object_path;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1920,6 +2082,7 @@ void gdk_window_impl_wayland_priv_set_application_application_object_path(GdkWin
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->application.application_object_path = application_application_object_path; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->application.application_object_path = application_application_object_path; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->application.application_object_path = application_application_object_path; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->application.application_object_path = application_application_object_path; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1937,6 +2100,7 @@ gchar * gdk_window_impl_wayland_priv_get_application_unique_bus_name(GdkWindowIm
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->application.unique_bus_name;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->application.unique_bus_name;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->application.unique_bus_name;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->application.unique_bus_name;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1952,6 +2116,7 @@ void gdk_window_impl_wayland_priv_set_application_unique_bus_name(GdkWindowImplW
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->application.unique_bus_name = application_unique_bus_name; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->application.unique_bus_name = application_unique_bus_name; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->application.unique_bus_name = application_unique_bus_name; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->application.unique_bus_name = application_unique_bus_name; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1969,6 +2134,7 @@ GdkGeometry * gdk_window_impl_wayland_priv_get_geometry_hints_ptr(GdkWindowImplW
     case 6: return (GdkGeometry *)&((struct _GdkWindowImplWayland_v3_23_3*)self)->geometry_hints;
     case 7: return (GdkGeometry *)&((struct _GdkWindowImplWayland_v3_24_4*)self)->geometry_hints;
     case 8: return (GdkGeometry *)&((struct _GdkWindowImplWayland_v3_24_17*)self)->geometry_hints;
+    case 9: return (GdkGeometry *)&((struct _GdkWindowImplWayland_v3_24_22*)self)->geometry_hints;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1986,6 +2152,7 @@ GdkWindowHints * gdk_window_impl_wayland_priv_get_geometry_mask_ptr(GdkWindowImp
     case 6: return (GdkWindowHints *)&((struct _GdkWindowImplWayland_v3_23_3*)self)->geometry_mask;
     case 7: return (GdkWindowHints *)&((struct _GdkWindowImplWayland_v3_24_4*)self)->geometry_mask;
     case 8: return (GdkWindowHints *)&((struct _GdkWindowImplWayland_v3_24_17*)self)->geometry_mask;
+    case 9: return (GdkWindowHints *)&((struct _GdkWindowImplWayland_v3_24_22*)self)->geometry_mask;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2003,6 +2170,7 @@ GdkSeat * gdk_window_impl_wayland_priv_get_grab_input_seat(GdkWindowImplWayland 
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->grab_input_seat;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->grab_input_seat;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->grab_input_seat;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->grab_input_seat;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2018,6 +2186,7 @@ void gdk_window_impl_wayland_priv_set_grab_input_seat(GdkWindowImplWayland * sel
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->grab_input_seat = grab_input_seat; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->grab_input_seat = grab_input_seat; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->grab_input_seat = grab_input_seat; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->grab_input_seat = grab_input_seat; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2035,6 +2204,7 @@ gint64 * gdk_window_impl_wayland_priv_get_pending_frame_counter_ptr(GdkWindowImp
     case 6: return (gint64 *)&((struct _GdkWindowImplWayland_v3_23_3*)self)->pending_frame_counter;
     case 7: return (gint64 *)&((struct _GdkWindowImplWayland_v3_24_4*)self)->pending_frame_counter;
     case 8: return (gint64 *)&((struct _GdkWindowImplWayland_v3_24_17*)self)->pending_frame_counter;
+    case 9: return (gint64 *)&((struct _GdkWindowImplWayland_v3_24_22*)self)->pending_frame_counter;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2052,6 +2222,7 @@ guint32 * gdk_window_impl_wayland_priv_get_scale_ptr(GdkWindowImplWayland * self
     case 6: return (guint32 *)&((struct _GdkWindowImplWayland_v3_23_3*)self)->scale;
     case 7: return (guint32 *)&((struct _GdkWindowImplWayland_v3_24_4*)self)->scale;
     case 8: return (guint32 *)&((struct _GdkWindowImplWayland_v3_24_17*)self)->scale;
+    case 9: return (guint32 *)&((struct _GdkWindowImplWayland_v3_24_22*)self)->scale;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2069,6 +2240,7 @@ int gdk_window_impl_wayland_priv_get_margin_left(GdkWindowImplWayland * self) {
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->margin_left;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->margin_left;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->margin_left;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->margin_left;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2084,6 +2256,7 @@ void gdk_window_impl_wayland_priv_set_margin_left(GdkWindowImplWayland * self, i
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->margin_left = margin_left; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->margin_left = margin_left; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->margin_left = margin_left; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->margin_left = margin_left; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2101,6 +2274,7 @@ int gdk_window_impl_wayland_priv_get_margin_right(GdkWindowImplWayland * self) {
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->margin_right;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->margin_right;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->margin_right;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->margin_right;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2116,6 +2290,7 @@ void gdk_window_impl_wayland_priv_set_margin_right(GdkWindowImplWayland * self, 
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->margin_right = margin_right; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->margin_right = margin_right; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->margin_right = margin_right; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->margin_right = margin_right; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2133,6 +2308,7 @@ int gdk_window_impl_wayland_priv_get_margin_top(GdkWindowImplWayland * self) {
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->margin_top;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->margin_top;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->margin_top;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->margin_top;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2148,6 +2324,7 @@ void gdk_window_impl_wayland_priv_set_margin_top(GdkWindowImplWayland * self, in
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->margin_top = margin_top; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->margin_top = margin_top; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->margin_top = margin_top; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->margin_top = margin_top; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2165,6 +2342,7 @@ int gdk_window_impl_wayland_priv_get_margin_bottom(GdkWindowImplWayland * self) 
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->margin_bottom;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->margin_bottom;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->margin_bottom;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->margin_bottom;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2180,6 +2358,7 @@ void gdk_window_impl_wayland_priv_set_margin_bottom(GdkWindowImplWayland * self,
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->margin_bottom = margin_bottom; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->margin_bottom = margin_bottom; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->margin_bottom = margin_bottom; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->margin_bottom = margin_bottom; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2197,6 +2376,7 @@ gboolean gdk_window_impl_wayland_priv_get_margin_dirty(GdkWindowImplWayland * se
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->margin_dirty;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->margin_dirty;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->margin_dirty;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->margin_dirty;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2212,6 +2392,7 @@ void gdk_window_impl_wayland_priv_set_margin_dirty(GdkWindowImplWayland * self, 
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->margin_dirty = margin_dirty; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->margin_dirty = margin_dirty; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->margin_dirty = margin_dirty; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->margin_dirty = margin_dirty; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2229,6 +2410,7 @@ int gdk_window_impl_wayland_priv_get_initial_fullscreen_monitor(GdkWindowImplWay
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->initial_fullscreen_monitor;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->initial_fullscreen_monitor;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->initial_fullscreen_monitor;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->initial_fullscreen_monitor;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2244,6 +2426,7 @@ void gdk_window_impl_wayland_priv_set_initial_fullscreen_monitor(GdkWindowImplWa
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->initial_fullscreen_monitor = initial_fullscreen_monitor; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->initial_fullscreen_monitor = initial_fullscreen_monitor; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->initial_fullscreen_monitor = initial_fullscreen_monitor; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->initial_fullscreen_monitor = initial_fullscreen_monitor; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2261,6 +2444,7 @@ cairo_region_t * gdk_window_impl_wayland_priv_get_opaque_region(GdkWindowImplWay
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->opaque_region;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->opaque_region;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->opaque_region;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->opaque_region;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2276,6 +2460,7 @@ void gdk_window_impl_wayland_priv_set_opaque_region(GdkWindowImplWayland * self,
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->opaque_region = opaque_region; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->opaque_region = opaque_region; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->opaque_region = opaque_region; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->opaque_region = opaque_region; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2293,6 +2478,7 @@ gboolean gdk_window_impl_wayland_priv_get_opaque_region_dirty(GdkWindowImplWayla
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->opaque_region_dirty;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->opaque_region_dirty;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->opaque_region_dirty;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->opaque_region_dirty;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2308,6 +2494,7 @@ void gdk_window_impl_wayland_priv_set_opaque_region_dirty(GdkWindowImplWayland *
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->opaque_region_dirty = opaque_region_dirty; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->opaque_region_dirty = opaque_region_dirty; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->opaque_region_dirty = opaque_region_dirty; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->opaque_region_dirty = opaque_region_dirty; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2325,6 +2512,7 @@ cairo_region_t * gdk_window_impl_wayland_priv_get_input_region(GdkWindowImplWayl
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->input_region;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->input_region;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->input_region;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->input_region;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2340,6 +2528,7 @@ void gdk_window_impl_wayland_priv_set_input_region(GdkWindowImplWayland * self, 
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->input_region = input_region; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->input_region = input_region; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->input_region = input_region; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->input_region = input_region; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2357,6 +2546,7 @@ gboolean gdk_window_impl_wayland_priv_get_input_region_dirty(GdkWindowImplWaylan
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->input_region_dirty;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->input_region_dirty;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->input_region_dirty;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->input_region_dirty;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2372,6 +2562,7 @@ void gdk_window_impl_wayland_priv_set_input_region_dirty(GdkWindowImplWayland * 
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->input_region_dirty = input_region_dirty; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->input_region_dirty = input_region_dirty; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->input_region_dirty = input_region_dirty; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->input_region_dirty = input_region_dirty; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2389,6 +2580,7 @@ cairo_region_t * gdk_window_impl_wayland_priv_get_staged_updates_region(GdkWindo
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->staged_updates_region;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->staged_updates_region;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->staged_updates_region;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->staged_updates_region;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2404,6 +2596,7 @@ void gdk_window_impl_wayland_priv_set_staged_updates_region(GdkWindowImplWayland
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->staged_updates_region = staged_updates_region; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->staged_updates_region = staged_updates_region; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->staged_updates_region = staged_updates_region; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->staged_updates_region = staged_updates_region; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2421,6 +2614,7 @@ int gdk_window_impl_wayland_priv_get_saved_width(GdkWindowImplWayland * self) {
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->saved_width;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->saved_width;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->saved_width;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->saved_width;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2436,6 +2630,7 @@ void gdk_window_impl_wayland_priv_set_saved_width(GdkWindowImplWayland * self, i
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->saved_width = saved_width; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->saved_width = saved_width; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->saved_width = saved_width; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->saved_width = saved_width; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2453,6 +2648,7 @@ int gdk_window_impl_wayland_priv_get_saved_height(GdkWindowImplWayland * self) {
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->saved_height;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->saved_height;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->saved_height;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->saved_height;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2468,6 +2664,7 @@ void gdk_window_impl_wayland_priv_set_saved_height(GdkWindowImplWayland * self, 
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->saved_height = saved_height; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->saved_height = saved_height; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->saved_height = saved_height; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->saved_height = saved_height; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2485,6 +2682,7 @@ gulong * gdk_window_impl_wayland_priv_get_parent_surface_committed_handler_ptr(G
     case 6: return (gulong *)&((struct _GdkWindowImplWayland_v3_23_3*)self)->parent_surface_committed_handler;
     case 7: return (gulong *)&((struct _GdkWindowImplWayland_v3_24_4*)self)->parent_surface_committed_handler;
     case 8: return (gulong *)&((struct _GdkWindowImplWayland_v3_24_17*)self)->parent_surface_committed_handler;
+    case 9: return (gulong *)&((struct _GdkWindowImplWayland_v3_24_22*)self)->parent_surface_committed_handler;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2502,6 +2700,7 @@ GdkRectangle * gdk_window_impl_wayland_priv_get_pending_move_to_rect_rect_ptr(Gd
     case 6: return (GdkRectangle *)&((struct _GdkWindowImplWayland_v3_23_3*)self)->pending_move_to_rect.rect;
     case 7: return (GdkRectangle *)&((struct _GdkWindowImplWayland_v3_24_4*)self)->pending_move_to_rect.rect;
     case 8: return (GdkRectangle *)&((struct _GdkWindowImplWayland_v3_24_17*)self)->pending_move_to_rect.rect;
+    case 9: return (GdkRectangle *)&((struct _GdkWindowImplWayland_v3_24_22*)self)->pending_move_to_rect.rect;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2519,6 +2718,7 @@ GdkGravity * gdk_window_impl_wayland_priv_get_pending_move_to_rect_rect_anchor_p
     case 6: return (GdkGravity *)&((struct _GdkWindowImplWayland_v3_23_3*)self)->pending_move_to_rect.rect_anchor;
     case 7: return (GdkGravity *)&((struct _GdkWindowImplWayland_v3_24_4*)self)->pending_move_to_rect.rect_anchor;
     case 8: return (GdkGravity *)&((struct _GdkWindowImplWayland_v3_24_17*)self)->pending_move_to_rect.rect_anchor;
+    case 9: return (GdkGravity *)&((struct _GdkWindowImplWayland_v3_24_22*)self)->pending_move_to_rect.rect_anchor;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2536,6 +2736,7 @@ GdkGravity * gdk_window_impl_wayland_priv_get_pending_move_to_rect_window_anchor
     case 6: return (GdkGravity *)&((struct _GdkWindowImplWayland_v3_23_3*)self)->pending_move_to_rect.window_anchor;
     case 7: return (GdkGravity *)&((struct _GdkWindowImplWayland_v3_24_4*)self)->pending_move_to_rect.window_anchor;
     case 8: return (GdkGravity *)&((struct _GdkWindowImplWayland_v3_24_17*)self)->pending_move_to_rect.window_anchor;
+    case 9: return (GdkGravity *)&((struct _GdkWindowImplWayland_v3_24_22*)self)->pending_move_to_rect.window_anchor;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2553,6 +2754,7 @@ GdkAnchorHints * gdk_window_impl_wayland_priv_get_pending_move_to_rect_anchor_hi
     case 6: return (GdkAnchorHints *)&((struct _GdkWindowImplWayland_v3_23_3*)self)->pending_move_to_rect.anchor_hints;
     case 7: return (GdkAnchorHints *)&((struct _GdkWindowImplWayland_v3_24_4*)self)->pending_move_to_rect.anchor_hints;
     case 8: return (GdkAnchorHints *)&((struct _GdkWindowImplWayland_v3_24_17*)self)->pending_move_to_rect.anchor_hints;
+    case 9: return (GdkAnchorHints *)&((struct _GdkWindowImplWayland_v3_24_22*)self)->pending_move_to_rect.anchor_hints;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2570,6 +2772,7 @@ gint gdk_window_impl_wayland_priv_get_pending_move_to_rect_rect_anchor_dx(GdkWin
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->pending_move_to_rect.rect_anchor_dx;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->pending_move_to_rect.rect_anchor_dx;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->pending_move_to_rect.rect_anchor_dx;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->pending_move_to_rect.rect_anchor_dx;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2585,6 +2788,7 @@ void gdk_window_impl_wayland_priv_set_pending_move_to_rect_rect_anchor_dx(GdkWin
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->pending_move_to_rect.rect_anchor_dx = pending_move_to_rect_rect_anchor_dx; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->pending_move_to_rect.rect_anchor_dx = pending_move_to_rect_rect_anchor_dx; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->pending_move_to_rect.rect_anchor_dx = pending_move_to_rect_rect_anchor_dx; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->pending_move_to_rect.rect_anchor_dx = pending_move_to_rect_rect_anchor_dx; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2602,6 +2806,7 @@ gint gdk_window_impl_wayland_priv_get_pending_move_to_rect_rect_anchor_dy(GdkWin
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->pending_move_to_rect.rect_anchor_dy;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->pending_move_to_rect.rect_anchor_dy;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->pending_move_to_rect.rect_anchor_dy;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->pending_move_to_rect.rect_anchor_dy;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2617,6 +2822,7 @@ void gdk_window_impl_wayland_priv_set_pending_move_to_rect_rect_anchor_dy(GdkWin
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->pending_move_to_rect.rect_anchor_dy = pending_move_to_rect_rect_anchor_dy; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->pending_move_to_rect.rect_anchor_dy = pending_move_to_rect_rect_anchor_dy; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->pending_move_to_rect.rect_anchor_dy = pending_move_to_rect_rect_anchor_dy; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->pending_move_to_rect.rect_anchor_dy = pending_move_to_rect_rect_anchor_dy; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2634,6 +2840,7 @@ int gdk_window_impl_wayland_priv_get_pending_width(GdkWindowImplWayland * self) 
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->pending.width;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->pending.width;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->pending.width;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->pending.width;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2649,6 +2856,7 @@ void gdk_window_impl_wayland_priv_set_pending_width(GdkWindowImplWayland * self,
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->pending.width = pending_width; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->pending.width = pending_width; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->pending.width = pending_width; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->pending.width = pending_width; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2666,6 +2874,7 @@ int gdk_window_impl_wayland_priv_get_pending_height(GdkWindowImplWayland * self)
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->pending.height;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->pending.height;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->pending.height;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->pending.height;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2681,6 +2890,7 @@ void gdk_window_impl_wayland_priv_set_pending_height(GdkWindowImplWayland * self
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->pending.height = pending_height; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->pending.height = pending_height; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->pending.height = pending_height; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->pending.height = pending_height; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2698,6 +2908,7 @@ GdkWindowState * gdk_window_impl_wayland_priv_get_pending_state_ptr(GdkWindowImp
     case 6: return (GdkWindowState *)&((struct _GdkWindowImplWayland_v3_23_3*)self)->pending.state;
     case 7: return (GdkWindowState *)&((struct _GdkWindowImplWayland_v3_24_4*)self)->pending.state;
     case 8: return (GdkWindowState *)&((struct _GdkWindowImplWayland_v3_24_17*)self)->pending.state;
+    case 9: return (GdkWindowState *)&((struct _GdkWindowImplWayland_v3_24_22*)self)->pending.state;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2715,6 +2926,7 @@ gboolean gdk_window_impl_wayland_priv_get_exported_callback_supported() {
     case 6: return FALSE;
     case 7: return FALSE;
     case 8: return FALSE;
+    case 9: return FALSE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2730,6 +2942,7 @@ GdkWaylandWindowExported * gdk_window_impl_wayland_priv_get_exported_callback_pt
     case 6: return NULL;
     case 7: return NULL;
     case 8: return NULL;
+    case 9: return NULL;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2747,6 +2960,7 @@ gboolean gdk_window_impl_wayland_priv_get_exported_user_data_supported() {
     case 6: return FALSE;
     case 7: return FALSE;
     case 8: return FALSE;
+    case 9: return FALSE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2762,21 +2976,23 @@ gpointer gdk_window_impl_wayland_priv_get_exported_user_data_or_abort(GdkWindowI
     case 6: g_error("GdkWindowImplWayland::exported.user_data not supported on this GTK"); g_abort();
     case 7: g_error("GdkWindowImplWayland::exported.user_data not supported on this GTK"); g_abort();
     case 8: g_error("GdkWindowImplWayland::exported.user_data not supported on this GTK"); g_abort();
+    case 9: g_error("GdkWindowImplWayland::exported.user_data not supported on this GTK"); g_abort();
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_exported_user_data_or_ignore(GdkWindowImplWayland * self, gpointer exported_user_data) {
+void gdk_window_impl_wayland_priv_set_exported_user_data_or_abort(GdkWindowImplWayland * self, gpointer exported_user_data) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
     case 0: ((struct _GdkWindowImplWayland_v3_22_0*)self)->exported.user_data = exported_user_data; break;
-    case 1: break;
-    case 2: break;
-    case 3: break;
-    case 4: break;
-    case 5: break;
-    case 6: break;
-    case 7: break;
-    case 8: break;
+    case 1: g_error("GdkWindowImplWayland::exported.user_data not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::exported.user_data not supported on this GTK"); g_abort();
+    case 3: g_error("GdkWindowImplWayland::exported.user_data not supported on this GTK"); g_abort();
+    case 4: g_error("GdkWindowImplWayland::exported.user_data not supported on this GTK"); g_abort();
+    case 5: g_error("GdkWindowImplWayland::exported.user_data not supported on this GTK"); g_abort();
+    case 6: g_error("GdkWindowImplWayland::exported.user_data not supported on this GTK"); g_abort();
+    case 7: g_error("GdkWindowImplWayland::exported.user_data not supported on this GTK"); g_abort();
+    case 8: g_error("GdkWindowImplWayland::exported.user_data not supported on this GTK"); g_abort();
+    case 9: g_error("GdkWindowImplWayland::exported.user_data not supported on this GTK"); g_abort();
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2794,6 +3010,7 @@ gboolean gdk_window_impl_wayland_priv_get_exported_destroy_func_supported() {
     case 6: return FALSE;
     case 7: return FALSE;
     case 8: return FALSE;
+    case 9: return FALSE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2809,6 +3026,7 @@ GDestroyNotify * gdk_window_impl_wayland_priv_get_exported_destroy_func_ptr_or_n
     case 6: return NULL;
     case 7: return NULL;
     case 8: return NULL;
+    case 9: return NULL;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2826,6 +3044,7 @@ struct zxdg_imported_v1 * gdk_window_impl_wayland_priv_get_imported_transient_fo
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->imported_transient_for;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->imported_transient_for;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->imported_transient_for;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->imported_transient_for;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2841,6 +3060,7 @@ void gdk_window_impl_wayland_priv_set_imported_transient_for(GdkWindowImplWaylan
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->imported_transient_for = imported_transient_for; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->imported_transient_for = imported_transient_for; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->imported_transient_for = imported_transient_for; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->imported_transient_for = imported_transient_for; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2858,6 +3078,7 @@ gboolean gdk_window_impl_wayland_priv_get_exported_handle_supported() {
     case 6: return TRUE;
     case 7: return TRUE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2873,13 +3094,14 @@ char * gdk_window_impl_wayland_priv_get_exported_handle_or_abort(GdkWindowImplWa
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->exported.handle;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->exported.handle;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->exported.handle;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->exported.handle;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_exported_handle_or_ignore(GdkWindowImplWayland * self, char * exported_handle) {
+void gdk_window_impl_wayland_priv_set_exported_handle_or_abort(GdkWindowImplWayland * self, char * exported_handle) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
+    case 0: g_error("GdkWindowImplWayland::exported.handle not supported on this GTK"); g_abort();
     case 1: ((struct _GdkWindowImplWayland_v3_22_16*)self)->exported.handle = exported_handle; break;
     case 2: ((struct _GdkWindowImplWayland_v3_22_18*)self)->exported.handle = exported_handle; break;
     case 3: ((struct _GdkWindowImplWayland_v3_22_25*)self)->exported.handle = exported_handle; break;
@@ -2888,6 +3110,7 @@ void gdk_window_impl_wayland_priv_set_exported_handle_or_ignore(GdkWindowImplWay
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->exported.handle = exported_handle; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->exported.handle = exported_handle; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->exported.handle = exported_handle; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->exported.handle = exported_handle; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2905,6 +3128,7 @@ gboolean gdk_window_impl_wayland_priv_get_exported_export_count_supported() {
     case 6: return TRUE;
     case 7: return TRUE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2920,13 +3144,14 @@ int gdk_window_impl_wayland_priv_get_exported_export_count_or_abort(GdkWindowImp
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->exported.export_count;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->exported.export_count;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->exported.export_count;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->exported.export_count;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_exported_export_count_or_ignore(GdkWindowImplWayland * self, int exported_export_count) {
+void gdk_window_impl_wayland_priv_set_exported_export_count_or_abort(GdkWindowImplWayland * self, int exported_export_count) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
+    case 0: g_error("GdkWindowImplWayland::exported.export_count not supported on this GTK"); g_abort();
     case 1: ((struct _GdkWindowImplWayland_v3_22_16*)self)->exported.export_count = exported_export_count; break;
     case 2: ((struct _GdkWindowImplWayland_v3_22_18*)self)->exported.export_count = exported_export_count; break;
     case 3: ((struct _GdkWindowImplWayland_v3_22_25*)self)->exported.export_count = exported_export_count; break;
@@ -2935,6 +3160,7 @@ void gdk_window_impl_wayland_priv_set_exported_export_count_or_ignore(GdkWindowI
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->exported.export_count = exported_export_count; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->exported.export_count = exported_export_count; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->exported.export_count = exported_export_count; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->exported.export_count = exported_export_count; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2952,6 +3178,7 @@ gboolean gdk_window_impl_wayland_priv_get_exported_closures_supported() {
     case 6: return TRUE;
     case 7: return TRUE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2967,13 +3194,14 @@ GList * gdk_window_impl_wayland_priv_get_exported_closures_or_abort(GdkWindowImp
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->exported.closures;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->exported.closures;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->exported.closures;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->exported.closures;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_exported_closures_or_ignore(GdkWindowImplWayland * self, GList * exported_closures) {
+void gdk_window_impl_wayland_priv_set_exported_closures_or_abort(GdkWindowImplWayland * self, GList * exported_closures) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
+    case 0: g_error("GdkWindowImplWayland::exported.closures not supported on this GTK"); g_abort();
     case 1: ((struct _GdkWindowImplWayland_v3_22_16*)self)->exported.closures = exported_closures; break;
     case 2: ((struct _GdkWindowImplWayland_v3_22_18*)self)->exported.closures = exported_closures; break;
     case 3: ((struct _GdkWindowImplWayland_v3_22_25*)self)->exported.closures = exported_closures; break;
@@ -2982,6 +3210,7 @@ void gdk_window_impl_wayland_priv_set_exported_closures_or_ignore(GdkWindowImplW
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->exported.closures = exported_closures; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->exported.closures = exported_closures; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->exported.closures = exported_closures; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->exported.closures = exported_closures; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -2999,6 +3228,7 @@ gboolean gdk_window_impl_wayland_priv_get_exported_idle_source_id_supported() {
     case 6: return TRUE;
     case 7: return TRUE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3014,13 +3244,14 @@ guint gdk_window_impl_wayland_priv_get_exported_idle_source_id_or_abort(GdkWindo
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->exported.idle_source_id;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->exported.idle_source_id;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->exported.idle_source_id;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->exported.idle_source_id;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_exported_idle_source_id_or_ignore(GdkWindowImplWayland * self, guint exported_idle_source_id) {
+void gdk_window_impl_wayland_priv_set_exported_idle_source_id_or_abort(GdkWindowImplWayland * self, guint exported_idle_source_id) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
+    case 0: g_error("GdkWindowImplWayland::exported.idle_source_id not supported on this GTK"); g_abort();
     case 1: ((struct _GdkWindowImplWayland_v3_22_16*)self)->exported.idle_source_id = exported_idle_source_id; break;
     case 2: ((struct _GdkWindowImplWayland_v3_22_18*)self)->exported.idle_source_id = exported_idle_source_id; break;
     case 3: ((struct _GdkWindowImplWayland_v3_22_25*)self)->exported.idle_source_id = exported_idle_source_id; break;
@@ -3029,6 +3260,7 @@ void gdk_window_impl_wayland_priv_set_exported_idle_source_id_or_ignore(GdkWindo
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->exported.idle_source_id = exported_idle_source_id; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->exported.idle_source_id = exported_idle_source_id; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->exported.idle_source_id = exported_idle_source_id; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->exported.idle_source_id = exported_idle_source_id; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3046,6 +3278,7 @@ gboolean gdk_window_impl_wayland_priv_get_shortcuts_inhibitors_supported() {
     case 6: return TRUE;
     case 7: return TRUE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3061,14 +3294,15 @@ GHashTable * gdk_window_impl_wayland_priv_get_shortcuts_inhibitors_or_abort(GdkW
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->shortcuts_inhibitors;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->shortcuts_inhibitors;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->shortcuts_inhibitors;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->shortcuts_inhibitors;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_shortcuts_inhibitors_or_ignore(GdkWindowImplWayland * self, GHashTable * shortcuts_inhibitors) {
+void gdk_window_impl_wayland_priv_set_shortcuts_inhibitors_or_abort(GdkWindowImplWayland * self, GHashTable * shortcuts_inhibitors) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
-    case 1: break;
+    case 0: g_error("GdkWindowImplWayland::shortcuts_inhibitors not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::shortcuts_inhibitors not supported on this GTK"); g_abort();
     case 2: ((struct _GdkWindowImplWayland_v3_22_18*)self)->shortcuts_inhibitors = shortcuts_inhibitors; break;
     case 3: ((struct _GdkWindowImplWayland_v3_22_25*)self)->shortcuts_inhibitors = shortcuts_inhibitors; break;
     case 4: ((struct _GdkWindowImplWayland_v3_22_30*)self)->shortcuts_inhibitors = shortcuts_inhibitors; break;
@@ -3076,6 +3310,7 @@ void gdk_window_impl_wayland_priv_set_shortcuts_inhibitors_or_ignore(GdkWindowIm
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->shortcuts_inhibitors = shortcuts_inhibitors; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->shortcuts_inhibitors = shortcuts_inhibitors; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->shortcuts_inhibitors = shortcuts_inhibitors; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->shortcuts_inhibitors = shortcuts_inhibitors; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3093,6 +3328,7 @@ gboolean gdk_window_impl_wayland_priv_get_display_server_server_decoration_suppo
     case 6: return TRUE;
     case 7: return TRUE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3108,21 +3344,23 @@ struct org_kde_kwin_server_decoration * gdk_window_impl_wayland_priv_get_display
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.server_decoration;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.server_decoration;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.server_decoration;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.server_decoration;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_display_server_server_decoration_or_ignore(GdkWindowImplWayland * self, struct org_kde_kwin_server_decoration * display_server_server_decoration) {
+void gdk_window_impl_wayland_priv_set_display_server_server_decoration_or_abort(GdkWindowImplWayland * self, struct org_kde_kwin_server_decoration * display_server_server_decoration) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
-    case 1: break;
-    case 2: break;
+    case 0: g_error("GdkWindowImplWayland::display_server.server_decoration not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::display_server.server_decoration not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::display_server.server_decoration not supported on this GTK"); g_abort();
     case 3: ((struct _GdkWindowImplWayland_v3_22_25*)self)->display_server.server_decoration = display_server_server_decoration; break;
     case 4: ((struct _GdkWindowImplWayland_v3_22_30*)self)->display_server.server_decoration = display_server_server_decoration; break;
     case 5: ((struct _GdkWindowImplWayland_v3_23_1*)self)->display_server.server_decoration = display_server_server_decoration; break;
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.server_decoration = display_server_server_decoration; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.server_decoration = display_server_server_decoration; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.server_decoration = display_server_server_decoration; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.server_decoration = display_server_server_decoration; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3140,6 +3378,7 @@ gboolean gdk_window_impl_wayland_priv_get_display_server_xdg_surface_supported()
     case 6: return TRUE;
     case 7: return TRUE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3155,21 +3394,23 @@ struct xdg_surface * gdk_window_impl_wayland_priv_get_display_server_xdg_surface
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.xdg_surface;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.xdg_surface;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.xdg_surface;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.xdg_surface;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_display_server_xdg_surface_or_ignore(GdkWindowImplWayland * self, struct xdg_surface * display_server_xdg_surface) {
+void gdk_window_impl_wayland_priv_set_display_server_xdg_surface_or_abort(GdkWindowImplWayland * self, struct xdg_surface * display_server_xdg_surface) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
-    case 1: break;
-    case 2: break;
-    case 3: break;
+    case 0: g_error("GdkWindowImplWayland::display_server.xdg_surface not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::display_server.xdg_surface not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::display_server.xdg_surface not supported on this GTK"); g_abort();
+    case 3: g_error("GdkWindowImplWayland::display_server.xdg_surface not supported on this GTK"); g_abort();
     case 4: ((struct _GdkWindowImplWayland_v3_22_30*)self)->display_server.xdg_surface = display_server_xdg_surface; break;
     case 5: ((struct _GdkWindowImplWayland_v3_23_1*)self)->display_server.xdg_surface = display_server_xdg_surface; break;
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.xdg_surface = display_server_xdg_surface; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.xdg_surface = display_server_xdg_surface; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.xdg_surface = display_server_xdg_surface; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.xdg_surface = display_server_xdg_surface; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3187,6 +3428,7 @@ gboolean gdk_window_impl_wayland_priv_get_display_server_xdg_toplevel_supported(
     case 6: return TRUE;
     case 7: return TRUE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3202,21 +3444,23 @@ struct xdg_toplevel * gdk_window_impl_wayland_priv_get_display_server_xdg_toplev
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.xdg_toplevel;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.xdg_toplevel;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.xdg_toplevel;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.xdg_toplevel;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_display_server_xdg_toplevel_or_ignore(GdkWindowImplWayland * self, struct xdg_toplevel * display_server_xdg_toplevel) {
+void gdk_window_impl_wayland_priv_set_display_server_xdg_toplevel_or_abort(GdkWindowImplWayland * self, struct xdg_toplevel * display_server_xdg_toplevel) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
-    case 1: break;
-    case 2: break;
-    case 3: break;
+    case 0: g_error("GdkWindowImplWayland::display_server.xdg_toplevel not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::display_server.xdg_toplevel not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::display_server.xdg_toplevel not supported on this GTK"); g_abort();
+    case 3: g_error("GdkWindowImplWayland::display_server.xdg_toplevel not supported on this GTK"); g_abort();
     case 4: ((struct _GdkWindowImplWayland_v3_22_30*)self)->display_server.xdg_toplevel = display_server_xdg_toplevel; break;
     case 5: ((struct _GdkWindowImplWayland_v3_23_1*)self)->display_server.xdg_toplevel = display_server_xdg_toplevel; break;
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.xdg_toplevel = display_server_xdg_toplevel; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.xdg_toplevel = display_server_xdg_toplevel; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.xdg_toplevel = display_server_xdg_toplevel; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.xdg_toplevel = display_server_xdg_toplevel; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3234,6 +3478,7 @@ gboolean gdk_window_impl_wayland_priv_get_display_server_xdg_popup_supported() {
     case 6: return TRUE;
     case 7: return TRUE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3249,21 +3494,23 @@ struct xdg_popup * gdk_window_impl_wayland_priv_get_display_server_xdg_popup_or_
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.xdg_popup;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.xdg_popup;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.xdg_popup;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.xdg_popup;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_display_server_xdg_popup_or_ignore(GdkWindowImplWayland * self, struct xdg_popup * display_server_xdg_popup) {
+void gdk_window_impl_wayland_priv_set_display_server_xdg_popup_or_abort(GdkWindowImplWayland * self, struct xdg_popup * display_server_xdg_popup) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
-    case 1: break;
-    case 2: break;
-    case 3: break;
+    case 0: g_error("GdkWindowImplWayland::display_server.xdg_popup not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::display_server.xdg_popup not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::display_server.xdg_popup not supported on this GTK"); g_abort();
+    case 3: g_error("GdkWindowImplWayland::display_server.xdg_popup not supported on this GTK"); g_abort();
     case 4: ((struct _GdkWindowImplWayland_v3_22_30*)self)->display_server.xdg_popup = display_server_xdg_popup; break;
     case 5: ((struct _GdkWindowImplWayland_v3_23_1*)self)->display_server.xdg_popup = display_server_xdg_popup; break;
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.xdg_popup = display_server_xdg_popup; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.xdg_popup = display_server_xdg_popup; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.xdg_popup = display_server_xdg_popup; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.xdg_popup = display_server_xdg_popup; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3281,6 +3528,7 @@ gboolean gdk_window_impl_wayland_priv_get_display_server_zxdg_surface_v6_support
     case 6: return TRUE;
     case 7: return TRUE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3296,21 +3544,23 @@ struct zxdg_surface_v6 * gdk_window_impl_wayland_priv_get_display_server_zxdg_su
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.zxdg_surface_v6;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.zxdg_surface_v6;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.zxdg_surface_v6;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.zxdg_surface_v6;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_display_server_zxdg_surface_v6_or_ignore(GdkWindowImplWayland * self, struct zxdg_surface_v6 * display_server_zxdg_surface_v6) {
+void gdk_window_impl_wayland_priv_set_display_server_zxdg_surface_v6_or_abort(GdkWindowImplWayland * self, struct zxdg_surface_v6 * display_server_zxdg_surface_v6) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
-    case 1: break;
-    case 2: break;
-    case 3: break;
+    case 0: g_error("GdkWindowImplWayland::display_server.zxdg_surface_v6 not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::display_server.zxdg_surface_v6 not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::display_server.zxdg_surface_v6 not supported on this GTK"); g_abort();
+    case 3: g_error("GdkWindowImplWayland::display_server.zxdg_surface_v6 not supported on this GTK"); g_abort();
     case 4: ((struct _GdkWindowImplWayland_v3_22_30*)self)->display_server.zxdg_surface_v6 = display_server_zxdg_surface_v6; break;
     case 5: ((struct _GdkWindowImplWayland_v3_23_1*)self)->display_server.zxdg_surface_v6 = display_server_zxdg_surface_v6; break;
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.zxdg_surface_v6 = display_server_zxdg_surface_v6; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.zxdg_surface_v6 = display_server_zxdg_surface_v6; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.zxdg_surface_v6 = display_server_zxdg_surface_v6; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.zxdg_surface_v6 = display_server_zxdg_surface_v6; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3328,6 +3578,7 @@ gboolean gdk_window_impl_wayland_priv_get_display_server_zxdg_toplevel_v6_suppor
     case 6: return TRUE;
     case 7: return TRUE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3343,21 +3594,23 @@ struct zxdg_toplevel_v6 * gdk_window_impl_wayland_priv_get_display_server_zxdg_t
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.zxdg_toplevel_v6;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.zxdg_toplevel_v6;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.zxdg_toplevel_v6;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.zxdg_toplevel_v6;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_display_server_zxdg_toplevel_v6_or_ignore(GdkWindowImplWayland * self, struct zxdg_toplevel_v6 * display_server_zxdg_toplevel_v6) {
+void gdk_window_impl_wayland_priv_set_display_server_zxdg_toplevel_v6_or_abort(GdkWindowImplWayland * self, struct zxdg_toplevel_v6 * display_server_zxdg_toplevel_v6) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
-    case 1: break;
-    case 2: break;
-    case 3: break;
+    case 0: g_error("GdkWindowImplWayland::display_server.zxdg_toplevel_v6 not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::display_server.zxdg_toplevel_v6 not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::display_server.zxdg_toplevel_v6 not supported on this GTK"); g_abort();
+    case 3: g_error("GdkWindowImplWayland::display_server.zxdg_toplevel_v6 not supported on this GTK"); g_abort();
     case 4: ((struct _GdkWindowImplWayland_v3_22_30*)self)->display_server.zxdg_toplevel_v6 = display_server_zxdg_toplevel_v6; break;
     case 5: ((struct _GdkWindowImplWayland_v3_23_1*)self)->display_server.zxdg_toplevel_v6 = display_server_zxdg_toplevel_v6; break;
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.zxdg_toplevel_v6 = display_server_zxdg_toplevel_v6; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.zxdg_toplevel_v6 = display_server_zxdg_toplevel_v6; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.zxdg_toplevel_v6 = display_server_zxdg_toplevel_v6; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.zxdg_toplevel_v6 = display_server_zxdg_toplevel_v6; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3375,6 +3628,7 @@ gboolean gdk_window_impl_wayland_priv_get_display_server_zxdg_popup_v6_supported
     case 6: return TRUE;
     case 7: return TRUE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3390,21 +3644,23 @@ struct zxdg_popup_v6 * gdk_window_impl_wayland_priv_get_display_server_zxdg_popu
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.zxdg_popup_v6;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.zxdg_popup_v6;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.zxdg_popup_v6;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.zxdg_popup_v6;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_display_server_zxdg_popup_v6_or_ignore(GdkWindowImplWayland * self, struct zxdg_popup_v6 * display_server_zxdg_popup_v6) {
+void gdk_window_impl_wayland_priv_set_display_server_zxdg_popup_v6_or_abort(GdkWindowImplWayland * self, struct zxdg_popup_v6 * display_server_zxdg_popup_v6) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
-    case 1: break;
-    case 2: break;
-    case 3: break;
+    case 0: g_error("GdkWindowImplWayland::display_server.zxdg_popup_v6 not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::display_server.zxdg_popup_v6 not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::display_server.zxdg_popup_v6 not supported on this GTK"); g_abort();
+    case 3: g_error("GdkWindowImplWayland::display_server.zxdg_popup_v6 not supported on this GTK"); g_abort();
     case 4: ((struct _GdkWindowImplWayland_v3_22_30*)self)->display_server.zxdg_popup_v6 = display_server_zxdg_popup_v6; break;
     case 5: ((struct _GdkWindowImplWayland_v3_23_1*)self)->display_server.zxdg_popup_v6 = display_server_zxdg_popup_v6; break;
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->display_server.zxdg_popup_v6 = display_server_zxdg_popup_v6; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->display_server.zxdg_popup_v6 = display_server_zxdg_popup_v6; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->display_server.zxdg_popup_v6 = display_server_zxdg_popup_v6; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->display_server.zxdg_popup_v6 = display_server_zxdg_popup_v6; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3422,6 +3678,7 @@ gboolean gdk_window_impl_wayland_priv_get_using_csd_supported() {
     case 6: return TRUE;
     case 7: return TRUE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3437,21 +3694,23 @@ unsigned int gdk_window_impl_wayland_priv_get_using_csd_or_abort(GdkWindowImplWa
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->using_csd;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->using_csd;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->using_csd;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->using_csd;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_using_csd_or_ignore(GdkWindowImplWayland * self, unsigned int using_csd) {
+void gdk_window_impl_wayland_priv_set_using_csd_or_abort(GdkWindowImplWayland * self, unsigned int using_csd) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
-    case 1: break;
-    case 2: break;
-    case 3: break;
-    case 4: break;
+    case 0: g_error("GdkWindowImplWayland::using_csd not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::using_csd not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::using_csd not supported on this GTK"); g_abort();
+    case 3: g_error("GdkWindowImplWayland::using_csd not supported on this GTK"); g_abort();
+    case 4: g_error("GdkWindowImplWayland::using_csd not supported on this GTK"); g_abort();
     case 5: ((struct _GdkWindowImplWayland_v3_23_1*)self)->using_csd = using_csd; break;
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->using_csd = using_csd; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->using_csd = using_csd; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->using_csd = using_csd; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->using_csd = using_csd; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3469,6 +3728,7 @@ gboolean gdk_window_impl_wayland_priv_get_subsurface_x_supported() {
     case 6: return TRUE;
     case 7: return TRUE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3484,21 +3744,23 @@ int gdk_window_impl_wayland_priv_get_subsurface_x_or_abort(GdkWindowImplWayland 
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->subsurface_x;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->subsurface_x;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->subsurface_x;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->subsurface_x;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_subsurface_x_or_ignore(GdkWindowImplWayland * self, int subsurface_x) {
+void gdk_window_impl_wayland_priv_set_subsurface_x_or_abort(GdkWindowImplWayland * self, int subsurface_x) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
-    case 1: break;
-    case 2: break;
-    case 3: break;
-    case 4: break;
-    case 5: break;
+    case 0: g_error("GdkWindowImplWayland::subsurface_x not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::subsurface_x not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::subsurface_x not supported on this GTK"); g_abort();
+    case 3: g_error("GdkWindowImplWayland::subsurface_x not supported on this GTK"); g_abort();
+    case 4: g_error("GdkWindowImplWayland::subsurface_x not supported on this GTK"); g_abort();
+    case 5: g_error("GdkWindowImplWayland::subsurface_x not supported on this GTK"); g_abort();
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->subsurface_x = subsurface_x; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->subsurface_x = subsurface_x; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->subsurface_x = subsurface_x; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->subsurface_x = subsurface_x; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3516,6 +3778,7 @@ gboolean gdk_window_impl_wayland_priv_get_subsurface_y_supported() {
     case 6: return TRUE;
     case 7: return TRUE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3531,21 +3794,23 @@ int gdk_window_impl_wayland_priv_get_subsurface_y_or_abort(GdkWindowImplWayland 
     case 6: return ((struct _GdkWindowImplWayland_v3_23_3*)self)->subsurface_y;
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->subsurface_y;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->subsurface_y;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->subsurface_y;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_subsurface_y_or_ignore(GdkWindowImplWayland * self, int subsurface_y) {
+void gdk_window_impl_wayland_priv_set_subsurface_y_or_abort(GdkWindowImplWayland * self, int subsurface_y) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
-    case 1: break;
-    case 2: break;
-    case 3: break;
-    case 4: break;
-    case 5: break;
+    case 0: g_error("GdkWindowImplWayland::subsurface_y not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::subsurface_y not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::subsurface_y not supported on this GTK"); g_abort();
+    case 3: g_error("GdkWindowImplWayland::subsurface_y not supported on this GTK"); g_abort();
+    case 4: g_error("GdkWindowImplWayland::subsurface_y not supported on this GTK"); g_abort();
+    case 5: g_error("GdkWindowImplWayland::subsurface_y not supported on this GTK"); g_abort();
     case 6: ((struct _GdkWindowImplWayland_v3_23_3*)self)->subsurface_y = subsurface_y; break;
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->subsurface_y = subsurface_y; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->subsurface_y = subsurface_y; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->subsurface_y = subsurface_y; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3563,6 +3828,7 @@ gboolean gdk_window_impl_wayland_priv_get_configuring_popup_supported() {
     case 6: return FALSE;
     case 7: return TRUE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3578,21 +3844,23 @@ unsigned int gdk_window_impl_wayland_priv_get_configuring_popup_or_abort(GdkWind
     case 6: g_error("GdkWindowImplWayland::configuring_popup not supported on this GTK"); g_abort();
     case 7: return ((struct _GdkWindowImplWayland_v3_24_4*)self)->configuring_popup;
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->configuring_popup;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->configuring_popup;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_configuring_popup_or_ignore(GdkWindowImplWayland * self, unsigned int configuring_popup) {
+void gdk_window_impl_wayland_priv_set_configuring_popup_or_abort(GdkWindowImplWayland * self, unsigned int configuring_popup) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
-    case 1: break;
-    case 2: break;
-    case 3: break;
-    case 4: break;
-    case 5: break;
-    case 6: break;
+    case 0: g_error("GdkWindowImplWayland::configuring_popup not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::configuring_popup not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::configuring_popup not supported on this GTK"); g_abort();
+    case 3: g_error("GdkWindowImplWayland::configuring_popup not supported on this GTK"); g_abort();
+    case 4: g_error("GdkWindowImplWayland::configuring_popup not supported on this GTK"); g_abort();
+    case 5: g_error("GdkWindowImplWayland::configuring_popup not supported on this GTK"); g_abort();
+    case 6: g_error("GdkWindowImplWayland::configuring_popup not supported on this GTK"); g_abort();
     case 7: ((struct _GdkWindowImplWayland_v3_24_4*)self)->configuring_popup = configuring_popup; break;
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->configuring_popup = configuring_popup; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->configuring_popup = configuring_popup; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3610,6 +3878,7 @@ gboolean gdk_window_impl_wayland_priv_get_unconfigured_width_supported() {
     case 6: return FALSE;
     case 7: return FALSE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3625,21 +3894,23 @@ int gdk_window_impl_wayland_priv_get_unconfigured_width_or_abort(GdkWindowImplWa
     case 6: g_error("GdkWindowImplWayland::unconfigured_width not supported on this GTK"); g_abort();
     case 7: g_error("GdkWindowImplWayland::unconfigured_width not supported on this GTK"); g_abort();
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->unconfigured_width;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->unconfigured_width;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_unconfigured_width_or_ignore(GdkWindowImplWayland * self, int unconfigured_width) {
+void gdk_window_impl_wayland_priv_set_unconfigured_width_or_abort(GdkWindowImplWayland * self, int unconfigured_width) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
-    case 1: break;
-    case 2: break;
-    case 3: break;
-    case 4: break;
-    case 5: break;
-    case 6: break;
-    case 7: break;
+    case 0: g_error("GdkWindowImplWayland::unconfigured_width not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::unconfigured_width not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::unconfigured_width not supported on this GTK"); g_abort();
+    case 3: g_error("GdkWindowImplWayland::unconfigured_width not supported on this GTK"); g_abort();
+    case 4: g_error("GdkWindowImplWayland::unconfigured_width not supported on this GTK"); g_abort();
+    case 5: g_error("GdkWindowImplWayland::unconfigured_width not supported on this GTK"); g_abort();
+    case 6: g_error("GdkWindowImplWayland::unconfigured_width not supported on this GTK"); g_abort();
+    case 7: g_error("GdkWindowImplWayland::unconfigured_width not supported on this GTK"); g_abort();
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->unconfigured_width = unconfigured_width; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->unconfigured_width = unconfigured_width; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3657,6 +3928,7 @@ gboolean gdk_window_impl_wayland_priv_get_unconfigured_height_supported() {
     case 6: return FALSE;
     case 7: return FALSE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3672,21 +3944,23 @@ int gdk_window_impl_wayland_priv_get_unconfigured_height_or_abort(GdkWindowImplW
     case 6: g_error("GdkWindowImplWayland::unconfigured_height not supported on this GTK"); g_abort();
     case 7: g_error("GdkWindowImplWayland::unconfigured_height not supported on this GTK"); g_abort();
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->unconfigured_height;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->unconfigured_height;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_unconfigured_height_or_ignore(GdkWindowImplWayland * self, int unconfigured_height) {
+void gdk_window_impl_wayland_priv_set_unconfigured_height_or_abort(GdkWindowImplWayland * self, int unconfigured_height) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
-    case 1: break;
-    case 2: break;
-    case 3: break;
-    case 4: break;
-    case 5: break;
-    case 6: break;
-    case 7: break;
+    case 0: g_error("GdkWindowImplWayland::unconfigured_height not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::unconfigured_height not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::unconfigured_height not supported on this GTK"); g_abort();
+    case 3: g_error("GdkWindowImplWayland::unconfigured_height not supported on this GTK"); g_abort();
+    case 4: g_error("GdkWindowImplWayland::unconfigured_height not supported on this GTK"); g_abort();
+    case 5: g_error("GdkWindowImplWayland::unconfigured_height not supported on this GTK"); g_abort();
+    case 6: g_error("GdkWindowImplWayland::unconfigured_height not supported on this GTK"); g_abort();
+    case 7: g_error("GdkWindowImplWayland::unconfigured_height not supported on this GTK"); g_abort();
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->unconfigured_height = unconfigured_height; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->unconfigured_height = unconfigured_height; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3704,6 +3978,7 @@ gboolean gdk_window_impl_wayland_priv_get_fixed_size_width_supported() {
     case 6: return FALSE;
     case 7: return FALSE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3719,21 +3994,23 @@ int gdk_window_impl_wayland_priv_get_fixed_size_width_or_abort(GdkWindowImplWayl
     case 6: g_error("GdkWindowImplWayland::fixed_size_width not supported on this GTK"); g_abort();
     case 7: g_error("GdkWindowImplWayland::fixed_size_width not supported on this GTK"); g_abort();
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->fixed_size_width;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->fixed_size_width;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_fixed_size_width_or_ignore(GdkWindowImplWayland * self, int fixed_size_width) {
+void gdk_window_impl_wayland_priv_set_fixed_size_width_or_abort(GdkWindowImplWayland * self, int fixed_size_width) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
-    case 1: break;
-    case 2: break;
-    case 3: break;
-    case 4: break;
-    case 5: break;
-    case 6: break;
-    case 7: break;
+    case 0: g_error("GdkWindowImplWayland::fixed_size_width not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::fixed_size_width not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::fixed_size_width not supported on this GTK"); g_abort();
+    case 3: g_error("GdkWindowImplWayland::fixed_size_width not supported on this GTK"); g_abort();
+    case 4: g_error("GdkWindowImplWayland::fixed_size_width not supported on this GTK"); g_abort();
+    case 5: g_error("GdkWindowImplWayland::fixed_size_width not supported on this GTK"); g_abort();
+    case 6: g_error("GdkWindowImplWayland::fixed_size_width not supported on this GTK"); g_abort();
+    case 7: g_error("GdkWindowImplWayland::fixed_size_width not supported on this GTK"); g_abort();
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->fixed_size_width = fixed_size_width; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->fixed_size_width = fixed_size_width; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3751,6 +4028,7 @@ gboolean gdk_window_impl_wayland_priv_get_fixed_size_height_supported() {
     case 6: return FALSE;
     case 7: return FALSE;
     case 8: return TRUE;
+    case 9: return TRUE;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -3766,21 +4044,73 @@ int gdk_window_impl_wayland_priv_get_fixed_size_height_or_abort(GdkWindowImplWay
     case 6: g_error("GdkWindowImplWayland::fixed_size_height not supported on this GTK"); g_abort();
     case 7: g_error("GdkWindowImplWayland::fixed_size_height not supported on this GTK"); g_abort();
     case 8: return ((struct _GdkWindowImplWayland_v3_24_17*)self)->fixed_size_height;
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->fixed_size_height;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_window_impl_wayland_priv_set_fixed_size_height_or_ignore(GdkWindowImplWayland * self, int fixed_size_height) {
+void gdk_window_impl_wayland_priv_set_fixed_size_height_or_abort(GdkWindowImplWayland * self, int fixed_size_height) {
   switch (gdk_window_impl_wayland_priv_get_version_id()) {
-    case 0: break;
-    case 1: break;
-    case 2: break;
-    case 3: break;
-    case 4: break;
-    case 5: break;
-    case 6: break;
-    case 7: break;
+    case 0: g_error("GdkWindowImplWayland::fixed_size_height not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::fixed_size_height not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::fixed_size_height not supported on this GTK"); g_abort();
+    case 3: g_error("GdkWindowImplWayland::fixed_size_height not supported on this GTK"); g_abort();
+    case 4: g_error("GdkWindowImplWayland::fixed_size_height not supported on this GTK"); g_abort();
+    case 5: g_error("GdkWindowImplWayland::fixed_size_height not supported on this GTK"); g_abort();
+    case 6: g_error("GdkWindowImplWayland::fixed_size_height not supported on this GTK"); g_abort();
+    case 7: g_error("GdkWindowImplWayland::fixed_size_height not supported on this GTK"); g_abort();
     case 8: ((struct _GdkWindowImplWayland_v3_24_17*)self)->fixed_size_height = fixed_size_height; break;
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->fixed_size_height = fixed_size_height; break;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+// GdkWindowImplWayland::saved_size_changed
+
+gboolean gdk_window_impl_wayland_priv_get_saved_size_changed_supported() {
+  switch (gdk_window_impl_wayland_priv_get_version_id()) {
+    case 0: return FALSE;
+    case 1: return FALSE;
+    case 2: return FALSE;
+    case 3: return FALSE;
+    case 4: return FALSE;
+    case 5: return FALSE;
+    case 6: return FALSE;
+    case 7: return FALSE;
+    case 8: return FALSE;
+    case 9: return TRUE;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+gboolean gdk_window_impl_wayland_priv_get_saved_size_changed_or_abort(GdkWindowImplWayland * self) {
+  switch (gdk_window_impl_wayland_priv_get_version_id()) {
+    case 0: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 3: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 4: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 5: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 6: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 7: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 8: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 9: return ((struct _GdkWindowImplWayland_v3_24_22*)self)->saved_size_changed;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+void gdk_window_impl_wayland_priv_set_saved_size_changed_or_abort(GdkWindowImplWayland * self, gboolean saved_size_changed) {
+  switch (gdk_window_impl_wayland_priv_get_version_id()) {
+    case 0: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 2: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 3: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 4: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 5: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 6: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 7: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 8: g_error("GdkWindowImplWayland::saved_size_changed not supported on this GTK"); g_abort();
+    case 9: ((struct _GdkWindowImplWayland_v3_24_22*)self)->saved_size_changed = saved_size_changed; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }

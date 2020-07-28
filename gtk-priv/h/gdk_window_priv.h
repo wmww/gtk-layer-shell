@@ -195,7 +195,7 @@ struct _GdkWindow_v3_22_19
 };
 
 // Version ID 2
-// Valid for GTK v3.24.11 - v3.24.21
+// Valid for GTK v3.24.11 - v3.24.22 (unreleased)
 struct _GdkWindow_v3_24_11
 {
   GObject parent_instance;
@@ -1143,11 +1143,11 @@ guint gdk_window_priv_get_synthesize_crossing_event_queued_or_abort(GdkWindow * 
   }
 }
 
-void gdk_window_priv_set_synthesize_crossing_event_queued_or_ignore(GdkWindow * self, guint synthesize_crossing_event_queued) {
+void gdk_window_priv_set_synthesize_crossing_event_queued_or_abort(GdkWindow * self, guint synthesize_crossing_event_queued) {
   switch (gdk_window_priv_get_version_id()) {
     case 0: ((struct _GdkWindow_v3_22_0*)self)->synthesize_crossing_event_queued = synthesize_crossing_event_queued; break;
     case 1: ((struct _GdkWindow_v3_22_19*)self)->synthesize_crossing_event_queued = synthesize_crossing_event_queued; break;
-    case 2: break;
+    case 2: g_error("GdkWindow::synthesize_crossing_event_queued not supported on this GTK"); g_abort();
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1805,9 +1805,9 @@ cairo_region_t * gdk_window_priv_get_opaque_region_or_abort(GdkWindow * self) {
   }
 }
 
-void gdk_window_priv_set_opaque_region_or_ignore(GdkWindow * self, cairo_region_t * opaque_region) {
+void gdk_window_priv_set_opaque_region_or_abort(GdkWindow * self, cairo_region_t * opaque_region) {
   switch (gdk_window_priv_get_version_id()) {
-    case 0: break;
+    case 0: g_error("GdkWindow::opaque_region not supported on this GTK"); g_abort();
     case 1: ((struct _GdkWindow_v3_22_19*)self)->opaque_region = opaque_region; break;
     case 2: ((struct _GdkWindow_v3_24_11*)self)->opaque_region = opaque_region; break;
     default: g_error("Invalid version ID"); g_abort();
@@ -1834,10 +1834,10 @@ guint gdk_window_priv_get_synthesized_crossing_event_id_or_abort(GdkWindow * sel
   }
 }
 
-void gdk_window_priv_set_synthesized_crossing_event_id_or_ignore(GdkWindow * self, guint synthesized_crossing_event_id) {
+void gdk_window_priv_set_synthesized_crossing_event_id_or_abort(GdkWindow * self, guint synthesized_crossing_event_id) {
   switch (gdk_window_priv_get_version_id()) {
-    case 0: break;
-    case 1: break;
+    case 0: g_error("GdkWindow::synthesized_crossing_event_id not supported on this GTK"); g_abort();
+    case 1: g_error("GdkWindow::synthesized_crossing_event_id not supported on this GTK"); g_abort();
     case 2: ((struct _GdkWindow_v3_24_11*)self)->synthesized_crossing_event_id = synthesized_crossing_event_id; break;
     default: g_error("Invalid version ID"); g_abort();
   }

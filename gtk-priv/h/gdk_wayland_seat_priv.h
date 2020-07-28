@@ -139,7 +139,7 @@ struct _GdkWaylandSeat_v3_22_9
 };
 
 // Version ID 2
-// Valid for GTK v3.22.16 - v3.24.21
+// Valid for GTK v3.22.16 - v3.24.22 (unreleased)
 struct _GdkWaylandSeat_v3_22_16
 {
   GdkSeat parent_instance;

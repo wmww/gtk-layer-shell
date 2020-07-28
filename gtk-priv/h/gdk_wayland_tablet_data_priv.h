@@ -24,7 +24,7 @@
 typedef struct _GdkWaylandTabletData GdkWaylandTabletData;
 
 // Version ID 0
-// Valid for GTK v3.22.0 - v3.24.21
+// Valid for GTK v3.22.0 - v3.24.22 (unreleased)
 struct _GdkWaylandTabletData_v3_22_0
 {
   struct zwp_tablet_v2 *wp_tablet;
