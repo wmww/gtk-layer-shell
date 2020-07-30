@@ -19,6 +19,7 @@ static int default_margins[] = {0, 0, 0, 0};
 static gboolean default_auto_exclusive_zone = FALSE; // always set by command line option
 static gboolean default_keyboard_interactivity = FALSE; // always set by command line option
 static gboolean default_fixed_size = FALSE; // always set by command line option
+static gboolean no_layer_shell = FALSE; // always set by command line option
 
 const char *prog_name = "gtk-layer-demo";
 const char *prog_summary = "A GTK application for demonstrating the functionality of the Layer Shell Wayland protocol";
@@ -83,6 +84,15 @@ static const GOptionEntry options[] = {
         .arg = G_OPTION_ARG_NONE,
         .arg_data = &default_fixed_size,
         .description = "Enable a fixed window size",
+        .arg_description = NULL,
+    },
+    {
+        .long_name = "no-layer-shell",
+        .short_name = 0,
+        .flags = G_OPTION_FLAG_NONE,
+        .arg = G_OPTION_ARG_NONE,
+        .arg_data = &no_layer_shell,
+        .description = "Disable gtk-layer-shell, create a normal shell surface instead",
         .arg_description = NULL,
     },
     { NULL, 0, 0, 0, NULL, NULL, NULL }
@@ -263,14 +273,21 @@ static GtkWidget *
 layer_window_new ()
 {
     GtkWindow *gtk_window = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
-    gtk_layer_init_for_window (gtk_window);
 
     ToplevelData *data = g_new0 (ToplevelData, 1);
-    for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++) {
-        data->edges[i] = default_anchors[i];
-        gtk_layer_set_anchor (gtk_window, i, default_anchors[i]);
-    }
     g_object_set_data_full (G_OBJECT (gtk_window), anchor_edges_key, data, g_free);
+    for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++)
+        data->edges[i] = default_anchors[i];
+
+    if (no_layer_shell) {
+        g_message ("GTK layer shell disabled on command line");
+        g_message ("Expect controls to have no effect and warnings to be shown");
+    } else {
+        gtk_layer_init_for_window (gtk_window);
+    }
+
+    for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++)
+        gtk_layer_set_anchor (gtk_window, i, default_anchors[i]);
     for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++)
         gtk_layer_set_margin (gtk_window, i, default_margins[i]);
     gtk_layer_set_layer (gtk_window, default_layer);
@@ -305,18 +322,28 @@ layer_window_new ()
         }
     }{
         data->second_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-        gtk_box_pack_start (GTK_BOX (data->toplevel_box), data->second_box, FALSE, FALSE, 0);
+        gtk_box_pack_start (GTK_BOX (data->toplevel_box), data->second_box, TRUE, TRUE, 0);
         {
             GtkWidget *toggles_box = mscl_toggles_new (gtk_window,
-                                                 default_auto_exclusive_zone,
-                                                 default_keyboard_interactivity,
-                                                 default_fixed_size);
+                                                       default_auto_exclusive_zone,
+                                                       default_keyboard_interactivity,
+                                                       default_fixed_size);
             gtk_box_pack_start (GTK_BOX (data->second_box),
                                 toggles_box,
                                 FALSE, FALSE, 0);
-            gtk_box_pack_start (GTK_BOX (data->second_box),
+
+        }
+        {
+            GtkWidget *margin_and_version_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
+            gtk_box_pack_start (GTK_BOX (margin_and_version_box),
                                 margin_control_new (gtk_window, default_margins),
-                                FALSE, FALSE, 0);
+                                TRUE, FALSE, 0);
+            gtk_box_pack_start (GTK_BOX (margin_and_version_box),
+                                version_info_new (),
+                                TRUE, TRUE, 0);
+            gtk_box_pack_start (GTK_BOX (data->second_box),
+                                margin_and_version_box,
+                                TRUE, TRUE, 0);
         }
     }
 

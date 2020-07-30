@@ -47,6 +47,9 @@ GtkWidget *
 margin_control_new (GtkWindow *layer_window, const int default_margins[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER]);
 
 GtkWidget *
+version_info_new ();
+
+GtkWidget *
 mscl_toggles_new (GtkWindow *layer_window,
                   gboolean default_auto_exclusive_zone,
                   gboolean default_keyboard_interactivity,

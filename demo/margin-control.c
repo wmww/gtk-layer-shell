@@ -107,8 +107,5 @@ margin_control_new (GtkWindow *layer_window, const int default_margins[GTK_LAYER
     gtk_container_add (GTK_CONTAINER (popover), switch_box);
     gtk_widget_show_all (switch_box);
     g_signal_connect (open_button, "clicked", G_CALLBACK (on_open_clicked), popover);
-    GtkWidget *padding_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-    gtk_box_pack_start (GTK_BOX (padding_box), open_button, TRUE, FALSE, 0);
-
-    return padding_box;
+    return open_button;
 }
