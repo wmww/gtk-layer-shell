@@ -125,12 +125,10 @@ custom_shell_surface_needs_commit (CustomShellSurface *self)
     if (!gdk_window)
         return;
 
-    struct wl_surface *wl_surface = gdk_wayland_window_get_wl_surface (gdk_window);
-
-    if (!wl_surface)
-        return;
-
-    wl_surface_commit (wl_surface);
+    // Hopefully this will trigger a commit
+    // Don't commit directly, as that screws up GTK's internal state
+    // (see https://github.com/wmww/gtk-layer-shell/issues/51)
+    gdk_window_invalidate_rect (gdk_window, NULL, FALSE);
 }
 
 void

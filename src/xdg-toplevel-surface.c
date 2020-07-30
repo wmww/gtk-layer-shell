@@ -113,9 +113,6 @@ xdg_toplevel_surface_map (CustomShellSurface *super, struct wl_surface *wl_surfa
                                      self->geom.width,
                                      self->geom.height);
     xdg_toplevel_add_listener (self->xdg_toplevel, &xdg_toplevel_listener, self);
-
-    wl_surface_commit (wl_surface);
-    wl_display_roundtrip (gdk_wayland_display_get_wl_display (gdk_display_get_default ()));
 }
 
 static void
