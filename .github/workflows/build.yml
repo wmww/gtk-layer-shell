@@ -17,5 +17,3 @@ jobs:
       run: meson build -Dexamples=true -Ddocs=true
     - name: Build
       run: ninja -C build
-    - name: Check licenses
-      run: ./src/check_license.py
