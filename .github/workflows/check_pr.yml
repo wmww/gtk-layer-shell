@@ -1,4 +1,4 @@
-name: "Check PR"
+name: "PR body contains license agreement"
 on: [pull_request]
 
 jobs:
