@@ -1,0 +1,15 @@
+name: 'All files have licenses'
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Check per-file licenses
+      run: ./src/check_license.py
