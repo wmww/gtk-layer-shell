@@ -46,10 +46,12 @@ sudo apt install meson libwayland-dev libgtk-3-dev gobject-introspection libgire
 * The easiest way to build is to use the `gtk-layer-shell-0` pkg-config package. Refer to your build system or the pkg-config docs for further instructions
 
 ## Licensing
+GTK Layer Shell is licensed under the GNU Lesser General Public License version 3.0 or any later version.
+
 __By contributing to this project, you agree for your modifications to be licensed under the same license as the files they are made to (which may be a permissive license)__
 
-### Technical details
-Parts of GTK Layer Shell are extracted from GTK, and therefore the project as a whole is licensed under [GNU Lesser General Public License (LGPL) version 3](https://www.gnu.org/licenses/lgpl-3.0.en.html) (a newer version of the same license as GTK). See [LICENSE_LGPL.txt](LICENSE_LGPL.txt) for details. Almost all of the non-generated code, however, is licensed under [MIT](https://en.wikipedia.org/wiki/MIT_License) ([LICENSE_MIT.txt](LICENSE_MIT.txt)). At the top of each file should be a header that specifies which license applies to it. Please refer to that if in doubt.
+### Rationale
+I want everyone to be able to use GTK Layer Shell however they desire, but parts of it are extracted from GTK. Therefore, the project as a whole is licensed under [GNU Lesser General Public License (LGPL) version 3](https://www.gnu.org/licenses/lgpl-3.0.en.html) or any later version (a newer version of the same license as GTK). See [LICENSE_LGPL.txt](LICENSE_LGPL.txt) and [LICENSE_GPL.txt](LICENSE_GPL.txt) for details. Almost all of the non-generated code, however, is licensed under [MIT](https://en.wikipedia.org/wiki/MIT_License) ([LICENSE_MIT.txt](LICENSE_MIT.txt)). At the top of each file should be a header that specifies which license applies to it. Please refer to that if in doubt.
 
 ### What this means for you
 This library can be linked against under similar terms as GTK itself, so licensing shouldn't be a problem for most potential users. Furthermore, most of the code within this library can be used in permissively licensed or proprietary projects.
