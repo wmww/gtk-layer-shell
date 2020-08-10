@@ -66,7 +66,7 @@ wl_registry_handle_global (void *_data,
                                                &zwlr_layer_shell_v1_interface,
                                                MIN((uint32_t)zwlr_layer_shell_v1_interface.version, version));
     } else if (strcmp (interface, xdg_wm_base_interface.name) == 0) {
-        g_warn_if_fail (xdg_wm_base_interface.version == 2);
+        g_warn_if_fail (xdg_wm_base_interface.version >= 2);
         xdg_wm_base_global = wl_registry_bind (registry,
                                                id,
                                                &xdg_wm_base_interface,
