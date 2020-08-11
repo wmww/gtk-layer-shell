@@ -29,7 +29,7 @@ IGNORE_PATTERNS = [
     '*.md',
     '*.editorconfig',
     '*.txt',
-    '*/src/protocol',
+    '*.xml',
     '*/check_license.py',
     '*/meson.build',
     '*/gtk-priv/scripts/code.py', # Is MIT but has the LGPL license text in a string
