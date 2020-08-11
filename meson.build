@@ -22,6 +22,7 @@ gnome = import('gnome')
 gtk_priv_inc = include_directories('./gtk-priv/h')
 
 subdir('include')
+subdir('protocol')
 subdir('src')
 subdir('example')
 subdir('demo')

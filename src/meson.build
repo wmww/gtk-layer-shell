@@ -1,5 +1,3 @@
-subdir('protocol')
-
 srcs = files(
     'gtk-layer-shell.c',
     'gtk-wayland.c',
