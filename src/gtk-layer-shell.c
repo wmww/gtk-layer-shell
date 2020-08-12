@@ -48,6 +48,14 @@ gtk_layer_init_for_window (GtkWindow *window)
     }
 }
 
+struct zwlr_layer_surface_v1 *
+gtk_layer_get_zwlr_layer_surface_v1 (GtkWindow *window)
+{
+    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
+    if (!layer_surface) return NULL; // Error message already shown in gtk_window_get_layer_surface
+    return layer_surface_get_get_zwlr_layer_surface_v1 (layer_surface);
+}
+
 void
 gtk_layer_set_namespace (GtkWindow *window, char const* name_space)
 {

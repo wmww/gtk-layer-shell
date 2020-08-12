@@ -79,6 +79,14 @@ typedef enum {
 void gtk_layer_init_for_window (GtkWindow *window);
 
 /**
+ * gtk_layer_get_zwlr_layer_surface_v1:
+ * @window: A layer surface.
+ *
+ * Returns: The underlying layer surface Wayland object
+ */
+struct zwlr_layer_surface_v1 *gtk_layer_get_zwlr_layer_surface_v1 (GtkWindow *window);
+
+/**
  * gtk_layer_set_namespace:
  * @window: A layer surface.
  * @name_space: The namespace of this layer surface.
