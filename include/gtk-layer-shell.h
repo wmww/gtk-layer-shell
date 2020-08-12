@@ -124,6 +124,20 @@ struct zwlr_layer_surface_v1 *gtk_layer_get_zwlr_layer_surface_v1 (GtkWindow *wi
 void gtk_layer_set_namespace (GtkWindow *window, char const* name_space);
 
 /**
+ * gtk_layer_get_namespace:
+ * @window: A layer surface.
+ *
+ * NOTE: this function does not return ownership of the string. Do not free the returned string.
+ * Future calls into the library may invalidate the returned string.
+ *
+ * Returns: a reference to the namespace property. If namespace is unset, returns the
+ * default namespace ("gtk-layer-shell"). Never returns %NULL.
+ *
+ * Since: 0.5
+ */
+const char *gtk_layer_get_namespace (GtkWindow *window);
+
+/**
  * gtk_layer_set_layer:
  * @window: A layer surface.
  * @layer: The layer on which this surface appears.
@@ -135,6 +149,16 @@ void gtk_layer_set_namespace (GtkWindow *window, char const* name_space);
  * Default is #GTK_LAYER_SHELL_LAYER_TOP
  */
 void gtk_layer_set_layer (GtkWindow *window, GtkLayerShellLayer layer);
+
+/**
+ * gtk_layer_get_layer:
+ * @window: A layer surface.
+ *
+ * Returns: the current layer.
+ *
+ * Since: 0.5
+ */
+GtkLayerShellLayer gtk_layer_get_layer (GtkWindow *window);
 
 /**
  * gtk_layer_set_monitor:
@@ -149,6 +173,19 @@ void gtk_layer_set_layer (GtkWindow *window, GtkLayerShellLayer layer);
 void gtk_layer_set_monitor (GtkWindow *window, GdkMonitor *monitor);
 
 /**
+ * gtk_layer_get_monitor:
+ * @window: A layer surface.
+ *
+ * NOTE: To get which monitor the surface is actually on, use
+ * gdk_display_get_monitor_at_window().
+ *
+ * Returns: the monitor this surface will/has requested to be on, can be %NULL.
+ *
+ * Since: 0.5
+ */
+GdkMonitor *gtk_layer_get_monitor (GtkWindow *window);
+
+/**
  * gtk_layer_set_anchor:
  * @window: A layer surface.
  * @edge: A #GtkLayerShellEdge this layer suface may be anchored to.
@@ -161,6 +198,16 @@ void gtk_layer_set_monitor (GtkWindow *window, GdkMonitor *monitor);
  * Default is %FALSE for each #GtkLayerShellEdge
  */
 void gtk_layer_set_anchor (GtkWindow *window, GtkLayerShellEdge edge, gboolean anchor_to_edge);
+
+/**
+ * gtk_layer_get_anchor:
+ * @window: A layer surface.
+ *
+ * Returns: if this surface is anchored to the given edge.
+ *
+ * Since: 0.5
+ */
+gboolean gtk_layer_get_anchor (GtkWindow *window, GtkLayerShellEdge edge);
 
 /**
  * gtk_layer_set_margin:
@@ -200,6 +247,16 @@ int gtk_layer_get_margin (GtkWindow *window, GtkLayerShellEdge edge);
 void gtk_layer_set_exclusive_zone (GtkWindow *window, int exclusive_zone);
 
 /**
+ * gtk_layer_get_exclusive_zone:
+ * @window: A layer surface.
+ *
+ * Returns: the window's exclusive zone (which may have been set manually or automatically)
+ *
+ * Since: 0.5
+ */
+int gtk_layer_get_exclusive_zone (GtkWindow *window);
+
+/**
  * gtk_layer_auto_exclusive_zone_enable:
  * @window: A layer surface.
  *
@@ -213,6 +270,16 @@ void gtk_layer_set_exclusive_zone (GtkWindow *window, int exclusive_zone);
 void gtk_layer_auto_exclusive_zone_enable (GtkWindow *window);
 
 /**
+ * gtk_layer_auto_exclusive_zone_is_enabled:
+ * @window: A layer surface.
+ *
+ * Returns: if the surface's exclusive zone is set to change based on the window's size
+ *
+ * Since: 0.5
+ */
+gboolean gtk_layer_auto_exclusive_zone_is_enabled (GtkWindow *window);
+
+/**
  * gtk_layer_set_keyboard_interactivity:
  * @window: A layer surface.
  * @interacitvity: Whether the layer surface should receive keyboard events.
@@ -222,6 +289,16 @@ void gtk_layer_auto_exclusive_zone_enable (GtkWindow *window);
  * Default is %FALSE
  */
 void gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interacitvity);
+
+/**
+ * gtk_layer_get_keyboard_interactivity:
+ * @window: A layer surface.
+ *
+ * Returns: if keybaord interacitvity is enabled
+ *
+ * Since: 0.5
+ */
+gboolean gtk_layer_get_keyboard_interactivity (GtkWindow *window);
 
 G_END_DECLS
 
