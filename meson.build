@@ -1,6 +1,6 @@
 project('gtk-layer-shell',
     ['c'],
-    version: '0.2.0',
+    version: '0.3.0',
     license: 'LGPLv3',
     meson_version: '>=0.45.1',
     default_options: ['c_std=gnu11', 'warning_level=3'])
