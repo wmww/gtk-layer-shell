@@ -361,6 +361,12 @@ custom_shell_surface_get_layer_surface (CustomShellSurface *shell_surface)
         return NULL;
 }
 
+struct zwlr_layer_surface_v1 *
+layer_surface_get_get_zwlr_layer_surface_v1(LayerSurface *self)
+{
+    return self->layer_surface;
+}
+
 void
 layer_surface_set_layer (LayerSurface *self, enum zwlr_layer_shell_v1_layer layer)
 {
