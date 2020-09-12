@@ -11,8 +11,13 @@ add_project_arguments(
 
 gtk = dependency('gtk+-wayland-3.0', version: '>=3.22.0')
 wayland_client = dependency('wayland-client', version: '>=1.10.0')
+
+# only required for the tests
+wayland_server = dependency('wayland-server', version: '>=1.10.0', required: false)
+
 # wayland_scanner is required, but we can find it without pkg-config
 wayland_scanner = dependency('wayland-scanner', version: '>=1.10.0', required: false)
+
 # use system xdg-shell protocol when available
 wayland_protocols = dependency('wayland-protocols', version: '>=1.16', required: false)
 
@@ -29,6 +34,10 @@ subdir('demo')
 
 if get_option('docs')
     subdir('doc')
+endif
+
+if get_option('tests')
+    subdir('test')
 endif
 
 gtk_layer_shell_dep = declare_dependency(

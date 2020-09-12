@@ -17,7 +17,7 @@ GTK Layer Shell is packaged for the following distros. If you've packaged it for
 ## Building from source
 1. Clone this repo
 2. Install build dependencies (see below)
-3. `$ meson build -Dexamples=true -Ddocs=true`
+3. `$ meson build -Dexamples=true -Ddocs=true -Dtests=true`
 4. `$ ninja -C build`
 5. `$ sudo ninja -C build install`
 6. `$ sudo ldconfig`
@@ -35,8 +35,9 @@ sudo apt install meson libwayland-dev libgtk-3-dev gobject-introspection libgire
 ```
 
 ### Meson options
-* `-Dexamples`: If to build gtk-layer-example and if to build and install gtk-layer-demo (default false)
-* `-Ddocs`: If to generate the docs (default false)
+* `-Dexamples`: If to build gtk-layer-example and if to build and install gtk-layer-demo (default: `false`)
+* `-Ddocs`: If to generate the docs (default: `false`)
+* `-Dtests`: If to build the tests (default: `false`)
 
 ## Using the library
 * `gtk-layer-demo` is installed if examples are enabled. Its UI exposes all features of the library, and it's useful for testing layer shell support in compositors
