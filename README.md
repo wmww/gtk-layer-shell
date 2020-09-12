@@ -2,7 +2,7 @@
 
 ![GTK Layer Shell demo screenshot](https://i.imgur.com/dIuYcBM.png)
 
-A library to write [GTK](https://www.gtk.org/) applications that use [Layer Shell](https://github.com/swaywm/wlr-protocols/blob/master/unstable/wlr-layer-shell-unstable-v1.xml). Layer Shell is a Wayland protocol for desktop shell components, such as panels, notifications and wallpapers. You can use it to anchor your windows to a corner or edge of the output, or stretch them across the entire output. This library only makes sense on Wayland compositors that support Layer Shell, and will not work on X11. It supports all Layer Shell features including popups and popovers (GTK popups Just Work™). Please open issues for any bugs you come across.
+A library to write [GTK](https://www.gtk.org/) applications that use [Layer Shell](https://github.com/swaywm/wlr-protocols/blob/master/unstable/wlr-layer-shell-unstable-v1.xml). Layer Shell is a Wayland protocol for desktop shell components, such as panels, notifications and wallpapers. You can use it to anchor your windows to a corner or edge of the output, or stretch them across the entire output. This library will not work on X11, or Wayland compositors that do not support wlr-layer-shell-unstable-v1 (NOTE: Gnome does __not__ support Layer Shell). It supports all Layer Shell features including popups and popovers (GTK popups Just Work™). Please open issues for any bugs you come across.
 
 ## Installing with your package manager
 GTK Layer Shell is packaged for the following distros. If you've packaged it for a distro not listed, please make a PR or ask for it to be added in an issue.
@@ -50,7 +50,7 @@ GTK Layer Shell is licensed under the GNU Lesser General Public License version 
 
 __By contributing to this project, you agree for your modifications to be licensed under the same license as the files they are made to (which may be a permissive license)__
 
-### Rationale
+### Licensing rationale
 I want everyone to be able to use GTK Layer Shell however they desire, but parts of it are extracted from GTK. Therefore, the project as a whole is licensed under [GNU Lesser General Public License (LGPL) version 3](https://www.gnu.org/licenses/lgpl-3.0.en.html) or any later version (a newer version of the same license as GTK). See [LICENSE_LGPL.txt](LICENSE_LGPL.txt) and [LICENSE_GPL.txt](LICENSE_GPL.txt) for details. Almost all of the non-generated code, however, is licensed under [MIT](https://en.wikipedia.org/wiki/MIT_License) ([LICENSE_MIT.txt](LICENSE_MIT.txt)). At the top of each file should be a header that specifies which license applies to it. Please refer to that if in doubt.
 
 ### What this means for you
