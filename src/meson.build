@@ -9,7 +9,7 @@ srcs = files(
     'simple-conversions.c')
 
 gtk_layer_shell_lib = library('gtk-layer-shell',
-    srcs, protocol_srcs,
+    srcs, client_protocol_srcs,
     include_directories: [gtk_layer_shell_inc, gtk_priv_inc],
     dependencies: [gtk, wayland_client],
     version: meson.project_version(),

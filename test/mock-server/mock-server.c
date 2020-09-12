@@ -13,6 +13,8 @@
 // It does not show anything on the screen, and is only as conforment as is required by GTK
 
 #include <wayland-server.h>
+#include "xdg-shell-server.h"
+#include "wlr-layer-shell-unstable-v1-server.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
