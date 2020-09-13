@@ -23,3 +23,5 @@ foreach test_client : test_clients
             test_client
         ])
 endforeach
+
+test('check-licenses', py, args: [meson.current_source_dir() + '/check-licenses.py'])

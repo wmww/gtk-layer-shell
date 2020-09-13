@@ -19,7 +19,7 @@ import subprocess
 from fnmatch import fnmatch
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARNING)
 
 IGNORE_PATTERNS = [
     '*/.git',
@@ -30,7 +30,7 @@ IGNORE_PATTERNS = [
     '*.editorconfig',
     '*.txt',
     '*.xml',
-    '*/check_license.py',
+    '*/check-licenses.py',
     '*/meson.build',
     '*/gtk-priv/scripts/code.py', # Is MIT but has the LGPL license text in a string
 ]
