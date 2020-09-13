@@ -35,19 +35,25 @@ extern struct wl_display* display;
 #define FATAL_NOT_IMPL FATAL_FMT("%s() not implemented", __func__); exit(1)
 #define ASSERT(assertion) do {if (!(assertion)) {FATAL_FMT("assertion failed: %s", #assertion);}} while (0)
 
-#define alloc_struct(type) ((type*)alloc_zeroed(sizeof(type)))
+#define ALLOC_STRUCT(type) ((type*)alloc_zeroed(sizeof(type)))
 void* alloc_zeroed(size_t size);
+
+#define OVERRIDE_ARGS const struct wl_message* message, union wl_argument* args
+#define OVERRIDE_REQUEST(type, method) install_request_override(&type##_interface, #method, type##_##method)
+#define NEW_ID_ARG(name, index) ASSERT(type_code_at_index(message, index) == 'n'); uint32_t name = args[index].n;
 
 typedef struct
 {
     struct wl_resource* pending_frame;
 } SurfaceData;
 
+typedef void (*RequestOverrideFunction)(struct wl_resource* resource, const struct wl_message* message, union wl_argument* args);
+void install_request_override(const struct wl_interface* interface, const char* name, RequestOverrideFunction function);
 void use_default_impl(struct wl_resource* resource);
 void free_data_destroy_func(struct wl_resource *resource);
-void wl_compositor_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id);
+char type_code_at_index(const struct wl_message* message, int index);
+
 void wl_seat_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id);
-void xdg_wm_base_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id);
-void zwlr_layer_shell_v1_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id);
+void install_overrides();
 
 #endif // MOCK_SERVER_H

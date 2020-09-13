@@ -30,12 +30,48 @@ static const char* get_display_name()
     return result;
 }
 
+typedef struct
+{
+    const struct wl_message* message;
+    RequestOverrideFunction function;
+    struct wl_list link;
+} RequestOverride;
+
+struct wl_list request_overrides;
+
+void install_request_override(const struct wl_interface* interface, const char* name, RequestOverrideFunction function)
+{
+    for (int i = 0; i < interface->method_count; i++)
+    {
+        if (strcmp(name, interface->methods[i].name) == 0)
+        {
+            RequestOverride* override = ALLOC_STRUCT(RequestOverride);
+            override->message = &interface->methods[i];
+            override->function = function;
+            wl_list_insert(&request_overrides, &override->link);
+            return;
+        }
+    }
+    FATAL_FMT("Interface %s does not have a request named %s", interface->name, name);
+}
+
 static int default_dispatcher(const void* data, void* resource, uint32_t opcode, const struct wl_message* message, union wl_argument* args)
 {
+    // First, check if there is an override
+    RequestOverride* override;
+    wl_list_for_each(override, &request_overrides, link)
+    {
+        if (override->message == message)
+        {
+            override->function(resource, message, args);
+            return 0;
+        }
+    }
+
     // If there are any new-id type arguments, resources need to be created for them
     // See https://wayland.freedesktop.org/docs/html/apb.html#Client-structwl__message
     int arg = 0;
-    for (const char* c = message->signature; *c != '\0'; c++)
+    for (const char* c = message->signature; *c; c++)
     {
         if (*c == 'n' && args[arg].n != 0)
         {
@@ -79,6 +115,22 @@ void free_data_destroy_func(struct wl_resource *resource)
     free(data);
 }
 
+char type_code_at_index(const struct wl_message* message, int index)
+{
+    int i = 0;
+    for (const char* c = message->signature; *c; c++)
+    {
+        if (*c >= 'a' && *c <= 'z')
+        {
+            if (i == index)
+                return *c;
+            else
+                i++;
+        }
+    }
+    FATAL_FMT(".%s does not have an argument %d", message->name, index);
+}
+
 static void client_disconnect(struct wl_listener *listener, void *data)
 {
     wl_display_terminate(display);
@@ -100,6 +152,9 @@ static struct wl_listener client_connect_listener = {
 
 int main(int argc, const char** argv)
 {
+    wl_list_init(&request_overrides);
+    install_overrides();
+
     display = wl_display_create();
     if (wl_display_add_socket(display, get_display_name()) != 0)
     {
@@ -108,13 +163,13 @@ int main(int argc, const char** argv)
 
     wl_display_add_client_created_listener(display, &client_connect_listener);
 
+    wl_global_create(display, &wl_seat_interface, 6, NULL, wl_seat_bind);
     default_global_create(display, &wl_shm_interface, 1);
     default_global_create(display, &wl_output_interface, 2);
     default_global_create(display, &wl_data_device_manager_interface, 2);
-    wl_global_create(display, &wl_compositor_interface, 4, NULL, wl_compositor_bind);
-    wl_global_create(display, &wl_seat_interface, 6, NULL, wl_seat_bind);
-    wl_global_create(display, &xdg_wm_base_interface, 2, NULL, xdg_wm_base_bind);
-    wl_global_create(display, &zwlr_layer_shell_v1_interface, 3, NULL, zwlr_layer_shell_v1_bind);
+    default_global_create(display, &wl_compositor_interface, 4);
+    default_global_create(display, &xdg_wm_base_interface, 2);
+    default_global_create(display, &zwlr_layer_shell_v1_interface, 3);
 
     wl_display_run(display);
 
