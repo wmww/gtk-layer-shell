@@ -50,10 +50,10 @@ def format_stream(name, stream):
     r_pad = l_pad
     if len(name) % 2 == 1:
         r_pad += 1
-    header = '_' * l_pad + '| ' + name + ' |' + '_' * r_pad
-    body = '\n|'.join('  ' + line for line in stream.strip().splitlines())
-    footer = '_' * 42
-    return ' ' + header + '\n|\n|' + body + '\n|' + footer
+    header = '─' * l_pad + '┤ ' + name + ' ├' + '─' * r_pad + '┈'
+    body = '\n│'.join('  ' + line for line in stream.strip().splitlines())
+    footer = '─' * 40 + '┈'
+    return '╭' + header + '\n│\n│' + body + '\n│\n╰' + footer
 
 def run_test_processess(name, server_bin, client_bin, xdg_runtime, wayland_display):
     server = subprocess.Popen(
