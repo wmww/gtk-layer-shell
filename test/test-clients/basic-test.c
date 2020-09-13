@@ -13,7 +13,7 @@
 
 void emit_expectations()
 {
-    EXPECT_REQUEST(zwlr_layer_shell_v1 .get_layer_surface 1 foobar);
+    EXPECT_MESSAGE(zwlr_layer_shell_v1 .get_layer_surface 1 foobar);
 }
 
 void run_test()

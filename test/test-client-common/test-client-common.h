@@ -17,8 +17,7 @@
 #include <stdio.h>
 
 // Tell the test script that a request containing the given space-separated components is expected
-#define EXPECT_REQUEST(message) printf("REQUEST: %s\n", #message)
-#define EXPECT_EVENT(message) printf("EVENT: %s\n", #message)
+#define EXPECT_MESSAGE(message) printf("WL: %s\n", #message)
 
 // Test failures quit GTK main and set a non-zero return code, but let GTK shut down instead of exiting immediately
 // do {...} while (0) construct is used to force ; at the end of lines

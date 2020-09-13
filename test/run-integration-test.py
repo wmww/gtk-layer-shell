@@ -11,6 +11,9 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 '''
 
+# This script runs an integration test. See test/README.md for details
+usage = 'Usage: python3 run-test <test-build-dir> <test-name>'
+
 import os
 from os import path
 import sys
@@ -98,11 +101,7 @@ def run_test_processess(name, server_bin, client_bin, xdg_runtime, wayland_displ
     return client_streams
 
 def assertion_matches_line(assertion, line):
-    is_request = '  -> ' in line
-    if assertion[0] == 'REQUEST:' and not is_request:
-        return False
-    if assertion[0] == 'EVENT:' and is_request:
-        return False
+    assert assertion[0] == 'WL:', '"' + assertion + '" does not start with WL:'
     for i in assertion[1:]:
         if not i in line:
             return False
@@ -131,18 +130,26 @@ def run_test(name):
 
     assert_lines = []
     for line in client_stdout.strip().splitlines():
-        assert (
-            line.startswith('REQUEST: ') or
-            line.startswith('EVENT: ') or
-            not line.strip()), 'Invalid assertion line: ' + line
-        assert_lines.append(line.strip().split())
+        line = line.strip()
+        if line:
+            if not line.startswith('WL: '):
+                print(format_stream('assertions', client_stdout))
+                print()
+                print('Invalid assertion line: "' + line + '" does not start with WL:')
+                print('There should be no unexpected stdout output')
+                exit(1)
+            assert_lines.append(line.split())
 
     log_lines = []
     for line in client_stderr.splitlines():
-        assert (
-            (line.startswith('[') and line.endswith(')')) or
-            not line.strip()), 'Invalid stderr line: ' + line
-        log_lines.append(line)
+        line = line.strip()
+        if line:
+            if not line.startswith('[') or not line.endswith(')'):
+                print(format_stream('messages', client_stderr))
+                print()
+                print('Invalid stderr line: ' + line)
+                print('There should be no unexpected stderr output')
+            log_lines.append(line)
 
     try:
         verify_result(assert_lines, log_lines)
@@ -155,6 +162,6 @@ def run_test(name):
         exit(1)
 
 if __name__ == '__main__':
-    assert len(sys.argv) == 3, 'Incorrect number of args. Usage: python3 run-test <test-build-dir> <test-name>'
+    assert len(sys.argv) == 3, 'Incorrect number of args. ' + usage
     run_test(sys.argv[2])
     print('Passed')

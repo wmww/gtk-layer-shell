@@ -13,14 +13,14 @@
 
 void emit_expectations()
 {
-    EXPECT_REQUEST(zwlr_layer_surface_v1 .set_anchor 1);
-    EXPECT_REQUEST(zwlr_layer_surface_v1 .set_anchor 2);
-    EXPECT_REQUEST(zwlr_layer_surface_v1 .set_anchor 4);
-    EXPECT_REQUEST(zwlr_layer_surface_v1 .set_anchor 8);
-    EXPECT_REQUEST(zwlr_layer_surface_v1 .set_anchor 0);
-    EXPECT_REQUEST(zwlr_layer_surface_v1 .set_anchor 3);
-    EXPECT_REQUEST(zwlr_layer_surface_v1 .set_anchor 15);
-    EXPECT_REQUEST(zwlr_layer_surface_v1 .set_anchor 0);
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_anchor 1);
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_anchor 2);
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_anchor 4);
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_anchor 8);
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_anchor 0);
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_anchor 3);
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_anchor 15);
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_anchor 0);
 }
 
 void set_anchors(GtkWindow* window, gboolean top, gboolean bottom, gboolean left, gboolean right)
