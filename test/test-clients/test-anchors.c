@@ -11,15 +11,7 @@
 
 #include "test-client-common.h"
 
-void set_anchors(GtkWindow* window, gboolean top, gboolean bottom, gboolean left, gboolean right)
-{
-    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_TOP, top);
-    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_BOTTOM, bottom);
-    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_LEFT, left);
-    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_RIGHT, right);
-}
-
-int main()
+void emit_expectations()
 {
     EXPECT_REQUEST(zwlr_layer_surface_v1 .set_anchor 1);
     EXPECT_REQUEST(zwlr_layer_surface_v1 .set_anchor 2);
@@ -29,8 +21,18 @@ int main()
     EXPECT_REQUEST(zwlr_layer_surface_v1 .set_anchor 3);
     EXPECT_REQUEST(zwlr_layer_surface_v1 .set_anchor 15);
     EXPECT_REQUEST(zwlr_layer_surface_v1 .set_anchor 0);
+}
 
-    gtk_init(0, NULL);
+void set_anchors(GtkWindow* window, gboolean top, gboolean bottom, gboolean left, gboolean right)
+{
+    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_TOP, top);
+    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_BOTTOM, bottom);
+    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_LEFT, left);
+    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_RIGHT, right);
+}
+
+void run_test()
+{
     GtkWindow *window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     gtk_layer_init_for_window(window);
 
@@ -48,7 +50,4 @@ int main()
     set_anchors(window, FALSE, FALSE, FALSE, FALSE);
 
     add_quit_timeout();
-    gtk_main();
-
-    return 0;
 }

@@ -20,7 +20,19 @@
 #define EXPECT_REQUEST(message) printf("REQUEST: %s\n", #message)
 #define EXPECT_EVENT(message) printf("EVENT: %s\n", #message)
 
+// Test failures quit GTK main and set a non-zero return code, but let GTK shut down instead of exiting immediately
+// do {...} while (0) construct is used to force ; at the end of lines
+#define FAIL_TEST_FMT(format, ...) do {fprintf(stderr, "Failure at %s:%d: " format "\n", __FILE__, __LINE__, ##__VA_ARGS__); mark_test_failed();} while (0)
+#define FAIL_TEST(message) FAIL_TEST_FMT(message"%s", "")
+#define ASSERT(assertion) do {if (!(assertion)) {FAIL_TEST_FMT("assertion failed: %s", #assertion);}} while (0)
+
+// Implemented in test-client-common.c
 void add_quit_timeout();
 void setup_window(GtkWindow* window);
+void mark_test_failed();
+
+// Implemented in the test
+void emit_expectations();
+void run_test();
 
 #endif // TEST_CLIENT_COMMON

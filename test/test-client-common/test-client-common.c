@@ -11,10 +11,19 @@
 
 #include "test-client-common.h"
 
+static int return_code = 0;
+
 static gboolean quit_timeout(gpointer _data)
 {
     (void)_data;
     gtk_main_quit();
+    return FALSE;
+}
+
+static gboolean test_failed_timeout(gpointer _data)
+{
+    (void)_data;
+    FAIL_TEST("test timed out");
     return FALSE;
 }
 
@@ -33,4 +42,20 @@ void setup_window(GtkWindow* window)
         "</span>");
     gtk_container_add(GTK_CONTAINER(window), label);
     gtk_container_set_border_width(GTK_CONTAINER(window), 12);
+}
+
+void mark_test_failed()
+{
+    return_code = 1;
+    gtk_main_quit();
+}
+
+int main()
+{
+    emit_expectations();
+    gtk_init(0, NULL);
+    g_timeout_add(5000, test_failed_timeout, NULL);
+    run_test();
+    gtk_main();
+    return return_code;
 }
