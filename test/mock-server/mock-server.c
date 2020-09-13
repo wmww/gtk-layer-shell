@@ -30,13 +30,47 @@ static const char* get_display_name()
     return result;
 }
 
-int ignore_or_destroy_dispatcher(const void* data, void* resource, uint32_t opcode, const struct wl_message* message, union wl_argument* args)
+static int default_dispatcher(const void* data, void* resource, uint32_t opcode, const struct wl_message* message, union wl_argument* args)
 {
-    if (strcmp(message[opcode].name, "destroy") == 0)
+    // If there are any new-id type arguments, resources need to be created for them
+    // See https://wayland.freedesktop.org/docs/html/apb.html#Client-structwl__message
+    int arg = 0;
+    for (const char* c = message->signature; *c != '\0'; c++)
+    {
+        if (*c == 'n' && args[arg].n != 0)
+        {
+            struct wl_resource* new_resource = wl_resource_create(
+                wl_resource_get_client(resource),
+                message->types[arg],
+                wl_resource_get_version(resource),
+                args[arg].n);
+            wl_resource_set_dispatcher(new_resource, default_dispatcher, NULL, NULL, NULL);
+        }
+        if (*c >= 'a' && *c <= 'z')
+            arg++;
+    }
+    if (strcmp(message->name, "destroy") == 0)
     {
         wl_resource_destroy(resource);
     }
     return 0;
+}
+
+void use_default_impl(struct wl_resource* resource)
+{
+    wl_resource_set_dispatcher(resource, default_dispatcher, NULL, NULL, NULL);
+}
+
+static void default_global_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id)
+{
+    struct wl_interface* interface = data;
+    struct wl_resource* resource = wl_resource_create(client, interface, version, id);
+    use_default_impl(resource);
+};
+
+void default_global_create(struct wl_display* display, const struct wl_interface* interface, int version)
+{
+    wl_global_create(display, interface, version, (void*)interface, default_global_bind);
 }
 
 void free_data_destroy_func(struct wl_resource *resource)
@@ -64,11 +98,6 @@ static struct wl_listener client_connect_listener = {
     .notify = client_connect,
 };
 
-static void wl_output_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id)
-{
-    wl_resource_create(client, &wl_output_interface, version, id);
-};
-
 int main(int argc, const char** argv)
 {
     display = wl_display_create();
@@ -79,11 +108,11 @@ int main(int argc, const char** argv)
 
     wl_display_add_client_created_listener(display, &client_connect_listener);
 
+    default_global_create(display, &wl_shm_interface, 1);
+    default_global_create(display, &wl_output_interface, 2);
+    default_global_create(display, &wl_data_device_manager_interface, 2);
     wl_global_create(display, &wl_compositor_interface, 4, NULL, wl_compositor_bind);
-    wl_global_create(display, &wl_shm_interface, 1, NULL, wl_shm_bind);
     wl_global_create(display, &wl_seat_interface, 6, NULL, wl_seat_bind);
-    wl_global_create(display, &wl_data_device_manager_interface, 2, NULL, wl_data_device_manager_bind);
-    wl_global_create(display, &wl_output_interface, 2, NULL, wl_output_bind);
     wl_global_create(display, &xdg_wm_base_interface, 2, NULL, xdg_wm_base_bind);
     wl_global_create(display, &zwlr_layer_shell_v1_interface, 3, NULL, zwlr_layer_shell_v1_bind);
 

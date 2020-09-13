@@ -3,7 +3,6 @@ mock_server_srcs = [
     'mock-server.c',
     'compositor.c',
     'seat.c',
-    'shm.c',
     'xdg-shell.c',
     'layer-shell.c',
 ]

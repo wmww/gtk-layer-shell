@@ -104,7 +104,7 @@ static void wl_compositor_create_region(struct wl_client * client, struct wl_res
         &wl_region_interface,
         wl_resource_get_version(resource),
         id);
-    wl_resource_set_dispatcher(region, ignore_or_destroy_dispatcher, NULL, NULL, NULL);
+    use_default_impl(region);
 }
 
 static const struct wl_compositor_interface wl_compositor_impl = {

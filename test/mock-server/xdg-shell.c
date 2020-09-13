@@ -11,93 +11,6 @@
 
 #include "mock-server.h"
 
-static void xdg_toplevel_destroy(struct wl_client *client, struct wl_resource *resource)
-{
-    wl_resource_destroy(resource);
-}
-
-static void xdg_toplevel_set_parent(struct wl_client *client, struct wl_resource *resource, struct wl_resource *parent)
-{
-    // Ignore
-}
-
-static void xdg_toplevel_set_title(struct wl_client *client, struct wl_resource *resource, const char *title)
-{
-    // Ignore
-}
-
-static void xdg_toplevel_set_app_id(struct wl_client *client, struct wl_resource *resource, const char *app_id)
-{
-    // Ignore
-}
-
-static void xdg_toplevel_show_window_menu(struct wl_client *client, struct wl_resource *resource, struct wl_resource *seat, uint32_t serial, int32_t x, int32_t y)
-{
-    // Ignore
-}
-
-static void xdg_toplevel_move(struct wl_client *client, struct wl_resource *resource, struct wl_resource *seat, uint32_t serial)
-{
-    // Ignore
-}
-
-static void xdg_toplevel_resize(struct wl_client *client, struct wl_resource *resource, struct wl_resource *seat, uint32_t serial, uint32_t edges)
-{
-    // Ignore
-}
-
-static void xdg_toplevel_set_max_size(struct wl_client *client, struct wl_resource *resource, int32_t width, int32_t height)
-{
-    // Ignore
-}
-
-static void xdg_toplevel_set_min_size(struct wl_client *client, struct wl_resource *resource, int32_t width, int32_t height)
-{
-    // Ignore
-}
-
-static void xdg_toplevel_set_maximized(struct wl_client *client, struct wl_resource *resource)
-{
-    // Ignore
-}
-
-static void xdg_toplevel_unset_maximized(struct wl_client *client, struct wl_resource *resource)
-{
-    // Ignore
-}
-
-static void xdg_toplevel_set_fullscreen(struct wl_client *client, struct wl_resource *resource, struct wl_resource *output)
-{
-    // Ignore
-}
-
-static void xdg_toplevel_unset_fullscreen(struct wl_client *client, struct wl_resource *resource)
-{
-    // Ignore
-}
-
-static void xdg_toplevel_set_minimized(struct wl_client *client, struct wl_resource *resource)
-{
-    // Ignore
-}
-
-static const struct xdg_toplevel_interface xdg_toplevel_impl = {
-    .destroy = xdg_toplevel_destroy,
-    .set_parent = xdg_toplevel_set_parent,
-    .set_title = xdg_toplevel_set_title,
-    .set_app_id = xdg_toplevel_set_app_id,
-    .show_window_menu = xdg_toplevel_show_window_menu,
-    .move = xdg_toplevel_move,
-    .resize = xdg_toplevel_resize,
-    .set_max_size = xdg_toplevel_set_max_size,
-    .set_min_size = xdg_toplevel_set_min_size,
-    .set_maximized = xdg_toplevel_set_maximized,
-    .unset_maximized = xdg_toplevel_unset_maximized,
-    .set_fullscreen = xdg_toplevel_set_fullscreen,
-    .unset_fullscreen = xdg_toplevel_unset_fullscreen,
-    .set_minimized = xdg_toplevel_set_minimized,
-};
-
 static void xdg_surface_destroy(struct wl_client *client, struct wl_resource *resource)
 {
     wl_resource_destroy(resource);
@@ -106,7 +19,12 @@ static void xdg_surface_destroy(struct wl_client *client, struct wl_resource *re
 static void xdg_surface_get_toplevel(struct wl_client *client, struct wl_resource *resource, uint32_t id)
 {
     struct wl_resource* toplevel = wl_resource_create(client, &xdg_toplevel_interface, wl_resource_get_version(resource), id);
-    wl_resource_set_implementation(toplevel, &xdg_toplevel_impl, NULL, NULL);
+    use_default_impl(toplevel);
+    struct wl_array states;
+    wl_array_init(&states);
+    xdg_toplevel_send_configure(toplevel, 0, 0, &states);
+    wl_array_release(&states);
+    xdg_surface_send_configure(resource, wl_display_next_serial(display));
 }
 
 static void xdg_surface_get_popup(struct wl_client *client, struct wl_resource *resource, uint32_t id, struct wl_resource *parent, struct wl_resource *positioner)
