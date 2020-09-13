@@ -2,6 +2,7 @@ subdir('mock-server')
 
 test_clients = [
     'basic-test',
+    'test-anchors',
 ]
 test_client_common_inc = include_directories('test-client-common')
 py = find_program('python3')

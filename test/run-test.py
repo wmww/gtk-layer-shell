@@ -130,12 +130,17 @@ def run_test(name):
 
     assert_lines = []
     for line in client_stdout.strip().splitlines():
-        assert line.startswith('REQUEST: ') or line.startswith('EVENT: '), 'Invalid assertion line: ' + line
+        assert (
+            line.startswith('REQUEST: ') or
+            line.startswith('EVENT: ') or
+            not line.strip()), 'Invalid assertion line: ' + line
         assert_lines.append(line.strip().split())
 
     log_lines = []
     for line in client_stderr.splitlines():
-        assert line.startswith('[') and line.endswith(')'), 'Invalid stderr line: ' + line
+        assert (
+            (line.startswith('[') and line.endswith(')')) or
+            not line.strip()), 'Invalid stderr line: ' + line
         log_lines.append(line)
 
     try:
