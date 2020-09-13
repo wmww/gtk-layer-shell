@@ -118,8 +118,8 @@ def verify_result(assert_lines, log_lines):
         i += 1
 
 def run_test(name):
-    server_bin = get_bin('test/mock-server/mock-server')
-    client_bin = get_bin(path.join('test/test-clients', name))
+    server_bin = get_bin('mock-server/mock-server')
+    client_bin = get_bin(path.join('test-clients', name))
     wayland_display = 'wayland-test'
     xdg_runtime = get_xdg_runtime_dir()
 
@@ -141,6 +141,6 @@ def run_test(name):
     verify_result(assert_lines, log_lines)
 
 if __name__ == '__main__':
-    assert len(sys.argv) == 3, 'Incorrect number of args. Usage: python3 run-test <build-dir> <test-name>'
+    assert len(sys.argv) == 3, 'Incorrect number of args. Usage: python3 run-test <test-build-dir> <test-name>'
     run_test(sys.argv[2])
     print('Passed')
