@@ -134,7 +134,7 @@ static const struct xdg_surface_interface xdg_surface_impl = {
 
 static void xdg_wm_base_destroy(struct wl_client *client, struct wl_resource *resource)
 {
-    // ignore
+    wl_resource_destroy(resource);
 }
 
 static void xdg_wm_base_create_positioner(struct wl_client *client, struct wl_resource *resource, uint32_t id)

@@ -84,6 +84,7 @@ int main(int argc, const char** argv)
     wl_global_create(display, &wl_seat_interface, 6, NULL, wl_seat_bind);
     wl_global_create(display, &wl_output_interface, 2, NULL, wl_output_bind);
     wl_global_create(display, &xdg_wm_base_interface, 2, NULL, xdg_wm_base_bind);
+    wl_global_create(display, &zwlr_layer_shell_v1_interface, 3, NULL, zwlr_layer_shell_v1_bind);
 
     wl_display_run(display);
 

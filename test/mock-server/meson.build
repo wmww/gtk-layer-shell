@@ -5,6 +5,7 @@ mock_server_srcs = [
     'seat.c',
     'shm.c',
     'xdg-shell.c',
+    'layer-shell.c',
 ]
 
 mock_server = executable(
