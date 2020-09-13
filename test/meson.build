@@ -14,7 +14,7 @@ foreach test_client : test_clients
         'test-client-common/test-client-common.c',
         'test-clients/' + test_client + '.c',
     )
-    run_test_script = files(meson.current_source_dir() + '/run-test.py')
+    run_test_script = files(meson.current_source_dir() + '/run-integration-test.py')
     exe = executable(
         test_client,
         srcs,
