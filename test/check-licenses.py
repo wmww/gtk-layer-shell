@@ -11,6 +11,8 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 '''
 
+# This script checks that every soruce file in the project has an appropriate license
+
 import logging
 import re
 import os
@@ -19,7 +21,7 @@ import subprocess
 from fnmatch import fnmatch
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARNING)
 
 IGNORE_PATTERNS = [
     '*/.git',
@@ -30,8 +32,9 @@ IGNORE_PATTERNS = [
     '*.editorconfig',
     '*.txt',
     '*.xml',
-    '*/check_license.py',
+    '*/check-licenses.py',
     '*/meson.build',
+    '*.kate-swp',
     '*/gtk-priv/scripts/code.py', # Is MIT but has the LGPL license text in a string
 ]
 
@@ -104,6 +107,15 @@ def print_list(name, files):
         print('No files are licensed under ' + name)
     print()
 
+def load_file(p):
+    try:
+        with open(p, 'r') as f:
+            contents = f.read()
+            return canonify_str(contents)
+    except Exception as e:
+        raise RuntimeError('Failed to read ' + p + ': ' + str(e))
+
+
 def main():
     logger.info('Project root: ' + get_project_root())
     all_files = get_important_files()
@@ -115,8 +127,7 @@ def main():
     mit_example = canonify_str(MIT_EXAMPLE)
     lgpl3_example = canonify_str(LGPL3_EXAMPLE)
     for p in all_files:
-        with open(p, 'r') as f:
-            contents = canonify_str(f.read())
+            contents = load_file(p)
             found = 0
             if mit_example in contents:
                 mit_files.append(p)
