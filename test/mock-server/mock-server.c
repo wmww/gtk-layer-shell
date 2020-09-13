@@ -82,6 +82,7 @@ int main(int argc, const char** argv)
     wl_global_create(display, &wl_compositor_interface, 4, NULL, wl_compositor_bind);
     wl_global_create(display, &wl_shm_interface, 1, NULL, wl_shm_bind);
     wl_global_create(display, &wl_seat_interface, 6, NULL, wl_seat_bind);
+    wl_global_create(display, &wl_data_device_manager_interface, 2, NULL, wl_data_device_manager_bind);
     wl_global_create(display, &wl_output_interface, 2, NULL, wl_output_bind);
     wl_global_create(display, &xdg_wm_base_interface, 2, NULL, xdg_wm_base_bind);
     wl_global_create(display, &zwlr_layer_shell_v1_interface, 3, NULL, zwlr_layer_shell_v1_bind);

@@ -47,6 +47,7 @@ int ignore_or_destroy_dispatcher(const void* data, void* resource, uint32_t opco
 void free_data_destroy_func(struct wl_resource *resource);
 void wl_compositor_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id);
 void wl_seat_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id);
+void wl_data_device_manager_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id);
 void wl_shm_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id);
 void xdg_wm_base_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id);
 void zwlr_layer_shell_v1_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id);
