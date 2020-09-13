@@ -30,7 +30,7 @@
 
 extern struct wl_display* display;
 
-#define FATAL_FMT(format, ...) do {fprintf(stderr, "Fatal error: " format "\n", ##__VA_ARGS__); exit(1);} while (0)
+#define FATAL_FMT(format, ...) do {printf("Fatal error at %s:%d: " format "\n", __FILE__, __LINE__, ##__VA_ARGS__); exit(1);} while (0)
 #define FATAL(message) FATAL_FMT(message"%s", "")
 #define FATAL_NOT_IMPL FATAL_FMT("%s() not implemented", __func__); exit(1)
 #define ASSERT(assertion) do {if (!(assertion)) {FATAL_FMT("assertion failed: %s", #assertion);}} while (0)

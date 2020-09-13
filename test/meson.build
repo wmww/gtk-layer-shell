@@ -4,16 +4,17 @@ test_clients = [
     'basic-test',
     'test-anchors',
 ]
+
 test_client_common_inc = include_directories('test-client-common')
 py = find_program('python3')
 
-
 foreach test_client : test_clients
-    srcs = [
+    srcs = files(
         'test-client-common/test-client-common.h',
         'test-client-common/test-client-common.c',
         'test-clients/' + test_client + '.c',
-    ]
+    )
+    run_test_script = files(meson.current_source_dir() + '/run-test.py')
     exe = executable(
         test_client,
         srcs,
@@ -25,10 +26,11 @@ foreach test_client : test_clients
         py,
         workdir: meson.current_source_dir(),
         args: [
-            meson.current_source_dir() + '/run-test.py',
+            run_test_script,
             meson.current_build_dir(),
             test_client
         ])
 endforeach
 
-test('check-licenses', py, args: [meson.current_source_dir() + '/check-licenses.py'])
+check_licenses_script = files(meson.current_source_dir() + '/check-licenses.py')
+test('check-licenses', py, args: [check_licenses_script])
