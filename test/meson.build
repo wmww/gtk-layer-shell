@@ -2,11 +2,16 @@ subdir('mock-server')
 
 test_clients = [
     'basic-test',
+    'test-expect-fail',
     'test-anchors',
+    'test-set-layer',
+    'test-set-size-request',
+    'test-adapts-to-screen-size',
 ]
 
 test_client_common_inc = include_directories('test-client-common')
 py = find_program('python3')
+run_test_script = files(meson.current_source_dir() + '/run-integration-test.py')
 
 foreach test_client : test_clients
     srcs = files(
@@ -14,16 +19,17 @@ foreach test_client : test_clients
         'test-client-common/test-client-common.c',
         'test-clients/' + test_client + '.c',
     )
-    run_test_script = files(meson.current_source_dir() + '/run-integration-test.py')
     exe = executable(
         test_client,
         srcs,
-        dependencies: [gtk],
+        dependencies: [gtk, wayland_client],
         include_directories: [gtk_layer_shell_inc, test_client_common_inc],
         link_with: [gtk_layer_shell_lib])
+    expect_fail = test_client.endswith('expect-fail')
     test(
         test_client,
         py,
+        should_fail: expect_fail,
         workdir: meson.current_source_dir(),
         args: [
             run_test_script,

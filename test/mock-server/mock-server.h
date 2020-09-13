@@ -30,6 +30,9 @@
 
 extern struct wl_display* display;
 
+#define OUTPUT_WIDTH 1920
+#define OUTPUT_HEIGHT 1080
+
 #define FATAL_FMT(format, ...) do {printf("Fatal error at %s:%d: " format "\n", __FILE__, __LINE__, ##__VA_ARGS__); exit(1);} while (0)
 #define FATAL(message) FATAL_FMT(message"%s", "")
 #define FATAL_NOT_IMPL FATAL_FMT("%s() not implemented", __func__); exit(1)
@@ -41,11 +44,8 @@ void* alloc_zeroed(size_t size);
 #define OVERRIDE_ARGS const struct wl_message* message, union wl_argument* args
 #define OVERRIDE_REQUEST(type, method) install_request_override(&type##_interface, #method, type##_##method)
 #define NEW_ID_ARG(name, index) ASSERT(type_code_at_index(message, index) == 'n'); uint32_t name = args[index].n;
-
-typedef struct
-{
-    struct wl_resource* pending_frame;
-} SurfaceData;
+#define RESOURCE_ARG(type, name, index) ASSERT(type_code_at_index(message, index) == 'o'); ASSERT(message->types[index] == &type##_interface); struct wl_resource* name = (struct wl_resource*)args[index].o;
+#define UINT_ARG(name, index) ASSERT(type_code_at_index(message, index) == 'u'); uint32_t name = args[index].u;
 
 typedef void (*RequestOverrideFunction)(struct wl_resource* resource, const struct wl_message* message, union wl_argument* args);
 void install_request_override(const struct wl_interface* interface, const char* name, RequestOverrideFunction function);

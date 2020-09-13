@@ -69,7 +69,21 @@ def run_test_processess(name, server_bin, client_bin, xdg_runtime, wayland_displ
             'WAYLAND_DISPLAY': wayland_display,
             'WAYLAND_DEBUG': '1',
         })
-    wait_until_appears(path.join(xdg_runtime, wayland_display))
+
+    try:
+        wait_until_appears(path.join(xdg_runtime, wayland_display))
+    except RuntimeError as e:
+        server_streams = [stream.decode('utf-8') for stream in server.communicate()]
+        report = '\n\n'.join([
+            format_stream('server stdout', server_streams[0]),
+            format_stream('server stderr', server_streams[1]),
+            'server exit code: ' + str(server.returncode),
+        ])
+        print(report)
+        print()
+        print('server failed')
+        exit(1)
+
     client = subprocess.Popen(
         client_bin,
         stdout=subprocess.PIPE,
@@ -100,22 +114,31 @@ def run_test_processess(name, server_bin, client_bin, xdg_runtime, wayland_displ
 
     return client_streams
 
-def assertion_matches_line(assertion, line):
-    assert assertion[0] == 'WL:', '"' + assertion + '" does not start with WL:'
-    for i in assertion[1:]:
-        if not i in line:
-            return False
-    return True
-
 def verify_result(assert_lines, log_lines):
     i = 0
     for assertion in assert_lines:
-        while True:
-            assert i < len(log_lines), 'failed to find ' + ' '.join(assertion)
-            if assertion_matches_line(assertion, log_lines[i]):
-                break
+        possible_matches = []
+        found = False
+        while not found:
+            if i >= len(log_lines):
+                possible_matches = format_stream('incomplete matches', '\n'.join(possible_matches))
+                assertion = ' '.join(assertion)
+                message = possible_matches + '\n\n' + 'failed to find "' + assertion + '"'
+                raise RuntimeError(message)
+            assert assertion[0] == 'WL:', '"' + assertion + '" does not start with WL:'
+            partial = False
+            found = True
+            line = log_lines[i]
+            for token in assertion[1:]:
+                if token in line:
+                    if len(token) > 2:
+                        partial = True
+                    line = line[line.find(token) + len(token):]
+                else:
+                    found = False
+            if partial:
+                possible_matches.append(log_lines[i])
             i += 1
-        i += 1
 
 def run_test(name):
     server_bin = get_bin('mock-server/mock-server')
@@ -153,7 +176,7 @@ def run_test(name):
 
     try:
         verify_result(assert_lines, log_lines)
-    except AssertionError as e:
+    except Exception as e:
         print(format_stream('assertions', client_stdout))
         print()
         print(format_stream('messages', client_stderr))

@@ -20,16 +20,16 @@ static gboolean quit_timeout(gpointer _data)
     return FALSE;
 }
 
+void add_quit_timeout()
+{
+    g_timeout_add(100, quit_timeout, NULL);
+}
+
 static gboolean test_failed_timeout(gpointer _data)
 {
     (void)_data;
     FAIL_TEST("test timed out");
     return FALSE;
-}
-
-void add_quit_timeout()
-{
-    g_timeout_add(100, quit_timeout, NULL);
 }
 
 void setup_window(GtkWindow* window)
@@ -48,6 +48,13 @@ void mark_test_failed()
 {
     return_code = 1;
     gtk_main_quit();
+}
+
+void wayland_roundtrip()
+{
+    GdkDisplay* gdk_display = gdk_display_get_default();
+    struct wl_display* wl_display = gdk_wayland_display_get_wl_display(GDK_WAYLAND_DISPLAY(gdk_display));
+    wl_display_roundtrip(wl_display);
 }
 
 int main()

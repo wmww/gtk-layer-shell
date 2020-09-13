@@ -9,32 +9,29 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef TEST_CLIENT_COMMON
-#define TEST_CLIENT_COMMON
+#include "test-client-common.h"
 
-#include "gtk-layer-shell.h"
-#include <gtk/gtk.h>
-#include <gdk/gdk.h>
-#include <gdk/gdkwayland.h>
-#include <stdio.h>
+void emit_expectations()
+{
+    EXPECT_MESSAGE(zwlr_layer_shell_v1 .get_layer_surface 2);
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_layer 3);
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_layer 0);
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_layer 1);
+}
 
-// Tell the test script that a request containing the given space-separated components is expected
-#define EXPECT_MESSAGE(message) printf("WL: %s\n", #message)
+void run_test()
+{
+    GtkWindow *window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 
-// Test failures quit GTK main and set a non-zero return code, but let GTK shut down instead of exiting immediately
-// do {...} while (0) construct is used to force ; at the end of lines
-#define FAIL_TEST_FMT(format, ...) do {fprintf(stderr, "Failure at %s:%d: " format "\n", __FILE__, __LINE__, ##__VA_ARGS__); mark_test_failed();} while (0)
-#define FAIL_TEST(message) FAIL_TEST_FMT(message"%s", "")
-#define ASSERT(assertion) do {if (!(assertion)) {FAIL_TEST_FMT("assertion failed: %s", #assertion);}} while (0)
+    gtk_layer_init_for_window(window);
+    gtk_layer_set_layer(window, GTK_LAYER_SHELL_LAYER_TOP);
 
-// Implemented in test-client-common.c
-void add_quit_timeout();
-void setup_window(GtkWindow* window);
-void mark_test_failed();
-void wayland_roundtrip();
+    setup_window(window);
+    gtk_widget_show_all(GTK_WIDGET(window));
 
-// Implemented in the test
-void emit_expectations();
-void run_test();
+    gtk_layer_set_layer(window, GTK_LAYER_SHELL_LAYER_OVERLAY);
+    gtk_layer_set_layer(window, GTK_LAYER_SHELL_LAYER_BACKGROUND);
+    gtk_layer_set_layer(window, GTK_LAYER_SHELL_LAYER_BOTTOM);
 
-#endif // TEST_CLIENT_COMMON
+    add_quit_timeout();
+}
