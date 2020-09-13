@@ -11,22 +11,26 @@
 
 #include "test-client-common.h"
 
-int main()
+static gboolean quit_timeout(gpointer _data)
 {
-    EXPECT_REQUEST(zwlr_layer_shell_v1 .get_layer_surface 1 foobar);
+    (void)_data;
+    gtk_main_quit();
+    return FALSE;
+}
 
-    gtk_init(0, NULL);
-    GtkWindow *window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+void add_quit_timeout()
+{
+    g_timeout_add(100, quit_timeout, NULL);
+}
 
-    gtk_layer_init_for_window(window);
-    gtk_layer_set_layer(window, GTK_LAYER_SHELL_LAYER_BOTTOM);
-    gtk_layer_set_namespace(window, "foobar");
-    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_BOTTOM, TRUE);
-
-    setup_window(window);
-    gtk_widget_show_all(GTK_WIDGET(window));
-    add_quit_timeout();
-    gtk_main();
-
-    return 0;
+void setup_window(GtkWindow* window)
+{
+    GtkWidget *label = gtk_label_new("");
+    gtk_label_set_markup(
+        GTK_LABEL(label),
+        "<span font_desc=\"20.0\">"
+            "Layer shell test"
+        "</span>");
+    gtk_container_add(GTK_CONTAINER(window), label);
+    gtk_container_set_border_width(GTK_CONTAINER(window), 12);
 }

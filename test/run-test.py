@@ -65,7 +65,7 @@ def run_test_processess(name, server_bin, client_bin, xdg_runtime, wayland_displ
             'WAYLAND_DISPLAY': wayland_display,
             'WAYLAND_DEBUG': '1',
         })
-    #wait_until_appears(path.join(xdg_runtime, wayland_display))
+    wait_until_appears(path.join(xdg_runtime, wayland_display))
     client = subprocess.Popen(
         client_bin,
         stdout=subprocess.PIPE,
@@ -111,7 +111,7 @@ def verify_result(assert_lines, log_lines):
     i = 0
     for assertion in assert_lines:
         while True:
-            assert i < len(log_lines), 'Failed at ' + ' '.join(assertion)
+            assert i < len(log_lines), 'failed to find ' + ' '.join(assertion)
             if assertion_matches_line(assertion, log_lines[i]):
                 break
             i += 1
@@ -119,7 +119,7 @@ def verify_result(assert_lines, log_lines):
 
 def run_test(name):
     server_bin = get_bin('mock-server/mock-server')
-    client_bin = get_bin(path.join('test-clients', name))
+    client_bin = get_bin(name)
     wayland_display = 'wayland-test'
     xdg_runtime = get_xdg_runtime_dir()
 
@@ -138,7 +138,15 @@ def run_test(name):
         assert line.startswith('[') and line.endswith(')'), 'Invalid stderr line: ' + line
         log_lines.append(line)
 
-    verify_result(assert_lines, log_lines)
+    try:
+        verify_result(assert_lines, log_lines)
+    except AssertionError as e:
+        print(format_stream('assertions', client_stdout))
+        print()
+        print(format_stream('messages', client_stderr))
+        print()
+        print(e)
+        exit(1)
 
 if __name__ == '__main__':
     assert len(sys.argv) == 3, 'Incorrect number of args. Usage: python3 run-test <test-build-dir> <test-name>'
