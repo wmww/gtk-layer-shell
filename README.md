@@ -39,6 +39,9 @@ sudo apt install meson libwayland-dev libgtk-3-dev gobject-introspection libgire
 * `-Ddocs`: If to generate the docs (default: `false`)
 * `-Dtests`: If to build the tests (default: `false`)
 
+### Running the tests
+* `ninja -C build test`
+
 ## Using the library
 * `gtk-layer-demo` is installed if examples are enabled. Its UI exposes all features of the library, and it's useful for testing layer shell support in compositors
 * [gtk-layer-shell.h](include/gtk-layer-shell.h) shows the full API
