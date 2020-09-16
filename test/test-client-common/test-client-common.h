@@ -19,7 +19,10 @@
 #include <stdio.h>
 
 // Tell the test script that a request containing the given space-separated components is expected
-#define EXPECT_MESSAGE(message) printf("WL: %s\n", #message)
+#define EXPECT_MESSAGE(message) fprintf(stderr, "EXPECT: %s\n", #message)
+// Tell the test script that all expected messages should now be fufilled
+// (called automatically before each callback and at the end of the test)
+#define CHECK_EXPECTATIONS() fprintf(stderr, "CHECK EXPECTATIONS COMPLETED\n")
 
 // Test failures quit GTK main and set a non-zero return code, but let GTK shut down instead of exiting immediately
 // do {...} while (0) construct is used to force ; at the end of lines

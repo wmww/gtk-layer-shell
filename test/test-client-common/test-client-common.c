@@ -17,6 +17,7 @@ static int callback_index = 0;
 static gboolean timeout(gpointer _data)
 {
     (void)_data;
+    CHECK_EXPECTATIONS();
     if (test_callbacks[callback_index])
     {
         test_callbacks[callback_index]();
