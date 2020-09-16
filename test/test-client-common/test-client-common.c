@@ -61,7 +61,7 @@ void wayland_roundtrip()
 int main()
 {
     gtk_init(0, NULL);
-    g_timeout_add(100, timeout, NULL);
+    g_timeout_add(200, timeout, NULL);
     gtk_main();
     return return_code;
 }
