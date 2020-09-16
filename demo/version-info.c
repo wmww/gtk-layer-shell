@@ -14,12 +14,13 @@
 GtkWidget *
 version_info_new ()
 {
-    gchar *version_str = g_strdup_printf("GTK v%d.%d.%d\nage: %d/%d",
+    gchar *version_str = g_strdup_printf("GTK LS v%d.%d.%d\nGTK v%d.%d.%d",
+                                         gtk_layer_get_major_version (),
+                                         gtk_layer_get_minor_version (),
+                                         gtk_layer_get_micro_version (),
                                          gtk_get_major_version (),
                                          gtk_get_minor_version (),
-                                         gtk_get_micro_version (),
-                                         gtk_get_binary_age (),
-                                         gtk_get_interface_age ());
+                                         gtk_get_micro_version ());
     GtkWidget *version_info = gtk_label_new(version_str);
     g_free(version_str);
 
