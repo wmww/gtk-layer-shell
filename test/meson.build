@@ -7,6 +7,7 @@ test_clients = [
     'test-set-layer',
     'test-set-size-request',
     'test-adapts-to-screen-size',
+    'test-auto-exclusive-zone-no-margin',
 ]
 
 test_client_common_inc = include_directories('test-client-common')
