@@ -70,6 +70,27 @@ typedef enum {
 } GtkLayerShellEdge;
 
 /**
+ * gtk_layer_get_major_version:
+ *
+ * Returns: the major version number of the GTK Layer Shell library
+ */
+guint gtk_layer_get_major_version ();
+
+/**
+ * gtk_layer_get_minor_version:
+ *
+ * Returns: the minor version number of the GTK Layer Shell library
+ */
+guint gtk_layer_get_minor_version ();
+
+/**
+ * gtk_layer_get_micro_version:
+ *
+ * Returns: the micro/patch version number of the GTK Layer Shell library
+ */
+guint gtk_layer_get_micro_version ();
+
+/**
  * gtk_layer_init_for_window:
  * @window: A #GtkWindow to be turned into a layer surface.
  *
