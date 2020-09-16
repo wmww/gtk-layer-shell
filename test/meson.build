@@ -40,5 +40,13 @@ foreach test_client : test_clients
         ])
 endforeach
 
+test_get_version = executable(
+    'test-get-version',
+    ['unit-tests/test-get-version.c'],
+    dependencies: [gtk],
+    include_directories: [gtk_layer_shell_inc],
+    link_with: [gtk_layer_shell_lib])
+test('test-get-version', test_get_version, args: [meson.project_version()])
+
 check_licenses_script = files(meson.current_source_dir() + '/check-licenses.py')
 test('check-licenses', py, args: [check_licenses_script])
