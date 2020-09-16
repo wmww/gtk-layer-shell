@@ -49,17 +49,28 @@ def wait_until_appears(p):
         time.sleep(0.01)
     raise RuntimeError(p + ' did not appear in ' + str(timeout) + ' seconds')
 
+def decode_streams(streams):
+    return [stream.decode('utf-8') for stream in streams]
+
 def format_stream(name, stream):
     l_pad = 18 - len(name) // 2
     r_pad = l_pad
     if len(name) % 2 == 1:
         r_pad += 1
+    l_pad = max(l_pad, 1)
+    r_pad = max(r_pad, 1)
     header = '─' * l_pad + '┤ ' + name + ' ├' + '─' * r_pad + '┈'
     body = '\n│'.join('  ' + line for line in stream.strip().splitlines())
     footer = '─' * 40 + '┈'
     return '╭' + header + '\n│\n│' + body + '\n│\n╰' + footer
 
-def run_test_processess(name, server_bin, client_bin, xdg_runtime, wayland_display):
+def format_process_report(name, process, streams):
+    return (
+        format_stream(name + ' stdout', streams[0]) + '\n\n' +
+        format_stream(name + ' stderr', streams[1]) + '\n\n' +
+        name + ' exit code: ' + str(process.returncode))
+
+def run_test(name, server_bin, client_bin, xdg_runtime, wayland_display):
     server = subprocess.Popen(
         server_bin,
         stdout=subprocess.PIPE,
@@ -73,16 +84,9 @@ def run_test_processess(name, server_bin, client_bin, xdg_runtime, wayland_displ
     try:
         wait_until_appears(path.join(xdg_runtime, wayland_display))
     except RuntimeError as e:
-        server_streams = [stream.decode('utf-8') for stream in server.communicate()]
-        report = '\n\n'.join([
-            format_stream('server stdout', server_streams[0]),
-            format_stream('server stderr', server_streams[1]),
-            'server exit code: ' + str(server.returncode),
-        ])
-        print(report)
-        print()
-        print('server failed')
-        exit(1)
+        server.kill()
+        server_streams = decode_streams(server.communicate())
+        raise RuntimeError(format_process_report('server', server, server_streams) + '\n\n' + str(e))
 
     client = subprocess.Popen(
         client_bin,
@@ -94,97 +98,79 @@ def run_test_processess(name, server_bin, client_bin, xdg_runtime, wayland_displ
             'WAYLAND_DEBUG': '1',
         })
 
-    client_streams = [stream.decode('utf-8') for stream in client.communicate(timeout=5)]
-    server_streams = [stream.decode('utf-8') for stream in server.communicate(timeout=1)]
+    try:
+        client_streams = decode_streams(client.communicate(timeout=5))
+    except subprocess.TimeoutExpired:
+        client.kill()
+        time.sleep(1)
+        server.kill()
+        client_streams = decode_streams(client.communicate())
+        server.communicate(timeout=1)
+        raise RuntimeError(format_process_report(name, client, client_streams) + '\n\n' + name + ' timed out')
 
-    report = '\n\n'.join([
-        format_stream(name + ' stdout', client_streams[0]),
-        format_stream(name + ' stderr', client_streams[1]),
-        name + ' exit code: ' + str(client.returncode),
-        format_stream('server stdout', server_streams[0]),
-        format_stream('server stderr', server_streams[1]),
-        'server exit code: ' + str(server.returncode),
-    ])
+    try:
+        server_streams = decode_streams(server.communicate(timeout=1))
+    except subprocess.TimeoutExpired:
+        server.kill()
+        server_streams = decode_streams(server.communicate())
+        raise RuntimeError(format_process_report('server', server, server_streams) + '\n\nserver timed out')
 
     if server.returncode != 0:
-        raise RuntimeError('!!! server failed !!!\n\n' + report + '\n\n!!! server failed !!!')
+        raise RuntimeError(format_process_report('server', server, server_streams) + '\n\nserver failed')
 
     if client.returncode != 0:
-        raise RuntimeError('!!! ' + name + ' failed !!!\n\n' + report + '\n\n!!! ' + name + ' failed !!!')
+        raise RuntimeError(format_process_report(name, client, client_streams) + '\n\n' + name + ' failed')
 
-    return client_streams
+    if client_streams[0].strip() != '':
+        raise RuntimeError(format_stream(name + ' stdout', client_streams[0]) + '\n\n' + name + ' stdout not empty')
 
-def verify_result(assert_lines, log_lines):
-    i = 0
-    for assertion in assert_lines:
-        possible_matches = []
-        found = False
-        while not found:
-            if i >= len(log_lines):
-                possible_matches = format_stream('incomplete matches', '\n'.join(possible_matches))
-                assertion = ' '.join(assertion)
-                message = possible_matches + '\n\n' + 'failed to find "' + assertion + '"'
-                raise RuntimeError(message)
-            assert assertion[0] == 'WL:', '"' + assertion + '" does not start with WL:'
-            partial = False
-            found = True
-            line = log_lines[i]
-            for token in assertion[1:]:
-                if token in line:
-                    if len(token) > 2:
-                        partial = True
-                    line = line[line.find(token) + len(token):]
-                else:
-                    found = False
-            if partial:
-                possible_matches.append(log_lines[i])
-            i += 1
+    return client_streams[1]
 
-def run_test(name):
-    server_bin = get_bin('mock-server/mock-server')
-    client_bin = get_bin(name)
-    wayland_display = 'wayland-test'
-    xdg_runtime = get_xdg_runtime_dir()
+def line_contains(line, tokens):
+    found = True
+    for token in tokens:
+        if token in line:
+            line = line[line.find(token) + len(token):]
+        else:
+            found = False
+    return found
 
-    try:
-        client_stdout, client_stderr = run_test_processess(name, server_bin, client_bin, xdg_runtime, wayland_display)
-    finally:
-        wipe_xdg_runtime_dir(xdg_runtime)
-
-    assert_lines = []
-    for line in client_stdout.strip().splitlines():
-        line = line.strip()
-        if line:
-            if not line.startswith('WL: '):
-                print(format_stream('assertions', client_stdout))
-                print()
-                print('Invalid assertion line: "' + line + '" does not start with WL:')
-                print('There should be no unexpected stdout output')
-                exit(1)
-            assert_lines.append(line.split())
-
-    log_lines = []
-    for line in client_stderr.splitlines():
-        line = line.strip()
-        if line:
-            if not line.startswith('[') or not line.endswith(')'):
-                print(format_stream('messages', client_stderr))
-                print()
-                print('Invalid stderr line: ' + line)
-                print('There should be no unexpected stderr output')
-            log_lines.append(line)
-
-    try:
-        verify_result(assert_lines, log_lines)
-    except Exception as e:
-        print(format_stream('assertions', client_stdout))
-        print()
-        print(format_stream('messages', client_stderr))
-        print()
-        print(e)
-        exit(1)
+def verify_result(lines):
+    assertions = []
+    section_start = 0
+    for i, line in enumerate(lines):
+        if line.startswith('EXPECT: '):
+            assertions.append(line.split()[1:])
+        elif line.startswith('[') and line.endswith(')') and '@' in line:
+            if assertions and line_contains(line, assertions[0]):
+                assertions = assertions[1:]
+        elif line == 'CHECK EXPECTATIONS COMPLETED' or i == len(lines) - 1:
+            if assertions:
+                section = format_stream('relevant section', '\n'.join(lines[section_start:i]))
+                raise RuntimeError(section + '\n\ndid not find "' + ' '.join(assertions[0]) + '"')
+            section_start = i + 1
 
 if __name__ == '__main__':
     assert len(sys.argv) == 3, 'Incorrect number of args. ' + usage
-    run_test(sys.argv[2])
-    print('Passed')
+    name = sys.argv[2]
+    try:
+        server_bin = get_bin('mock-server/mock-server')
+        client_bin = get_bin(name)
+        wayland_display = 'wayland-test'
+        xdg_runtime = get_xdg_runtime_dir()
+
+        try:
+            client_stderr = run_test(name, server_bin, client_bin, xdg_runtime, wayland_display)
+        finally:
+            wipe_xdg_runtime_dir(xdg_runtime)
+
+        client_lines = [line.strip() for line in client_stderr.strip().splitlines()]
+        try:
+            verify_result(client_lines)
+        except RuntimeError as e:
+            raise RuntimeError(format_stream(name + ' stderr', client_stderr) + '\n\n' + str(e))
+
+        print('Passed')
+    except RuntimeError as e:
+        print(e)
+        exit(1)

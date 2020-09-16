@@ -6,7 +6,7 @@ project('gtk-layer-shell',
     default_options: ['c_std=gnu11', 'warning_level=3'])
 
 add_project_arguments(
-    ['-Wno-pedantic'],
+    ['-Wno-pedantic', '-Werror=unused-function'],
     language: 'c')
 
 gtk = dependency('gtk+-wayland-3.0', version: '>=3.22.0')

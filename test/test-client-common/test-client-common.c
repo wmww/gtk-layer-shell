@@ -12,28 +12,28 @@
 #include "test-client-common.h"
 
 static int return_code = 0;
+static int callback_index = 0;
 
-static gboolean quit_timeout(gpointer _data)
+static gboolean timeout(gpointer _data)
 {
     (void)_data;
-    gtk_main_quit();
-    return FALSE;
+    CHECK_EXPECTATIONS();
+    if (test_callbacks[callback_index])
+    {
+        test_callbacks[callback_index]();
+        callback_index++;
+        return TRUE;
+    }
+    else
+    {
+        gtk_main_quit();
+        return FALSE;
+    }
 }
 
-void add_quit_timeout()
+GtkWindow* create_default_window()
 {
-    g_timeout_add(100, quit_timeout, NULL);
-}
-
-static gboolean test_failed_timeout(gpointer _data)
-{
-    (void)_data;
-    FAIL_TEST("test timed out");
-    return FALSE;
-}
-
-void setup_window(GtkWindow* window)
-{
+    GtkWindow* window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     GtkWidget *label = gtk_label_new("");
     gtk_label_set_markup(
         GTK_LABEL(label),
@@ -42,6 +42,7 @@ void setup_window(GtkWindow* window)
         "</span>");
     gtk_container_add(GTK_CONTAINER(window), label);
     gtk_container_set_border_width(GTK_CONTAINER(window), 12);
+    return window;
 }
 
 void mark_test_failed()
@@ -59,10 +60,8 @@ void wayland_roundtrip()
 
 int main()
 {
-    emit_expectations();
     gtk_init(0, NULL);
-    g_timeout_add(5000, test_failed_timeout, NULL);
-    run_test();
+    g_timeout_add(200, timeout, NULL);
     gtk_main();
     return return_code;
 }
