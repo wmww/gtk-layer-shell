@@ -4,7 +4,7 @@ This directory is home to the gtk-layer-shell test suite.
 ## To run tests
 `ninja -C build test` (where `build` is the path to your build directory).
 
-### To add a new test
+### To add a new integration test
 1. Copy an existing test client
 2. Set the new expected protocol messages and implementation
 3. Add its name to the `test_clients` list in `test/meson.build`
@@ -18,10 +18,10 @@ This directory is home to the gtk-layer-shell test suite.
 Most of the potential bugs in GTK Layer Shell arise from interactions between the library, GTK and the Wayland compositor, so unit tests aren't particularly useful. The integration tests consist of the following components:
 
 ### Test clients
-Each integration test is a single unique GTK app that uses GTK Layer Shell (called a test client). All test clients are located in `test-clients`. Anything common to multiple test clients gets pulled into `test-client-common`. Test clients can make assertions and protocol expectations. See expectations format below. Each meson test runs a single test client.
+Each integration test is a single unique GTK app that uses GTK Layer Shell (called a test client). All test clients are located in `test-clients`. Anything common to multiple test clients gets pulled into `test-client-common`. Test clients can make assertions and protocol expectations (see expectations format below). Each meson test runs a single test client.
 
 ### Expectations format
-Test clients emit protocol expectations by using the `EXPECT_MESSAGE` macro. Each expectation is a white-space-separated sequence of tokens written to a line of stdout. The first element must be `WL:` (this is automatically inserted by `EXPECT_MESSAGE`). For an expectation to match a message, each following token must appear in order in the message line. The list of expected messages must match in the correct order. Messages are matched against the output of the client run with `WAYLAND_DEBUG=1`. Events and requests are not distinguished, as that's more likely to lead to confusing test bugs than it is to detect actual bugs.
+Test clients emit protocol expectations by using the `EXPECT_MESSAGE` macro. Each expectation is a white-space-separated sequence of tokens written to a line of stdout. The first element must be `EXPECT:` (this is automatically inserted by `EXPECT_MESSAGE`). For an expectation to match a message, each following token must appear in order in the message line. The list of expected messages must match in the correct order. Messages are matched against the output of the client run with `WAYLAND_DEBUG=1`. Events and requests are not distinguished, as that's more likely to lead to confusing test bugs than it is to detect actual bugs. When the script encounters `CHECK EXPECTATIONS COMPLETED` (emitted by `CHECK_EXPECTATIONS()`), it will assert that all previous expectations have been met.
 
 ### Test runner
 `ninja -C build test` will run `run-integration-test.py` for each test defined in `test/meson.build`. This script:

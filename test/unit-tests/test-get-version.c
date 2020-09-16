@@ -9,23 +9,33 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "gtk-layer-demo.h"
+#include <stdio.h>
+#include "gtk-layer-shell.h"
 
-GtkWidget *
-version_info_new ()
+int main(int argc, char** argv)
 {
-    gchar *version_str = g_strdup_printf("GTK LS v%d.%d.%d\nGTK v%d.%d.%d",
-                                         gtk_layer_get_major_version (),
-                                         gtk_layer_get_minor_version (),
-                                         gtk_layer_get_micro_version (),
-                                         gtk_get_major_version (),
-                                         gtk_get_minor_version (),
-                                         gtk_get_micro_version ());
-    GtkWidget *version_info = gtk_label_new(version_str);
-    g_free(version_str);
+    if (argc != 2)
+    {
+        fprintf(stderr, "Incorrect number of arguments (%d)", argc);
+        exit(1);
+    }
 
-    gtk_label_set_justify(GTK_LABEL(version_info), GTK_JUSTIFY_CENTER);
-    gtk_label_set_xalign(GTK_LABEL(version_info), 0.5);
-    gtk_label_set_yalign(GTK_LABEL(version_info), 0.25);
-    return version_info;
+    char version_string[1024];
+    sprintf(
+        version_string,
+        "%d.%d.%d",
+        gtk_layer_get_major_version(),
+        gtk_layer_get_minor_version(),
+        gtk_layer_get_micro_version());
+
+    const char* version_arg = argv[1];
+
+    if (strcmp(version_arg, version_string) != 0)
+    {
+        fprintf(stderr, "Version provided by GTK Layer Shell: %s\n", version_string);
+        fprintf(stderr, "Version sent to this test via argument: %s\n", version_arg);
+        exit(1);
+    }
+
+    return 0;
 }

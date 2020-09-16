@@ -16,6 +16,23 @@
 #include "layer-surface.h"
 #include "xdg-toplevel-surface.h"
 
+guint
+gtk_layer_get_major_version ()
+{
+    return GTK_LAYER_SHELL_MAJOR;
+}
+
+guint
+gtk_layer_get_minor_version ()
+{
+    return GTK_LAYER_SHELL_MINOR;
+}
+
+guint gtk_layer_get_micro_version ()
+{
+    return GTK_LAYER_SHELL_MICRO;
+}
+
 static
 LayerSurface* gtk_window_get_layer_surface (GtkWindow *window)
 {

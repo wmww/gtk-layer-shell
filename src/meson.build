@@ -8,11 +8,19 @@ srcs = files(
     'gtk-priv-access.c',
     'simple-conversions.c')
 
+version_args = [
+    '-DGTK_LAYER_SHELL_MAJOR=' + meson.project_version().split('.')[0],
+    '-DGTK_LAYER_SHELL_MINOR=' + meson.project_version().split('.')[1],
+    '-DGTK_LAYER_SHELL_MICRO=' + meson.project_version().split('.')[2],
+]
+
 gtk_layer_shell_lib = library('gtk-layer-shell',
     srcs, client_protocol_srcs,
+    c_args: version_args,
     include_directories: [gtk_layer_shell_inc, gtk_priv_inc],
     dependencies: [gtk, wayland_client],
     version: meson.project_version(),
+    soversion: lib_so_version,
     install: true)
 
 pkg_config_name = 'gtk-layer-shell-0'

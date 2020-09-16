@@ -10,6 +10,7 @@
  */
 
 #include "gtk-layer-demo.h"
+#include <stdlib.h>
 
 static GtkLayerShellLayer default_layer = GTK_LAYER_SHELL_LAYER_TOP;
 
@@ -20,6 +21,7 @@ static gboolean default_auto_exclusive_zone = FALSE; // always set by command li
 static gboolean default_keyboard_interactivity = FALSE; // always set by command line option
 static gboolean default_fixed_size = FALSE; // always set by command line option
 static gboolean no_layer_shell = FALSE; // always set by command line option
+static gboolean show_version_and_exit = FALSE; // always set by command line option
 
 const char *prog_name = "gtk-layer-demo";
 const char *prog_summary = "A GTK application for demonstrating the functionality of the Layer Shell Wayland protocol";
@@ -32,6 +34,15 @@ gboolean anchor_option_callback (const gchar *option_name, const gchar *value, v
 gboolean margin_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error);
 
 static const GOptionEntry options[] = {
+    {
+        .long_name = "version",
+        .short_name = 'v',
+        .flags = G_OPTION_FLAG_NONE,
+        .arg = G_OPTION_ARG_NONE,
+        .arg_data = &show_version_and_exit,
+        .description = "Show version and exit",
+        .arg_description = NULL,
+    },
     {
         .long_name = "layer",
         .short_name = 'l',
@@ -210,6 +221,17 @@ process_args (int *argc, char ***argv)
         g_error_free (error);
         g_option_context_free (context);
         exit (1);
+    }
+
+    if (show_version_and_exit)
+    {
+        g_print (
+            "%s on gtk-layer-shell v%d.%d.%d\n",
+            prog_name,
+            gtk_layer_get_major_version (),
+            gtk_layer_get_minor_version (),
+            gtk_layer_get_micro_version ());
+        exit(0);
     }
 
     g_option_context_free (context);

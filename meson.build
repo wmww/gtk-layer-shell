@@ -5,6 +5,8 @@ project('gtk-layer-shell',
     meson_version: '>=0.45.1',
     default_options: ['c_std=gnu11', 'warning_level=3'])
 
+lib_so_version = '0'
+
 add_project_arguments(
     ['-Wno-pedantic', '-Werror=unused-function'],
     language: 'c')
