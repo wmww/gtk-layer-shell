@@ -27,14 +27,15 @@
 #define FAIL_TEST(message) FAIL_TEST_FMT(message"%s", "")
 #define ASSERT(assertion) do {if (!(assertion)) {FAIL_TEST_FMT("assertion failed: %s", #assertion);}} while (0)
 
-// Implemented in test-client-common.c
-void add_quit_timeout();
-void setup_window(GtkWindow* window);
+// NULL-terminated list of callbacks that will be called before quiting
+// Should be defined in the test file using TEST_CALLBACKS()
+extern void (* test_callbacks[])(void);
+
+// Input is a sequence of callback names with a trailing comma
+#define TEST_CALLBACKS(...) void (* test_callbacks[])(void) = {__VA_ARGS__ NULL};
+
+GtkWindow* create_default_window();
 void mark_test_failed();
 void wayland_roundtrip();
-
-// Implemented in the test
-void emit_expectations();
-void run_test();
 
 #endif // TEST_CLIENT_COMMON

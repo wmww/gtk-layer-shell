@@ -11,17 +11,18 @@
 
 #include "test-client-common.h"
 
-void emit_expectations()
+static GtkWindow *window;
+
+static void callback_0()
 {
     // This should fail because the tokens are in the wrong order
     EXPECT_MESSAGE(.get_layer_surface zwlr_layer_shell_v1);
+
+    window = create_default_window();
+    gtk_layer_init_for_window(window);
+    gtk_widget_show_all(GTK_WIDGET(window));
 }
 
-void run_test()
-{
-    GtkWindow *window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
-    gtk_layer_init_for_window(window);
-    setup_window(window);
-    gtk_widget_show_all(GTK_WIDGET(window));
-    add_quit_timeout();
-}
+TEST_CALLBACKS(
+    callback_0,
+)

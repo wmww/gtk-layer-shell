@@ -11,21 +11,24 @@
 
 #include "test-client-common.h"
 
-void emit_expectations()
-{
-    EXPECT_MESSAGE(zwlr_layer_shell_v1 .get_layer_surface 1 "foobar");
-}
+static GtkWindow* window;
 
-void run_test()
+static void callback_0()
 {
-    GtkWindow *window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
-
+    window = create_default_window();
     gtk_layer_init_for_window(window);
     gtk_layer_set_layer(window, GTK_LAYER_SHELL_LAYER_BOTTOM);
     gtk_layer_set_namespace(window, "foobar");
     gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_BOTTOM, TRUE);
-
-    setup_window(window);
-    gtk_widget_show_all(GTK_WIDGET(window));
-    add_quit_timeout();
 }
+
+static void callback_1()
+{
+    EXPECT_MESSAGE(zwlr_layer_shell_v1 .get_layer_surface 1 "foobar");
+    gtk_widget_show_all(GTK_WIDGET(window));
+}
+
+TEST_CALLBACKS(
+    callback_0,
+    callback_1,
+)
