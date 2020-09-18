@@ -39,7 +39,7 @@ on_fixed_size_set (GtkToggleButton *_toggle_button, gboolean state, GtkWindow *l
     (void)_toggle_button;
 
     if (state) {
-        gtk_widget_set_size_request (GTK_WIDGET (layer_window), 600, 500);
+        gtk_widget_set_size_request (GTK_WIDGET (layer_window), fixed_size_width, fixed_size_height);
     } else {
         gtk_widget_set_size_request (GTK_WIDGET (layer_window), -1, -1);
     }
@@ -54,7 +54,7 @@ struct {
 } const mscl_toggles[] = {
     {"Exclusive", "Create an exclusive zone when anchored", on_exclusive_zone_state_set},
     {"Keyboard", "Get keyboard events", on_keyboard_interactivity_state_set},
-    {"Set Size", "Set a fixed window size", on_fixed_size_set},
+    {"Fixed size", "Set a fixed window size (ignored depending on anchors)", on_fixed_size_set},
 };
 
 GtkWidget *

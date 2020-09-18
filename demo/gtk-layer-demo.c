@@ -28,6 +28,8 @@ const char *prog_summary = "A GTK application for demonstrating the functionalit
 const char *prog_details = "See https://github.com/wmww/gtk-layer-shell for more information, and to report bugs";
 
 const char *anchor_edges_key = "anchor_edges";
+const int fixed_size_width = 600;
+const int fixed_size_height = 500;
 
 gboolean layer_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error);
 gboolean anchor_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error);
@@ -301,6 +303,9 @@ layer_window_new ()
     for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++)
         data->edges[i] = default_anchors[i];
 
+    if (default_fixed_size)
+        gtk_widget_set_size_request (GTK_WIDGET (gtk_window), fixed_size_width, fixed_size_height);
+
     if (no_layer_shell) {
         g_message ("GTK layer shell disabled on command line");
         g_message ("Expect controls to have no effect and warnings to be shown");
@@ -313,9 +318,10 @@ layer_window_new ()
     for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++)
         gtk_layer_set_margin (gtk_window, i, default_margins[i]);
     gtk_layer_set_layer (gtk_window, default_layer);
-    gtk_layer_set_exclusive_zone (gtk_window, default_auto_exclusive_zone);
     gtk_layer_set_keyboard_interactivity (gtk_window, default_keyboard_interactivity);
     gtk_layer_set_namespace (gtk_window, "demo");
+    if (default_auto_exclusive_zone)
+        gtk_layer_auto_exclusive_zone_enable (gtk_window);
 
     GtkWidget *centered_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add (GTK_CONTAINER (gtk_window), centered_vbox);

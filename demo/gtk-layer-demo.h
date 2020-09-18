@@ -30,6 +30,8 @@ typedef struct {
 } ToplevelData;
 
 extern const char *anchor_edges_key;
+extern const int fixed_size_width;
+extern const int fixed_size_height;
 
 void
 layer_window_update_orientation (GtkWindow *layer_window);
