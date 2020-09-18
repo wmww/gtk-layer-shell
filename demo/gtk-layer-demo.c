@@ -28,6 +28,8 @@ const char *prog_summary = "A GTK application for demonstrating the functionalit
 const char *prog_details = "See https://github.com/wmww/gtk-layer-shell for more information, and to report bugs";
 
 const char *anchor_edges_key = "anchor_edges";
+const int fixed_size_width = 600;
+const int fixed_size_height = 500;
 
 gboolean layer_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error);
 gboolean anchor_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error);
@@ -300,6 +302,9 @@ layer_window_new ()
     g_object_set_data_full (G_OBJECT (gtk_window), anchor_edges_key, data, g_free);
     for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++)
         data->edges[i] = default_anchors[i];
+
+    if (default_fixed_size)
+        gtk_widget_set_size_request (GTK_WIDGET (gtk_window), fixed_size_width, fixed_size_height);
 
     if (no_layer_shell) {
         g_message ("GTK layer shell disabled on command line");
