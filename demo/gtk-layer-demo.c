@@ -313,9 +313,10 @@ layer_window_new ()
     for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++)
         gtk_layer_set_margin (gtk_window, i, default_margins[i]);
     gtk_layer_set_layer (gtk_window, default_layer);
-    gtk_layer_set_exclusive_zone (gtk_window, default_auto_exclusive_zone);
     gtk_layer_set_keyboard_interactivity (gtk_window, default_keyboard_interactivity);
     gtk_layer_set_namespace (gtk_window, "demo");
+    if (default_auto_exclusive_zone)
+        gtk_layer_auto_exclusive_zone_enable (gtk_window);
 
     GtkWidget *centered_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add (GTK_CONTAINER (gtk_window), centered_vbox);
