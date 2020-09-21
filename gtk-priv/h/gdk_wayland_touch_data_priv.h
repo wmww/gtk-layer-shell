@@ -24,7 +24,7 @@
 typedef struct _GdkWaylandTouchData GdkWaylandTouchData;
 
 // Version ID 0
-// Valid for GTK v3.22.0 - v3.24.23 (unreleased)
+// Valid for GTK v3.22.0 - v3.24.24 (unreleased)
 struct _GdkWaylandTouchData_v3_22_0
 {
   uint32_t id;
@@ -105,6 +105,7 @@ int gdk_wayland_touch_data_priv_get_version_id() {
       case 24020:
       case 24021:
       case 24022:
+      case 24023:
         break;
   
       default:

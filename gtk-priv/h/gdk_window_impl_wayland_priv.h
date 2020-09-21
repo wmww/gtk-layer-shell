@@ -841,7 +841,7 @@ struct _GdkWindowImplWayland_v3_24_17
 };
 
 // Version ID 9
-// Valid for GTK v3.24.22 - v3.24.23 (unreleased)
+// Valid for GTK v3.24.22 - v3.24.24 (unreleased)
 struct _GdkWindowImplWayland_v3_24_22
 {
   struct _GdkWindowImpl_v3_22_0 parent_instance;
@@ -1010,6 +1010,7 @@ int gdk_window_impl_wayland_priv_get_version_id() {
       case 24020:
       case 24021:
       case 24022:
+      case 24023:
         break;
   
       default:

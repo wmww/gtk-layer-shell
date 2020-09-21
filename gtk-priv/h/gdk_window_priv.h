@@ -195,7 +195,7 @@ struct _GdkWindow_v3_22_19
 };
 
 // Version ID 2
-// Valid for GTK v3.24.11 - v3.24.23 (unreleased)
+// Valid for GTK v3.24.11 - v3.24.24 (unreleased)
 struct _GdkWindow_v3_24_11
 {
   GObject parent_instance;
@@ -350,6 +350,7 @@ int gdk_window_priv_get_version_id() {
       case 24020:
       case 24021:
       case 24022:
+      case 24023:
         break;
   
       default:
