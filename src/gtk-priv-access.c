@@ -52,14 +52,10 @@ gdk_window_get_priv_transient_for (GdkWindow *gdk_window)
     GdkWindow *window_transient_for = gdk_window_priv_get_transient_for (gdk_window);
     GdkWindowImplWayland *window_impl = (GdkWindowImplWayland *)gdk_window_priv_get_impl (gdk_window);
     GdkWindow *wayland_transient_for = gdk_window_impl_wayland_priv_get_transient_for (window_impl);
-    if (window_transient_for != wayland_transient_for) {
-        g_warning ("Wayland transient_for (%p) != generic transient_for (%p)",
-                   wayland_transient_for,
-                   window_transient_for);
-        if (!window_transient_for)
-            return wayland_transient_for;
-    }
-    return window_transient_for;
+    if (wayland_transient_for)
+        return wayland_transient_for;
+    else
+        return window_transient_for;
 }
 
 uint32_t
