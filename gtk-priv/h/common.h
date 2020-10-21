@@ -13,15 +13,24 @@
 #define GTK_PRIV_COMMON_H
 
 void gtk_priv_assert_gtk_version_valid() {
-    if (gtk_get_major_version() != 3) {
-        g_error("gtk-layer-shell only supports GTK3");
+    if (gtk_get_major_version() != 3 || gtk_get_minor_version() < 22) {
+        g_error(
+            "gtk-layer-shell only supports GTK3 >= v3.22.0 (you have v%d.%d.%d)",
+            gtk_get_major_version(),
+            gtk_get_minor_version(),
+            gtk_get_micro_version());
         g_abort();
     }
 }
 
 void gtk_priv_warn_gtk_version_may_be_unsupported() {
     g_warning(
-        "gtk-layer-shell was not compiled with support for GTK v%d.%d.%d, program may crash",
+        "gtk-layer-shell v%d.%d.%d may not work on GTK v%d.%d.%d. "
+        "If you experience crashes, check "
+        "https://github.com/wmww/gtk-layer-shell/blob/master/compatibility.md",
+        GTK_LAYER_SHELL_MAJOR,
+        GTK_LAYER_SHELL_MINOR,
+        GTK_LAYER_SHELL_MICRO,
         gtk_get_major_version(),
         gtk_get_minor_version(),
         gtk_get_micro_version());
