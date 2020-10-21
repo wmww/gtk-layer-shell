@@ -86,6 +86,8 @@ struct _GdkWaylandSeat_v3_22_0
 };
 
 // Version ID 1
+// Diff from previous version:
+// +   gint32 nkeys;
 // Valid for GTK v3.22.9 - v3.22.15
 struct _GdkWaylandSeat_v3_22_9
 {
@@ -144,6 +146,8 @@ struct _GdkWaylandSeat_v3_22_9
 };
 
 // Version ID 2
+// Diff from previous version:
+// -   gint32 nkeys;
 // Valid for GTK v3.22.16 - v3.24.23
 struct _GdkWaylandSeat_v3_22_16
 {
@@ -201,6 +205,10 @@ struct _GdkWaylandSeat_v3_22_16
 };
 
 // Version ID 3
+// Diff from previous version:
+// -   struct gtk_primary_selection_device *primary_data_device;
+// +   struct gtk_primary_selection_device *gtk_primary_data_device;
+// +   struct zwp_primary_selection_device_v1 *zwp_primary_data_device_v1;
 // Valid for GTK v3.24.24 (unreleased)
 struct _GdkWaylandSeat_v3_24_24
 {

@@ -114,6 +114,8 @@ struct _GdkWindow_v3_22_0
 };
 
 // Version ID 1
+// Diff from previous version:
+// +   cairo_region_t *opaque_region;
 // Valid for GTK v3.22.19 - v3.24.10
 struct _GdkWindow_v3_22_19
 {
@@ -200,6 +202,9 @@ struct _GdkWindow_v3_22_19
 };
 
 // Version ID 2
+// Diff from previous version:
+// +   guint synthesized_crossing_event_id;
+// -   guint synthesize_crossing_event_queued : 1;
 // Valid for GTK v3.24.11 - v3.24.24 (unreleased)
 struct _GdkWindow_v3_24_11
 {

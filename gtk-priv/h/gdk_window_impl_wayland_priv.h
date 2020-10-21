@@ -114,6 +114,14 @@ struct _GdkWindowImplWayland_v3_22_0
 };
 
 // Version ID 1
+// Diff from previous version:
+// -     GdkWaylandWindowExported callback;
+// -     gpointer user_data;
+// -     GDestroyNotify destroy_func;
+// +     char *handle;
+// +     int export_count;
+// +     GList *closures;
+// +     guint idle_source_id;
 // Valid for GTK v3.22.16 - v3.22.17
 struct _GdkWindowImplWayland_v3_22_16
 {
@@ -200,6 +208,8 @@ struct _GdkWindowImplWayland_v3_22_16
 };
 
 // Version ID 2
+// Diff from previous version:
+// +   GHashTable *shortcuts_inhibitors;
 // Valid for GTK v3.22.18 - v3.22.24
 struct _GdkWindowImplWayland_v3_22_18
 {
@@ -287,6 +297,8 @@ struct _GdkWindowImplWayland_v3_22_18
 };
 
 // Version ID 3
+// Diff from previous version:
+// +     struct org_kde_kwin_server_decoration *server_decoration;
 // Valid for GTK v3.22.25 - v3.22.29
 struct _GdkWindowImplWayland_v3_22_25
 {
@@ -375,6 +387,16 @@ struct _GdkWindowImplWayland_v3_22_25
 };
 
 // Version ID 4
+// Diff from previous version:
+// -     struct zxdg_surface_v6 *xdg_surface;
+// -     struct zxdg_toplevel_v6 *xdg_toplevel;
+// -     struct zxdg_popup_v6 *xdg_popup;
+// +     struct xdg_surface *xdg_surface;
+// +     struct xdg_toplevel *xdg_toplevel;
+// +     struct xdg_popup *xdg_popup;
+// +     struct zxdg_surface_v6 *zxdg_surface_v6;
+// +     struct zxdg_toplevel_v6 *zxdg_toplevel_v6;
+// +     struct zxdg_popup_v6 *zxdg_popup_v6;
 // Valid for GTK v3.22.30 - v3.23.0
 struct _GdkWindowImplWayland_v3_22_30
 {
@@ -466,6 +488,8 @@ struct _GdkWindowImplWayland_v3_22_30
 };
 
 // Version ID 5
+// Diff from previous version:
+// +   unsigned int using_csd : 1;
 // Valid for GTK v3.23.1 - v3.23.2
 struct _GdkWindowImplWayland_v3_23_1
 {
@@ -558,6 +582,9 @@ struct _GdkWindowImplWayland_v3_23_1
 };
 
 // Version ID 6
+// Diff from previous version:
+// +   int subsurface_x;
+// +   int subsurface_y;
 // Valid for GTK v3.23.3 - v3.24.3
 struct _GdkWindowImplWayland_v3_23_3
 {
@@ -652,6 +679,8 @@ struct _GdkWindowImplWayland_v3_23_3
 };
 
 // Version ID 7
+// Diff from previous version:
+// +   unsigned int configuring_popup : 1;
 // Valid for GTK v3.24.4 - v3.24.16
 struct _GdkWindowImplWayland_v3_24_4
 {
@@ -747,6 +776,11 @@ struct _GdkWindowImplWayland_v3_24_4
 };
 
 // Version ID 8
+// Diff from previous version:
+// +   int unconfigured_width;
+// +   int unconfigured_height;
+// +   int fixed_size_width;
+// +   int fixed_size_height;
 // Valid for GTK v3.24.17 - v3.24.21
 struct _GdkWindowImplWayland_v3_24_17
 {
@@ -846,6 +880,8 @@ struct _GdkWindowImplWayland_v3_24_17
 };
 
 // Version ID 9
+// Diff from previous version:
+// +   gboolean saved_size_changed;
 // Valid for GTK v3.24.22 - v3.24.24 (unreleased)
 struct _GdkWindowImplWayland_v3_24_22
 {
