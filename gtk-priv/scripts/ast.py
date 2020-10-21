@@ -189,12 +189,13 @@ class AstNode:
         return str(self) == str(other)
 
 class PropertyNode(AstNode):
-    def __init__(self, c_type, name, bit_field = None):
+    def __init__(self, c_type, name, bit_field):
         assert isinstance(c_type, CType)
         assert name is None or isinstance(name, str)
         assert bit_field is None or isinstance(bit_field, int)
         self.c_type = c_type
         self.name = name
+        self.statement = False
         self.bit_field = bit_field
 
     def resolve(self, ctx):
@@ -212,6 +213,8 @@ class PropertyNode(AstNode):
         result += self.c_type.str_right(True)
         if self.bit_field:
             result += ' : ' + str(self.bit_field)
+        if self.statement:
+            result += ';\n'
         return result
 
 class ListNode(AstNode):
@@ -232,7 +235,7 @@ class ListNode(AstNode):
         return result
 
     def __str__(self):
-        return '\n'.join(str(node) + ';' for node in self.nodes)
+        return ''.join(str(node) for node in self.nodes)
 
 class SubStructNode(AstNode):
     def __init__(self, name, content):
@@ -251,4 +254,4 @@ class SubStructNode(AstNode):
         return (
             'struct {' +
             ('\n' + code.INDENT).join([''] + str(self.content).splitlines()) +
-            '\n} ' + self.name)
+            '\n} ' + self.name + ';\n')
