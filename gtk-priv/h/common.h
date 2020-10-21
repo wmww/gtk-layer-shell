@@ -24,6 +24,9 @@ void gtk_priv_assert_gtk_version_valid() {
 }
 
 void gtk_priv_warn_gtk_version_may_be_unsupported() {
+    static gboolean shown = FALSE;
+    if (shown)
+        return;
     g_warning(
         "gtk-layer-shell v%d.%d.%d may not work on GTK v%d.%d.%d. "
         "If you experience crashes, check "
@@ -34,6 +37,7 @@ void gtk_priv_warn_gtk_version_may_be_unsupported() {
         gtk_get_major_version(),
         gtk_get_minor_version(),
         gtk_get_micro_version());
+    shown = TRUE;
 }
 
 #endif // GTK_PRIV_COMMON_H
