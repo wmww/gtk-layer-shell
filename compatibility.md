@@ -3,9 +3,9 @@ Due to limitations of GTK, GTK Layer Shell depends on unstable GTK internals. Ea
 
 The table below shows which GTK Layer Shell versions work with which GTK versions. If GTK is between the explicitly supported version and the highest version known to work, the warning that likely sent you to this page is harmless. If there is a mistake, missing info or you have any other questions, please [open an issue](https://github.com/wmww/gtk-layer-shell/issues).
 
-| GTK Layer Shell | Explicitly supported GTK | Highest GTK known to work | Lowest GTK known to crash |
+| GTK Layer Shell | Explicitly supported GTK | Highest GTK known to work | GTK versions known to crash |
 |---|---|---|---|
-| __v0.1.0__ | N/A | - | - |
-| __v0.2.0__ | GTK v3.24.21 | - | - |
+| __v0.1.0__ | GTK v3.24.11 | GTK v3.24.23 | - |
+| __v0.2.0__ | GTK v3.24.21 | GTK v3.24.23 | - |
 | __v0.3.0__ | GTK v3.24.22 | GTK v3.24.23 | - |
-| __master__ | GTK v3.24.23 | - | - |
+| __master__ | GTK v3.24.23 | GTK v3.24.23 | - |
