@@ -17,6 +17,8 @@ from os import path
 import re
 import mmap
 from collections import OrderedDict
+import tempfile
+import subprocess
 
 import parse
 from ast import *
@@ -109,6 +111,24 @@ def c_function(return_type, name, arg_list, body):
         result += INDENT + line + '\n'
     result += '}\n'
     return result
+
+def write_tmp_file(text):
+    f = tempfile.NamedTemporaryFile(mode='w', delete=True)
+    f.write(text)
+    f.flush()
+    return f
+
+def diff_between(old, new):
+    old_f = write_tmp_file(old)
+    new_f = write_tmp_file(new)
+    result = subprocess.run(['diff', old_f.name, new_f.name], capture_output=True, text=True)
+    code = ''
+    for line in result.stdout.splitlines():
+        if line.startswith('<'):
+            code += '// -' + line[1:] + '\n'
+        elif line.startswith('>'):
+            code += '// +' + line[1:] + '\n'
+    return code
 
 class ResolveContext:
     def __init__(self, project, struct, version):
@@ -403,9 +423,15 @@ class Struct:
         result += '\n'
         result += 'typedef struct ' + self.struct_name + ' ' + self.typedef + ';\n'
         result += '\n'
+        prev_definition = None
         for i, struct in enumerate(self.versions):
             result += '// Version ID ' + str(i) + '\n'
-            result += struct.emit_definition(generated)
+            definition = struct.emit_definition(generated)
+            if prev_definition:
+                result += '// Diff from previous version:\n'
+                result += '\n'.join(diff_between(prev_definition, definition).splitlines()[4:]) + '\n'
+            prev_definition = definition
+            result += definition
             result += '\n'
         result += '// For internal use only\n'
         result += self.emit_get_version_id_fn()
