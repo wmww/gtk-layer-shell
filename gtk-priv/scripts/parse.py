@@ -57,7 +57,7 @@ def parse_property(code):
         for i in fp.group(4).split(','):
             args.append(parse_property(i))
         c_type = FpType(ret, args)
-        return PropertyNode(c_type, name)
+        return PropertyNode(c_type, name, None)
     array = re.search(r'^(.*)\[(.*)\]$', code)
     if array:
         prop = parse_property(array.group(1))
@@ -69,7 +69,10 @@ def parse_property(code):
         names = normal.group(4).split(',')
         names = [name.strip() for name in names if name.strip()]
         if len(names) > 1:
-            nodes = [PropertyNode(c_type, name, None) for name in names]
+            nodes = []
+            for name in names:
+                nodes.append(PropertyNode(c_type, name, None))
+                nodes[-1].statement = True
             return ListNode(nodes)
         elif len(names) == 1:
             return PropertyNode(c_type, names[0], bit_field)
@@ -94,7 +97,10 @@ def parse_token_list(tokens, i):
         elif token == '}':
             break
         else:
-            nodes.append(parse_property(token))
+            node = parse_property(token)
+            if isinstance(node, PropertyNode):
+                node.statement = True
+            nodes.append(node)
         i += 1
     return i, ListNode(nodes)
 
