@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.4.0] - 21 Oct 2020
+- Demo: show GTK Layer Shell version
+- Demo: fix initially set auto-exclusive zone and fixed size properties (fixes [#64](https://github.com/wmww/gtk-layer-shell/issues/64))
+- API: expose GTK Layer Shell version
+- API: expose the underlying layer shell surface (fixes [#41](https://github.com/wmww/gtk-layer-shell/issues/41))
+- Tests: add mock server
+- Tests: add integration tests (fixes [#60](https://github.com/wmww/gtk-layer-shell/issues/60))
+- Diagnostics: remove "transient_for != window transient_for" warning
+- Diagnostics: improve warning when GTK version may not work by linking to a [compatibility table](https://github.com/wmww/gtk-layer-shell/blob/master/compatibility.md) (fixes [#66](https://github.com/wmww/gtk-layer-shell/issues/66))
+- Compat: bump supported GTK to v3.24.23
+
 ## [0.3.0] - 12 Aug 2020
 - Demo: Display GTK version
 - Demo: Add option for disabling gtk-layer-shell for testing
