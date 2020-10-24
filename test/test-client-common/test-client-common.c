@@ -11,10 +11,13 @@
 
 #include "test-client-common.h"
 
+// How long each callback has to run
+#define STEP_TIME 300
+
 static int return_code = 0;
 static int callback_index = 0;
 
-static gboolean timeout(gpointer _data)
+static gboolean next_step(gpointer _data)
 {
     (void)_data;
     CHECK_EXPECTATIONS();
@@ -61,7 +64,8 @@ void wayland_roundtrip()
 int main()
 {
     gtk_init(0, NULL);
-    g_timeout_add(200, timeout, NULL);
+    next_step(NULL);
+    g_timeout_add(STEP_TIME, next_step, NULL);
     gtk_main();
     return return_code;
 }
