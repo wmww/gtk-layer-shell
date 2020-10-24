@@ -10,6 +10,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "gtk-layer-shell.h"
 
 int main(int argc, char** argv)
