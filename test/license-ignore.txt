@@ -1,0 +1,15 @@
+# Used by the check-license.py test
+# Relative to project root and same format as .gitignore (although syntax may not be fully implemented)
+*.git
+*.gitignore
+*.github
+*/doc
+*.md
+*.editorconfig
+*.txt
+*.xml
+*/check-licenses.py # Contains multiple license texts in strings
+*/meson.build
+*.kate-swp
+*/gtk-priv/scripts/code.py # Contains multiple license texts in strings
+*/.pytest_cache
