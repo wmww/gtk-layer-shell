@@ -10,6 +10,7 @@
  */
 
 #include "mock-server.h"
+#include "linux/input.h"
 
 typedef struct
 {
@@ -24,6 +25,10 @@ typedef struct
     int layer_set_h;
     uint32_t layer_anchor;
 } SurfaceData;
+
+static struct wl_resource* seat_global = NULL;
+static struct wl_resource* pointer_global = NULL;
+static uint32_t click_serial = 0;
 
 static void surface_data_assert_has_one_role(SurfaceData* data)
 {
@@ -88,6 +93,22 @@ static void wl_surface_commit(struct wl_resource *resource, const struct wl_mess
             height = OUTPUT_HEIGHT;
         zwlr_layer_surface_v1_send_configure(data->layer_surface, wl_display_next_serial(display), width, height);
         data->layer_send_configure = 0;
+
+        // Move the pointer onto the surface and click
+        // This is needed to trigger a tooltip or popup menu to open for the popup tests
+        ASSERT(pointer_global);
+        wl_pointer_send_enter(
+            pointer_global,
+            wl_display_next_serial(display),
+            data->surface,
+            wl_fixed_from_double(5.0), wl_fixed_from_double(5.0));
+        wl_pointer_send_frame(pointer_global);
+        click_serial = wl_display_next_serial(display);
+        wl_pointer_send_button(
+            pointer_global,
+            click_serial, 0,
+            BTN_LEFT, WL_POINTER_BUTTON_STATE_PRESSED);
+        wl_pointer_send_frame(pointer_global);
     }
 }
 
@@ -108,10 +129,22 @@ static void wl_compositor_create_surface(struct wl_resource* resource, const str
 
 void wl_seat_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id)
 {
-    struct wl_resource* seat = wl_resource_create(client, &wl_seat_interface, version, id);
-    use_default_impl(seat);
-    wl_seat_send_capabilities(seat, WL_SEAT_CAPABILITY_POINTER | WL_SEAT_CAPABILITY_KEYBOARD);
+    seat_global = wl_resource_create(client, &wl_seat_interface, version, id);
+    use_default_impl(seat_global);
+    wl_seat_send_capabilities(seat_global, WL_SEAT_CAPABILITY_POINTER | WL_SEAT_CAPABILITY_KEYBOARD);
 };
+
+static void wl_seat_get_pointer(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
+{
+    NEW_ID_ARG(id, 0);
+    ASSERT(!pointer_global);
+    pointer_global = wl_resource_create(
+        wl_resource_get_client(resource),
+        &wl_pointer_interface,
+        wl_resource_get_version(resource),
+        id);
+    use_default_impl(pointer_global);
+}
 
 static void xdg_wm_base_get_xdg_surface(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
 {
@@ -146,6 +179,14 @@ static void xdg_surface_get_toplevel(struct wl_resource *resource, const struct 
     wl_resource_set_user_data(toplevel, data);
     data->xdg_toplevel = toplevel;
     surface_data_assert_has_one_role(data);
+}
+
+static void xdg_popup_grab(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
+{
+    RESOURCE_ARG(wl_seat, seat, 0);
+    UINT_ARG(serial, 1);
+    ASSERT_EQ(seat, seat_global, "%p");
+    ASSERT_EQ(serial, click_serial, "%u");
 }
 
 static void zwlr_layer_surface_v1_set_anchor(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
@@ -188,8 +229,10 @@ void install_overrides()
     OVERRIDE_REQUEST(wl_surface, commit);
     OVERRIDE_REQUEST(wl_surface, frame);
     OVERRIDE_REQUEST(wl_compositor, create_surface);
+    OVERRIDE_REQUEST(wl_seat, get_pointer);
     OVERRIDE_REQUEST(xdg_wm_base, get_xdg_surface);
     OVERRIDE_REQUEST(xdg_surface, get_toplevel);
+    OVERRIDE_REQUEST(xdg_popup, grab);
     OVERRIDE_REQUEST(zwlr_layer_shell_v1, get_layer_surface);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, set_anchor);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, set_size);
