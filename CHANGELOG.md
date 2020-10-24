@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+- Tests: fix license test for release tarball (fixes [#73](https://github.com/wmww/gtk-layer-shell/issues/73))
 
 ## [0.4.0] - 21 Oct 2020
 - Demo: show GTK Layer Shell version
