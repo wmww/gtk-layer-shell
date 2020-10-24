@@ -18,25 +18,10 @@ import re
 import os
 from os import path
 import subprocess
-from fnmatch import fnmatch
+import re
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.WARNING)
-
-IGNORE_PATTERNS = [
-    '*/.git',
-    '*/.gitignore',
-    '*/.github',
-    '*/doc',
-    '*.md',
-    '*.editorconfig',
-    '*.txt',
-    '*.xml',
-    '*/check-licenses.py',
-    '*/meson.build',
-    '*.kate-swp',
-    '*/gtk-priv/scripts/code.py', # Is MIT but has the LGPL license text in a string
-]
 
 MIT_EXAMPLE = '''
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -68,35 +53,50 @@ def canonify_str(s):
 def get_project_root():
     return path.dirname(path.dirname(path.realpath(__file__)))
 
-def ignored_by_git(file_path):
-    result = subprocess.run(
-        ['git','-C', get_project_root(), 'check-ignore', file_path],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    return result.returncode == 0
+ignore_patterns = None
+def get_ignore_patterns():
+    global ignore_patterns
+    if ignore_patterns is not None:
+        return ignore_patterns
+    ignore_patterns = []
+    for f in ['.gitignore', '.git/info/exclude', 'test/license-ignore.txt']:
+        p = get_project_root() + '/' + f
+        if path.isfile(p):
+            for raw_line in open(p, 'r').read().splitlines():
+                line = re.sub(r'([^#]*)(.*)', r'\1', raw_line).strip()
+                if line:
+                    ignore_patterns.append(line)
+    return ignore_patterns
 
-def get_files(search_path):
-    for pattern in IGNORE_PATTERNS:
-        if fnmatch(search_path, pattern):
-            logger.info(search_path + ' explicitly ignored (' + pattern + ')')
+def path_matches(base_path, original):
+    pattern = re.escape(original)
+    pattern = re.sub(r'\\\*', r'.*', pattern)
+    pattern = re.sub(r'\\?/', r'(^|$|/)', pattern)
+    try:
+        return bool(re.match(pattern, base_path))
+    except Exception as e:
+        raise RuntimeError('Failed to match pattern ' + pattern + ' (original: ' + original + ') against ' + base_path + ': ' + str(e))
+
+def get_files(prefix, search_path):
+    full_path = path.join(prefix, search_path);
+    for pattern in get_ignore_patterns():
+        if path_matches(search_path, pattern):
+            logger.info(search_path + ' ignored (' + pattern + ')')
             return []
-    if ignored_by_git(search_path):
-        logger.info(search_path + ' ignored by git')
-        return []
-    if search_path.endswith('/build.ninja'):
+    if search_path.endswith('build.ninja'):
         raise RuntimeError('Should not have tried to search a build dir')
-
-    if path.isfile(search_path):
+    if path.isfile(full_path):
         logger.info('Found ' + search_path)
         return [search_path]
-    elif path.isdir(search_path):
+    elif path.isdir(full_path):
         logger.info('Scanning ' + search_path)
         result = []
-        for item in os.listdir(search_path):
-            result += get_files(path.join(search_path, item))
+        for item in os.listdir(full_path):
+            result += get_files(prefix, path.join(search_path, item))
         return result
 
 def get_important_files():
-    return get_files(get_project_root())
+    return get_files(get_project_root(), '')
 
 def print_list(name, files):
     if files:
@@ -115,9 +115,9 @@ def load_file(p):
     except Exception as e:
         raise RuntimeError('Failed to read ' + p + ': ' + str(e))
 
-
 def main():
     logger.info('Project root: ' + get_project_root())
+    logger.info('Ignore paths: \n  ' + '\n  '.join(get_ignore_patterns()))
     all_files = get_important_files()
     logger.info('Found ' + str(len(all_files)) + ' files')
     mit_files = []
@@ -127,7 +127,7 @@ def main():
     mit_example = canonify_str(MIT_EXAMPLE)
     lgpl3_example = canonify_str(LGPL3_EXAMPLE)
     for p in all_files:
-            contents = load_file(p)
+            contents = load_file(path.join(get_project_root(), p))
             found = 0
             if mit_example in contents:
                 mit_files.append(p)
@@ -145,7 +145,7 @@ def main():
     print_list('no license', none_files)
     print_list('multiple licenses', multiples_files)
     if none_files or multiples_files:
-        print('If some files should be excluded from the license check, add them to IGNORE_PATTERNS in ' + __file__)
+        print('If some files should be excluded from the license check, add them to test/license-ignore.txt')
         print('Failed license check')
         exit(1)
     else:
