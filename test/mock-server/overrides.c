@@ -20,6 +20,9 @@ typedef struct
     struct wl_resource* xdg_popup;
     struct wl_resource* xdg_surface;
     struct wl_resource* layer_surface;
+    char has_pending_buffer;
+    char has_committed_buffer;
+    char initial_commit_for_role;
     char layer_send_configure;
     int layer_set_w;
     int layer_set_h;
@@ -30,30 +33,27 @@ static struct wl_resource* seat_global = NULL;
 static struct wl_resource* pointer_global = NULL;
 static uint32_t click_serial = 0;
 
-static void surface_data_assert_has_one_role(SurfaceData* data)
+static void assert_surface_can_be_given_role(SurfaceData* data)
 {
-    int role_count = 0;
     char roles[200];
     roles[0] = 0;
-    if (data->xdg_surface && data->xdg_toplevel)
+    if (data->xdg_toplevel)
     {
-        role_count++;
         strcat(roles, "xdg_toplevel ");
     }
-    if (data->xdg_surface && data->xdg_popup)
+    if (data->xdg_popup)
     {
-        role_count++;
-        strcat(roles, "xdg_popup");
+        strcat(roles, "xdg_popup ");
     }
     if (data->layer_surface)
     {
-        role_count++;
-        strcat(roles, "layer_surface");
+        strcat(roles, "layer_surface ");
     }
-    if (role_count != 1)
+    if (strlen(roles))
     {
-        FATAL_FMT("wl_surface@%d has %d roles: %s", wl_resource_get_id(data->surface), role_count, roles);
+        FATAL_FMT("wl_surface@%d already has a role: %s", wl_resource_get_id(data->surface), roles);
     }
+    ASSERT(!data->has_committed_buffer);
 }
 
 static void wl_surface_frame(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
@@ -68,14 +68,28 @@ static void wl_surface_frame(struct wl_resource *resource, const struct wl_messa
         callback);
 }
 
+static void wl_surface_attach(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
+{
+    RESOURCE_ARG(wl_buffer, buffer, 0);
+    SurfaceData* data = wl_resource_get_user_data(resource);
+    data->has_pending_buffer = (buffer != NULL);
+}
+
 static void wl_surface_commit(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
 {
     SurfaceData* data = wl_resource_get_user_data(resource);
+    data->has_committed_buffer = data->has_pending_buffer;
+    // leave the contents of has_pending_buffer alone
     if (data->pending_frame)
     {
         wl_callback_send_done(data->pending_frame, 0);
         wl_resource_destroy(data->pending_frame);
         data->pending_frame = NULL;
+    }
+    if (data->initial_commit_for_role)
+    {
+        ASSERT(!data->has_committed_buffer);
+        data->initial_commit_for_role = 0;
     }
     if (data->layer_surface && data->layer_send_configure)
     {
@@ -176,9 +190,28 @@ static void xdg_surface_get_toplevel(struct wl_resource *resource, const struct 
     wl_array_release(&states);
     xdg_surface_send_configure(resource, wl_display_next_serial(display));
     SurfaceData* data = wl_resource_get_user_data(resource);
+    assert_surface_can_be_given_role(data);
+    data->initial_commit_for_role = 1;
     wl_resource_set_user_data(toplevel, data);
     data->xdg_toplevel = toplevel;
-    surface_data_assert_has_one_role(data);
+}
+
+static void xdg_surface_get_popup(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
+{
+    NEW_ID_ARG(id, 0);
+    struct wl_resource* popup = wl_resource_create(
+        wl_resource_get_client(resource),
+        &xdg_popup_interface,
+        wl_resource_get_version(resource),
+        id);
+    use_default_impl(popup);
+    xdg_popup_send_configure(popup, 0, 0, 100, 100);
+    xdg_surface_send_configure(resource, wl_display_next_serial(display));
+    SurfaceData* data = wl_resource_get_user_data(resource);
+    assert_surface_can_be_given_role(data);
+    data->initial_commit_for_role = 1;
+    wl_resource_set_user_data(popup, data);
+    data->xdg_popup = popup;
 }
 
 static void xdg_popup_grab(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
@@ -218,20 +251,23 @@ static void zwlr_layer_shell_v1_get_layer_surface(struct wl_resource *resource, 
         id);
     use_default_impl(layer_surface);
     SurfaceData* data = wl_resource_get_user_data(surface);
+    assert_surface_can_be_given_role(data);
+    data->initial_commit_for_role = 1;
     wl_resource_set_user_data(layer_surface, data);
     data->layer_send_configure = 1;
     data->layer_surface = layer_surface;
-    surface_data_assert_has_one_role(data);
 }
 
 void install_overrides()
 {
     OVERRIDE_REQUEST(wl_surface, commit);
     OVERRIDE_REQUEST(wl_surface, frame);
+    OVERRIDE_REQUEST(wl_surface, attach);
     OVERRIDE_REQUEST(wl_compositor, create_surface);
     OVERRIDE_REQUEST(wl_seat, get_pointer);
     OVERRIDE_REQUEST(xdg_wm_base, get_xdg_surface);
     OVERRIDE_REQUEST(xdg_surface, get_toplevel);
+    OVERRIDE_REQUEST(xdg_surface, get_popup);
     OVERRIDE_REQUEST(xdg_popup, grab);
     OVERRIDE_REQUEST(zwlr_layer_shell_v1, get_layer_surface);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, set_anchor);
