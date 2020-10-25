@@ -9,34 +9,33 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "gtk-layer-shell.h"
+#include "test-client-common.h"
 
-int main(int argc, char** argv)
+static GtkWindow* window;
+
+static void callback_0()
 {
-    if (argc != 2)
-    {
-        fprintf(stderr, "Incorrect number of arguments (%d)", argc);
-        exit(1);
-    }
+    // The mock server will automatically click on our window, triggering the menu to open
 
-    char version_string[1024];
-    sprintf(
-        version_string,
-        "%d.%d.%d",
-        gtk_layer_get_major_version(),
-        gtk_layer_get_minor_version(),
-        gtk_layer_get_micro_version());
+    EXPECT_MESSAGE(zwlr_layer_shell_v1 .get_layer_surface);
+    EXPECT_MESSAGE(xdg_wm_base .get_xdg_surface);
+    EXPECT_MESSAGE(xdg_surface .get_popup);
+    EXPECT_MESSAGE(xdg_popup .grab);
 
-    const char* version_arg = argv[1];
+    window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+    GtkWidget *menu_bar = gtk_menu_bar_new();
+    gtk_container_add(GTK_CONTAINER(window), menu_bar);
+    GtkWidget *menu_item = gtk_menu_item_new_with_label("Popup menu");
+    gtk_container_add(GTK_CONTAINER(menu_bar), menu_item);
+    GtkWidget *submenu = gtk_menu_new();
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
+    GtkWidget *close_item = gtk_menu_item_new_with_label("Menu item");
+    gtk_menu_shell_append(GTK_MENU_SHELL(submenu), close_item);
 
-    if (strcmp(version_arg, version_string) != 0)
-    {
-        fprintf(stderr, "Version provided by GTK Layer Shell: %s\n", version_string);
-        fprintf(stderr, "Version sent to this test via argument: %s\n", version_arg);
-        exit(1);
-    }
-
-    return 0;
+    gtk_layer_init_for_window(window);
+    gtk_widget_show_all(GTK_WIDGET(window));
 }
+
+TEST_CALLBACKS(
+    callback_0,
+)

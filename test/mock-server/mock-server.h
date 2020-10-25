@@ -37,6 +37,7 @@ extern struct wl_display* display;
 #define FATAL(message) FATAL_FMT(message"%s", "")
 #define FATAL_NOT_IMPL FATAL_FMT("%s() not implemented", __func__); exit(1)
 #define ASSERT(assertion) do {if (!(assertion)) {FATAL_FMT("assertion failed: %s", #assertion);}} while (0)
+#define ASSERT_EQ(a, b, format) do {if (!((a) == (b))) {FATAL_FMT("expected %s == %s\n  %s: " format "\n  %s: " format "\n", #a, #b, #a, a, #b, b);}} while (0)
 
 #define ALLOC_STRUCT(type) ((type*)alloc_zeroed(sizeof(type)))
 void* alloc_zeroed(size_t size);

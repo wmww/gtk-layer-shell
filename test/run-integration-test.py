@@ -65,10 +65,12 @@ def format_stream(name, stream):
     return '╭' + header + '\n│\n│' + body + '\n│\n╰' + footer
 
 def format_process_report(name, process, streams):
-    return (
-        format_stream(name + ' stdout', streams[0]) + '\n\n' +
-        format_stream(name + ' stderr', streams[1]) + '\n\n' +
-        name + ' exit code: ' + str(process.returncode))
+    streams = (
+        format_stream(name + ' stdout', streams[0]) + '\n\n',
+        format_stream(name + ' stderr', streams[1]) + '\n\n')
+    if name == 'server':
+        streams = (streams[1], streams[0])
+    return ''.join(streams) + name + ' exit code: ' + str(process.returncode)
 
 def run_test(name, server_bin, client_bin, xdg_runtime, wayland_display):
     server = subprocess.Popen(

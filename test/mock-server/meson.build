@@ -1,7 +1,7 @@
 mock_server_srcs = [
     'mock-server.h',
     'mock-server.c',
-    'request-overrides.c',
+    'overrides.c',
 ]
 
 mock_server = executable(
