@@ -23,6 +23,8 @@ import re
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.WARNING)
 
+ignore_patterns_file = 'test/license-ignore.txt'
+
 MIT_EXAMPLE = '''
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -59,13 +61,16 @@ def get_ignore_patterns():
     if ignore_patterns is not None:
         return ignore_patterns
     ignore_patterns = []
-    for f in ['.gitignore', '.git/info/exclude', 'test/license-ignore.txt']:
+    for f in ['.gitignore', '.git/info/exclude', ignore_patterns_file]:
         p = get_project_root() + '/' + f
         if path.isfile(p):
+            logger.info('Excluding paths in ' + p + ' from the license check')
             for raw_line in open(p, 'r').read().splitlines():
                 line = re.sub(r'([^#]*)(.*)', r'\1', raw_line).strip()
                 if line:
                     ignore_patterns.append(line)
+        else:
+            logger.warning(p + ' not found, it will not be used to exclude paths from the license check')
     return ignore_patterns
 
 def path_matches(base_path, original):
@@ -79,12 +84,13 @@ def path_matches(base_path, original):
 
 def get_files(prefix, search_path):
     full_path = path.join(prefix, search_path);
+    if path.exists(path.join(full_path, 'build.ninja')):
+        logger.info(search_path + ' ignored because it is a build directory')
+        return []
     for pattern in get_ignore_patterns():
         if path_matches(search_path, pattern):
-            logger.info(search_path + ' ignored (' + pattern + ')')
+            logger.info(search_path + ' ignored because it matches ' + pattern)
             return []
-    if search_path.endswith('build.ninja'):
-        raise RuntimeError('Should not have tried to search a build dir')
     if path.isfile(full_path):
         logger.info('Found ' + search_path)
         return [search_path]
@@ -94,6 +100,8 @@ def get_files(prefix, search_path):
         for item in os.listdir(full_path):
             result += get_files(prefix, path.join(search_path, item))
         return result
+    else:
+        return []
 
 def get_important_files():
     return get_files(get_project_root(), '')
@@ -112,8 +120,11 @@ def load_file(p):
         with open(p, 'r') as f:
             contents = f.read()
             return canonify_str(contents)
-    except Exception as e:
-        raise RuntimeError('Failed to read ' + p + ': ' + str(e))
+    except Exception:
+        rel = path.relpath(p, get_project_root())
+        raise RuntimeError(
+            'Failed to read ' + rel +
+            '. If this file should have been ignored, add it to ' + ignore_patterns_file)
 
 def main():
     logger.info('Project root: ' + get_project_root())
@@ -145,7 +156,7 @@ def main():
     print_list('no license', none_files)
     print_list('multiple licenses', multiples_files)
     if none_files or multiples_files:
-        print('If some files should be excluded from the license check, add them to test/license-ignore.txt')
+        print('If some files should be excluded from the license check, add them to ' + ignore_patterns_file)
         print('Failed license check')
         exit(1)
     else:
