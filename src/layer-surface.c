@@ -412,6 +412,7 @@ void
 layer_surface_set_anchor (LayerSurface *self, GtkLayerShellEdge edge, gboolean anchor_to_edge)
 {
     g_return_if_fail (edge >= 0 && edge < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER);
+    anchor_to_edge = (anchor_to_edge != FALSE);
     if (anchor_to_edge != self->anchors[edge]) {
         self->anchors[edge] = anchor_to_edge;
         if (self->layer_surface) {

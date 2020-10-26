@@ -9,6 +9,7 @@ test_clients = [
     'test-adapts-to-screen-size',
     'test-auto-exclusive-zone-no-margin',
     'test-auto-exclusive-zone-with-margin',
+    'test-auto-exclusive-zone-weird-bool-values',
     'test-menu-popup',
     'test-window-with-initially-attached-buffer',
     'test-close-layer-surface'
