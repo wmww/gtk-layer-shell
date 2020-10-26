@@ -239,7 +239,7 @@ int gtk_layer_get_margin (GtkWindow *window, GtkLayerShellEdge edge);
  *
  * Has no effect unless the surface is anchored to an edge. Requests that the compositor
  * does not place other surfaces within the given exclusive zone of the anchored edge.
- * For example, a penel can request to not be covered by maximized windows. See
+ * For example, a panel can request to not be covered by maximized windows. See
  * wlr-layer-shell-unstable-v1.xml for details.
  *
  * Default is 0
