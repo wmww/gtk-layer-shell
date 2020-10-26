@@ -126,6 +126,16 @@ static void wl_surface_commit(struct wl_resource *resource, const struct wl_mess
     }
 }
 
+static void wl_surface_destroy(struct wl_resource* resource, const struct wl_message* message, union wl_argument* args)
+{
+    SurfaceData* data = wl_resource_get_user_data(resource);
+    ASSERT(!data->xdg_popup);
+    ASSERT(!data->xdg_toplevel);
+    ASSERT(!data->xdg_surface);
+    ASSERT(!data->layer_surface);
+    free(data);
+}
+
 static void wl_compositor_create_surface(struct wl_resource* resource, const struct wl_message* message, union wl_argument* args)
 {
     NEW_ID_ARG(id, 0);
@@ -170,8 +180,16 @@ static void xdg_wm_base_get_xdg_surface(struct wl_resource *resource, const stru
         id);
     use_default_impl(xdg_surface);
     SurfaceData* data = wl_resource_get_user_data(surface);
-    data->xdg_surface = xdg_surface;
     wl_resource_set_user_data(xdg_surface, data);
+    data->xdg_surface = xdg_surface;
+}
+
+static void xdg_surface_destroy(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
+{
+    SurfaceData* data = wl_resource_get_user_data(resource);
+    ASSERT(!data->xdg_toplevel);
+    ASSERT(!data->xdg_popup);
+    data->xdg_surface = NULL;
 }
 
 static void xdg_surface_get_toplevel(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
@@ -192,6 +210,13 @@ static void xdg_surface_get_toplevel(struct wl_resource *resource, const struct 
     surface_data_set_role(data, SURFACE_ROLE_XDG_TOPLEVEL);
     wl_resource_set_user_data(toplevel, data);
     data->xdg_toplevel = toplevel;
+}
+
+static void xdg_toplevel_destroy(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
+{
+    SurfaceData* data = wl_resource_get_user_data(resource);
+    ASSERT(data->xdg_surface);
+    data->xdg_toplevel = NULL;
 }
 
 static void xdg_surface_get_popup(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
@@ -217,6 +242,13 @@ static void xdg_popup_grab(struct wl_resource *resource, const struct wl_message
     UINT_ARG(serial, 1);
     ASSERT_EQ(seat, seat_global, "%p");
     ASSERT_EQ(serial, click_serial, "%u");
+}
+
+static void xdg_popup_destroy(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
+{
+    SurfaceData* data = wl_resource_get_user_data(resource);
+    ASSERT(data->xdg_surface);
+    data->xdg_popup = NULL;
 }
 
 static void zwlr_layer_surface_v1_set_anchor(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
@@ -254,20 +286,31 @@ static void zwlr_layer_shell_v1_get_layer_surface(struct wl_resource *resource, 
     data->layer_surface = layer_surface;
 }
 
+static void zwlr_layer_surface_v1_destroy(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
+{
+    SurfaceData* data = wl_resource_get_user_data(resource);
+    data->layer_surface = NULL;
+}
+
 void init()
 {
     OVERRIDE_REQUEST(wl_surface, commit);
     OVERRIDE_REQUEST(wl_surface, frame);
     OVERRIDE_REQUEST(wl_surface, attach);
+    OVERRIDE_REQUEST(wl_surface, destroy);
     OVERRIDE_REQUEST(wl_compositor, create_surface);
     OVERRIDE_REQUEST(wl_seat, get_pointer);
     OVERRIDE_REQUEST(xdg_wm_base, get_xdg_surface);
+    OVERRIDE_REQUEST(xdg_surface, destroy);
     OVERRIDE_REQUEST(xdg_surface, get_toplevel);
+    OVERRIDE_REQUEST(xdg_toplevel, destroy);
     OVERRIDE_REQUEST(xdg_surface, get_popup);
     OVERRIDE_REQUEST(xdg_popup, grab);
+    OVERRIDE_REQUEST(xdg_popup, destroy);
     OVERRIDE_REQUEST(zwlr_layer_shell_v1, get_layer_surface);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, set_anchor);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, set_size);
+    OVERRIDE_REQUEST(zwlr_layer_surface_v1, destroy);
 
     wl_global_create(display, &wl_seat_interface, 6, NULL, wl_seat_bind);
     default_global_create(display, &wl_shm_interface, 1);
