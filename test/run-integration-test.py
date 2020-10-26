@@ -101,7 +101,7 @@ def run_test(name, server_bin, client_bin, xdg_runtime, wayland_display):
         })
 
     try:
-        client_streams = decode_streams(client.communicate(timeout=5))
+        client_streams = decode_streams(client.communicate(timeout=20))
     except subprocess.TimeoutExpired:
         client.kill()
         time.sleep(1)
