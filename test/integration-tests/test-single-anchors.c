@@ -23,37 +23,31 @@ static void set_anchors(GtkWindow* window, gboolean top, gboolean bottom, gboole
 
 static void callback_0()
 {
-    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_anchor 0);
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_anchor 1);
 
     window = create_default_window();
     gtk_layer_init_for_window(window);
     gtk_widget_show_all(GTK_WIDGET(window));
 
-    set_anchors(window, FALSE, FALSE, FALSE, FALSE);
+    set_anchors(window, TRUE, FALSE, FALSE, FALSE);
 }
 
 static void callback_1()
 {
-    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_anchor 3);
-    set_anchors(window, TRUE, TRUE, FALSE, FALSE);
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_anchor 2);
+    set_anchors(window, FALSE, TRUE, FALSE, FALSE);
 }
 
 static void callback_2()
 {
-    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_anchor 13);
-    set_anchors(window, TRUE, FALSE, TRUE, TRUE);
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_anchor 4);
+    set_anchors(window, FALSE, FALSE, TRUE, FALSE);
 }
 
 static void callback_3()
 {
-    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_anchor 15);
-    set_anchors(window, TRUE, TRUE, TRUE, TRUE);
-}
-
-static void callback_4()
-{
-    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_anchor 0);
-    set_anchors(window, FALSE, FALSE, FALSE, FALSE);
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_anchor 8);
+    set_anchors(window, FALSE, FALSE, FALSE, TRUE);
 }
 
 TEST_CALLBACKS(
@@ -61,5 +55,4 @@ TEST_CALLBACKS(
     callback_1,
     callback_2,
     callback_3,
-    callback_4,
 )
