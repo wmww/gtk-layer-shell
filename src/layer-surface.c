@@ -22,29 +22,6 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkwayland.h>
 
-struct _LayerSurface
-{
-    CustomShellSurface super;
-
-    // Can be set at any time
-    gboolean anchors[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER]; // The current anchor
-    int margins[GTK_LAYER_SHELL_LAYER_ENTRY_NUMBER]; // The current margins
-    int exclusive_zone; // The current exclusive zone (set either explicitly or automatically)
-    gboolean auto_exclusive_zone; // If to automatically change the exclusive zone to match the window size
-    gboolean keyboard_interactivity; // If this surface should get keyboard input
-    enum zwlr_layer_shell_v1_layer layer; // The current layer, needs surface recreation on old layer shell versions
-
-    // Need the surface to be recreated to change
-    GdkMonitor *monitor; // Can be null
-    const char *name_space; // Can be null, freed on destruction
-
-    // Not set by user requests
-    struct zwlr_layer_surface_v1 *layer_surface; // The actual layer surface Wayland object (can be NULL)
-    GtkRequisition current_allocation; // Last size allocation, or (0, 0) if there hasn't been one
-    GtkRequisition cached_layer_size; // Last size sent to zwlr_layer_surface_v1_set_size (starts as 0, 0)
-    GtkRequisition last_configure_size; // Last size received from a configure event
-};
-
 /*
  * Sends the .set_size request if the current allocation differs from the last size sent
  * Needs to be called whenever current_allocation or anchors are changed

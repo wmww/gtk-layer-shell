@@ -17,8 +17,33 @@
 #include "gtk-layer-shell.h"
 #include <gtk/gtk.h>
 
-// a LayerSurface * can be safely cast to a CustomShellSurface *
+// A LayerSurface * can be safely cast to a CustomShellSurface *
 typedef struct _LayerSurface LayerSurface;
+
+// Functions that mutate this structure should all be in layer-surface.c to make the logic easier to understand
+// Struct is declared in this header to prevent the need for excess getters
+struct _LayerSurface
+{
+    CustomShellSurface super;
+
+    // Can be set at any time
+    gboolean anchors[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER]; // The current anchor
+    int margins[GTK_LAYER_SHELL_LAYER_ENTRY_NUMBER]; // The current margins
+    int exclusive_zone; // The current exclusive zone (set either explicitly or automatically)
+    gboolean auto_exclusive_zone; // If to automatically change the exclusive zone to match the window size
+    gboolean keyboard_interactivity; // If this surface should get keyboard input
+    enum zwlr_layer_shell_v1_layer layer; // The current layer, needs surface recreation on old layer shell versions
+
+    // Need the surface to be recreated to change
+    GdkMonitor *monitor; // Can be null
+    const char *name_space; // Can be null, freed on destruction
+
+    // Not set by user requests
+    struct zwlr_layer_surface_v1 *layer_surface; // The actual layer surface Wayland object (can be NULL)
+    GtkRequisition current_allocation; // Last size allocation, or (0, 0) if there hasn't been one
+    GtkRequisition cached_layer_size; // Last size sent to zwlr_layer_surface_v1_set_size (starts as 0, 0)
+    GtkRequisition last_configure_size; // Last size received from a configure event
+};
 
 LayerSurface *layer_surface_new (GtkWindow *gtk_window);
 
