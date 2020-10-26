@@ -5,14 +5,24 @@ test_clients = [
     'test-expect-fail',
     'test-anchors',
     'test-set-layer',
+    'test-get-layer',
     'test-set-size-request',
     'test-adapts-to-screen-size',
     'test-auto-exclusive-zone-no-margin',
     'test-auto-exclusive-zone-with-margin',
     'test-auto-exclusive-zone-weird-bool-values',
+    'test-get-explicit-exclusive-zone',
+    'test-get-auto-exclusive-zone',
     'test-menu-popup',
     'test-window-with-initially-attached-buffer',
-    'test-close-layer-surface'
+    'test-close-layer-surface',
+    'test-get-namespace-default',
+    'test-get-namespace-on-non-layer-window',
+    'test-get-namespace-custom-namespace',
+    'test-set-monitor',
+    'test-get-monitor',
+    'test-set-keyboard-interactivity',
+    'test-get-keyboard-interactivity',
 ]
 
 test_client_common_inc = include_directories('test-client-common')
