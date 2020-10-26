@@ -70,7 +70,7 @@ gtk_layer_get_zwlr_layer_surface_v1 (GtkWindow *window)
 {
     LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
     if (!layer_surface) return NULL; // Error message already shown in gtk_window_get_layer_surface
-    return layer_surface_get_get_zwlr_layer_surface_v1 (layer_surface);
+    return layer_surface->layer_surface;
 }
 
 void

@@ -50,9 +50,6 @@ LayerSurface *layer_surface_new (GtkWindow *gtk_window);
 // Safe cast, returns NULL if wrong type sent
 LayerSurface *custom_shell_surface_get_layer_surface (CustomShellSurface *shell_surface);
 
-// Getters
-struct zwlr_layer_surface_v1 *layer_surface_get_get_zwlr_layer_surface_v1(LayerSurface *self);
-
 // Surface is remapped in order to set
 void layer_surface_set_monitor (LayerSurface *self, GdkMonitor *monitor); // Can be null for default
 void layer_surface_set_name_space (LayerSurface *self, char const* name_space); // Makes a copy of the string, can be null
