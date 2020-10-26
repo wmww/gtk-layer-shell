@@ -11,6 +11,7 @@ test_clients = [
     'test-auto-exclusive-zone-with-margin',
     'test-menu-popup',
     'test-window-with-initially-attached-buffer',
+    'test-close-layer-surface'
 ]
 
 test_client_common_inc = include_directories('test-client-common')
