@@ -138,7 +138,6 @@ static void wl_compositor_create_surface(struct wl_resource* resource, const str
     data->surface = surface;
     use_default_impl(surface);
     wl_resource_set_user_data(surface, data);
-    wl_resource_set_destructor(surface, free_data_destroy_func);
 }
 
 void wl_seat_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id)

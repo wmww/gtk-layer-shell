@@ -109,12 +109,6 @@ void default_global_create(struct wl_display* display, const struct wl_interface
     wl_global_create(display, interface, version, (void*)interface, default_global_bind);
 }
 
-void free_data_destroy_func(struct wl_resource *resource)
-{
-    void* data = wl_resource_get_user_data(resource);
-    free(data);
-}
-
 char type_code_at_index(const struct wl_message* message, int index)
 {
     int i = 0;
