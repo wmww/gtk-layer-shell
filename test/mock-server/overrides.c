@@ -20,13 +20,13 @@ typedef struct
     struct wl_resource* xdg_popup;
     struct wl_resource* xdg_surface;
     struct wl_resource* layer_surface;
-    char has_pending_buffer;
-    char has_committed_buffer;
-    char initial_commit_for_role;
-    char layer_send_configure;
-    int layer_set_w;
-    int layer_set_h;
-    uint32_t layer_anchor;
+    char has_pending_buffer; // If the pending buffer is non-null; same as has_committed_buffer if no pending buffer
+    char has_committed_buffer; // This surface has a non-null committed buffer
+    char initial_commit_for_role; // Set to 1 when a role is created for a surface, and cleared after the first commit
+    char layer_send_configure; // If to send a layer surface configure on the next commit
+    int layer_set_w; // The width to configure the layer surface with
+    int layer_set_h; // The height to configure the layer surface with
+    uint32_t layer_anchor; // The layer surface's anchor
 } SurfaceData;
 
 static struct wl_resource* seat_global = NULL;
