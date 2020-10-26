@@ -153,7 +153,6 @@ static struct wl_listener client_connect_listener = {
 int main(int argc, const char** argv)
 {
     wl_list_init(&request_overrides);
-    install_overrides();
 
     display = wl_display_create();
     if (wl_display_add_socket(display, get_display_name()) != 0)
@@ -163,16 +162,9 @@ int main(int argc, const char** argv)
 
     wl_display_add_client_created_listener(display, &client_connect_listener);
 
-    wl_global_create(display, &wl_seat_interface, 6, NULL, wl_seat_bind);
-    default_global_create(display, &wl_shm_interface, 1);
-    default_global_create(display, &wl_output_interface, 2);
-    default_global_create(display, &wl_data_device_manager_interface, 2);
-    default_global_create(display, &wl_compositor_interface, 4);
-    default_global_create(display, &xdg_wm_base_interface, 2);
-    default_global_create(display, &zwlr_layer_shell_v1_interface, 3);
+    init();
 
     wl_display_run(display);
-
     wl_display_destroy(display);
 
     return 0;

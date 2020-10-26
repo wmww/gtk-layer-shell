@@ -255,7 +255,7 @@ static void zwlr_layer_shell_v1_get_layer_surface(struct wl_resource *resource, 
     data->layer_surface = layer_surface;
 }
 
-void install_overrides()
+void init()
 {
     OVERRIDE_REQUEST(wl_surface, commit);
     OVERRIDE_REQUEST(wl_surface, frame);
@@ -269,4 +269,12 @@ void install_overrides()
     OVERRIDE_REQUEST(zwlr_layer_shell_v1, get_layer_surface);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, set_anchor);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, set_size);
+
+    wl_global_create(display, &wl_seat_interface, 6, NULL, wl_seat_bind);
+    default_global_create(display, &wl_shm_interface, 1);
+    default_global_create(display, &wl_output_interface, 2);
+    default_global_create(display, &wl_data_device_manager_interface, 2);
+    default_global_create(display, &wl_compositor_interface, 4);
+    default_global_create(display, &xdg_wm_base_interface, 2);
+    default_global_create(display, &zwlr_layer_shell_v1_interface, 3);
 }

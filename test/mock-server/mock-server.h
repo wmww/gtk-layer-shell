@@ -49,10 +49,10 @@ void* alloc_zeroed(size_t size);
 typedef void (*RequestOverrideFunction)(struct wl_resource* resource, const struct wl_message* message, union wl_argument* args);
 void install_request_override(const struct wl_interface* interface, const char* name, RequestOverrideFunction function);
 void use_default_impl(struct wl_resource* resource);
+void default_global_create(struct wl_display* display, const struct wl_interface* interface, int version);
 void free_data_destroy_func(struct wl_resource *resource);
 char type_code_at_index(const struct wl_message* message, int index);
 
-void wl_seat_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id);
-void install_overrides();
+void init();
 
 #endif // MOCK_SERVER_H
