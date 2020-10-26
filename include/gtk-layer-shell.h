@@ -176,14 +176,24 @@ void gtk_layer_set_anchor (GtkWindow *window, GtkLayerShellEdge edge, gboolean a
 void gtk_layer_set_margin (GtkWindow *window, GtkLayerShellEdge edge, int margin_size);
 
 /**
+ * gtk_layer_get_margin:
+ * @window: A layer surface.
+ *
+ * Returns: the size of the margin for the given edge.
+ *
+ * Since: 0.5
+ */
+int gtk_layer_get_margin (GtkWindow *window, GtkLayerShellEdge edge);
+
+/**
  * gtk_layer_set_exclusive_zone:
  * @window: A layer surface.
  * @exclusive_zone: The size of the exclusive zone.
  *
- * If auto exclusive zone is enabled, exclusive zone will automatically be set to the
- * size of the @window + relevant margin. To disable auto exclusive zone, just set the
- * exclusive zone to 0 or any other fixed value. There is no need to manually set the
- * exclusive zone size when using auto exclusive zone.
+ * Has no effect unless the surface is anchored to an edge. Requests that the compositor
+ * does not place other surfaces within the given exclusive zone of the anchored edge.
+ * For example, a penel can request to not be covered by maximized windows. See
+ * wlr-layer-shell-unstable-v1.xml for details.
  *
  * Default is 0
  */
@@ -193,7 +203,12 @@ void gtk_layer_set_exclusive_zone (GtkWindow *window, int exclusive_zone);
  * gtk_layer_auto_exclusive_zone_enable:
  * @window: A layer surface.
  *
- * Enables auto exclusive zone for @window.
+ * When auto exclusive zone is enabled, exclusive zone is automatically set to the
+ * size of the @window + relevant margin. To disable auto exclusive zone, just set the
+ * exclusive zone to 0 or any other fixed value.
+ *
+ * NOTE: you can control the auto exclusive zone by changing the margin on the non-anchored
+ * edge. This behavior is specific to gtk-layer-shell and not part of the underlying protocol
  */
 void gtk_layer_auto_exclusive_zone_enable (GtkWindow *window);
 
