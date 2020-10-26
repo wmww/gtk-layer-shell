@@ -58,7 +58,7 @@ custom_shell_surface_on_window_map (GtkWidget *widget, CustomShellSurface *self)
     // In some cases (observed when a mate panel has an image background) GDK will attach a buffer just after creating
     // the surface (see the implementation of gdk_wayland_window_show() for details). Giving the surface a role with a
     // buffer attached is a protocol violation, so we attach a null buffer. GDK hasn't commited the buffer it may have
-    // attached, so we don't need to commit.
+    // attached, so we don't need to commit. If this is removed, test-window-with-initially-attached-buffer should fail.
     wl_surface_attach (wl_surface, NULL, 0, 0);
 
     self->virtual->map (self, wl_surface);
