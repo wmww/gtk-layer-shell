@@ -12,48 +12,48 @@
 #include "mock-server.h"
 #include "linux/input.h"
 
+typedef enum
+{
+    SURFACE_ROLE_NONE = 0,
+    SURFACE_ROLE_XDG_TOPLEVEL,
+    SURFACE_ROLE_XDG_POPUP,
+    SURFACE_ROLE_LAYER,
+} SurfaceRole;
+
 typedef struct
 {
+    SurfaceRole role;
     struct wl_resource* surface;
     struct wl_resource* pending_frame;
     struct wl_resource* xdg_toplevel;
     struct wl_resource* xdg_popup;
     struct wl_resource* xdg_surface;
     struct wl_resource* layer_surface;
-    char layer_send_configure;
-    int layer_set_w;
-    int layer_set_h;
-    uint32_t layer_anchor;
+    char has_pending_buffer; // If the pending buffer is non-null; same as has_committed_buffer if no pending buffer
+    char has_committed_buffer; // This surface has a non-null committed buffer
+    char initial_commit_for_role; // Set to 1 when a role is created for a surface, and cleared after the first commit
+    char layer_send_configure; // If to send a layer surface configure on the next commit
+    int layer_set_w; // The width to configure the layer surface with
+    int layer_set_h; // The height to configure the layer surface with
+    uint32_t layer_anchor; // The layer surface's anchor
 } SurfaceData;
 
 static struct wl_resource* seat_global = NULL;
 static struct wl_resource* pointer_global = NULL;
 static uint32_t click_serial = 0;
 
-static void surface_data_assert_has_one_role(SurfaceData* data)
+// Needs to be called before any role objects are asigned
+static void surface_data_set_role(SurfaceData* data, SurfaceRole role)
 {
-    int role_count = 0;
-    char roles[200];
-    roles[0] = 0;
-    if (data->xdg_surface && data->xdg_toplevel)
-    {
-        role_count++;
-        strcat(roles, "xdg_toplevel ");
-    }
-    if (data->xdg_surface && data->xdg_popup)
-    {
-        role_count++;
-        strcat(roles, "xdg_popup");
-    }
-    if (data->layer_surface)
-    {
-        role_count++;
-        strcat(roles, "layer_surface");
-    }
-    if (role_count != 1)
-    {
-        FATAL_FMT("wl_surface@%d has %d roles: %s", wl_resource_get_id(data->surface), role_count, roles);
-    }
+    ASSERT_EQ(data->role, SURFACE_ROLE_NONE, "%u");
+    char is_xdg_role = (role == SURFACE_ROLE_XDG_TOPLEVEL || role == SURFACE_ROLE_XDG_POPUP);
+    ASSERT_EQ(data->xdg_surface != NULL, is_xdg_role, "%d");
+    ASSERT(!data->xdg_toplevel);
+    ASSERT(!data->xdg_popup);
+    ASSERT(!data->layer_surface);
+    ASSERT(!data->has_committed_buffer);
+    data->role = role;
+    data->initial_commit_for_role = 1;
 }
 
 static void wl_surface_frame(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
@@ -68,14 +68,28 @@ static void wl_surface_frame(struct wl_resource *resource, const struct wl_messa
         callback);
 }
 
+static void wl_surface_attach(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
+{
+    RESOURCE_ARG(wl_buffer, buffer, 0);
+    SurfaceData* data = wl_resource_get_user_data(resource);
+    data->has_pending_buffer = (buffer != NULL);
+}
+
 static void wl_surface_commit(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
 {
     SurfaceData* data = wl_resource_get_user_data(resource);
+    data->has_committed_buffer = data->has_pending_buffer;
+    // leave the contents of has_pending_buffer alone
     if (data->pending_frame)
     {
         wl_callback_send_done(data->pending_frame, 0);
         wl_resource_destroy(data->pending_frame);
         data->pending_frame = NULL;
+    }
+    if (data->initial_commit_for_role)
+    {
+        ASSERT(!data->has_committed_buffer);
+        data->initial_commit_for_role = 0;
     }
     if (data->layer_surface && data->layer_send_configure)
     {
@@ -112,6 +126,16 @@ static void wl_surface_commit(struct wl_resource *resource, const struct wl_mess
     }
 }
 
+static void wl_surface_destroy(struct wl_resource* resource, const struct wl_message* message, union wl_argument* args)
+{
+    SurfaceData* data = wl_resource_get_user_data(resource);
+    ASSERT(!data->xdg_popup);
+    ASSERT(!data->xdg_toplevel);
+    ASSERT(!data->xdg_surface);
+    ASSERT(!data->layer_surface);
+    free(data);
+}
+
 static void wl_compositor_create_surface(struct wl_resource* resource, const struct wl_message* message, union wl_argument* args)
 {
     NEW_ID_ARG(id, 0);
@@ -124,7 +148,6 @@ static void wl_compositor_create_surface(struct wl_resource* resource, const str
     data->surface = surface;
     use_default_impl(surface);
     wl_resource_set_user_data(surface, data);
-    wl_resource_set_destructor(surface, free_data_destroy_func);
 }
 
 void wl_seat_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id)
@@ -157,8 +180,16 @@ static void xdg_wm_base_get_xdg_surface(struct wl_resource *resource, const stru
         id);
     use_default_impl(xdg_surface);
     SurfaceData* data = wl_resource_get_user_data(surface);
-    data->xdg_surface = xdg_surface;
     wl_resource_set_user_data(xdg_surface, data);
+    data->xdg_surface = xdg_surface;
+}
+
+static void xdg_surface_destroy(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
+{
+    SurfaceData* data = wl_resource_get_user_data(resource);
+    ASSERT(!data->xdg_toplevel);
+    ASSERT(!data->xdg_popup);
+    data->xdg_surface = NULL;
 }
 
 static void xdg_surface_get_toplevel(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
@@ -176,9 +207,33 @@ static void xdg_surface_get_toplevel(struct wl_resource *resource, const struct 
     wl_array_release(&states);
     xdg_surface_send_configure(resource, wl_display_next_serial(display));
     SurfaceData* data = wl_resource_get_user_data(resource);
+    surface_data_set_role(data, SURFACE_ROLE_XDG_TOPLEVEL);
     wl_resource_set_user_data(toplevel, data);
     data->xdg_toplevel = toplevel;
-    surface_data_assert_has_one_role(data);
+}
+
+static void xdg_toplevel_destroy(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
+{
+    SurfaceData* data = wl_resource_get_user_data(resource);
+    ASSERT(data->xdg_surface);
+    data->xdg_toplevel = NULL;
+}
+
+static void xdg_surface_get_popup(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
+{
+    NEW_ID_ARG(id, 0);
+    struct wl_resource* popup = wl_resource_create(
+        wl_resource_get_client(resource),
+        &xdg_popup_interface,
+        wl_resource_get_version(resource),
+        id);
+    use_default_impl(popup);
+    xdg_popup_send_configure(popup, 0, 0, 100, 100);
+    xdg_surface_send_configure(resource, wl_display_next_serial(display));
+    SurfaceData* data = wl_resource_get_user_data(resource);
+    surface_data_set_role(data, SURFACE_ROLE_XDG_POPUP);
+    wl_resource_set_user_data(popup, data);
+    data->xdg_popup = popup;
 }
 
 static void xdg_popup_grab(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
@@ -187,6 +242,13 @@ static void xdg_popup_grab(struct wl_resource *resource, const struct wl_message
     UINT_ARG(serial, 1);
     ASSERT_EQ(seat, seat_global, "%p");
     ASSERT_EQ(serial, click_serial, "%u");
+}
+
+static void xdg_popup_destroy(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
+{
+    SurfaceData* data = wl_resource_get_user_data(resource);
+    ASSERT(data->xdg_surface);
+    data->xdg_popup = NULL;
 }
 
 static void zwlr_layer_surface_v1_set_anchor(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
@@ -218,22 +280,43 @@ static void zwlr_layer_shell_v1_get_layer_surface(struct wl_resource *resource, 
         id);
     use_default_impl(layer_surface);
     SurfaceData* data = wl_resource_get_user_data(surface);
+    surface_data_set_role(data, SURFACE_ROLE_LAYER);
     wl_resource_set_user_data(layer_surface, data);
     data->layer_send_configure = 1;
     data->layer_surface = layer_surface;
-    surface_data_assert_has_one_role(data);
 }
 
-void install_overrides()
+static void zwlr_layer_surface_v1_destroy(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
+{
+    SurfaceData* data = wl_resource_get_user_data(resource);
+    data->layer_surface = NULL;
+}
+
+void init()
 {
     OVERRIDE_REQUEST(wl_surface, commit);
     OVERRIDE_REQUEST(wl_surface, frame);
+    OVERRIDE_REQUEST(wl_surface, attach);
+    OVERRIDE_REQUEST(wl_surface, destroy);
     OVERRIDE_REQUEST(wl_compositor, create_surface);
     OVERRIDE_REQUEST(wl_seat, get_pointer);
     OVERRIDE_REQUEST(xdg_wm_base, get_xdg_surface);
+    OVERRIDE_REQUEST(xdg_surface, destroy);
     OVERRIDE_REQUEST(xdg_surface, get_toplevel);
+    OVERRIDE_REQUEST(xdg_toplevel, destroy);
+    OVERRIDE_REQUEST(xdg_surface, get_popup);
     OVERRIDE_REQUEST(xdg_popup, grab);
+    OVERRIDE_REQUEST(xdg_popup, destroy);
     OVERRIDE_REQUEST(zwlr_layer_shell_v1, get_layer_surface);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, set_anchor);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, set_size);
+    OVERRIDE_REQUEST(zwlr_layer_surface_v1, destroy);
+
+    wl_global_create(display, &wl_seat_interface, 6, NULL, wl_seat_bind);
+    default_global_create(display, &wl_shm_interface, 1);
+    default_global_create(display, &wl_output_interface, 2);
+    default_global_create(display, &wl_data_device_manager_interface, 2);
+    default_global_create(display, &wl_compositor_interface, 4);
+    default_global_create(display, &xdg_wm_base_interface, 2);
+    default_global_create(display, &zwlr_layer_shell_v1_interface, 3);
 }

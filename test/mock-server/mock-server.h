@@ -33,16 +33,14 @@ extern struct wl_display* display;
 #define OUTPUT_WIDTH 1920
 #define OUTPUT_HEIGHT 1080
 
-#define FATAL_FMT(format, ...) do {printf("Fatal error at %s:%d: " format "\n", __FILE__, __LINE__, ##__VA_ARGS__); exit(1);} while (0)
+#define FATAL_FMT(format, ...) do {printf("Fatal error at %s:%d in %s(): " format "\n", __FILE__, __LINE__, __func__, ##__VA_ARGS__); exit(1);} while (0)
 #define FATAL(message) FATAL_FMT(message"%s", "")
-#define FATAL_NOT_IMPL FATAL_FMT("%s() not implemented", __func__); exit(1)
 #define ASSERT(assertion) do {if (!(assertion)) {FATAL_FMT("assertion failed: %s", #assertion);}} while (0)
 #define ASSERT_EQ(a, b, format) do {if (!((a) == (b))) {FATAL_FMT("expected %s == %s\n  %s: " format "\n  %s: " format "\n", #a, #b, #a, a, #b, b);}} while (0)
 
 #define ALLOC_STRUCT(type) ((type*)alloc_zeroed(sizeof(type)))
 void* alloc_zeroed(size_t size);
 
-#define OVERRIDE_ARGS const struct wl_message* message, union wl_argument* args
 #define OVERRIDE_REQUEST(type, method) install_request_override(&type##_interface, #method, type##_##method)
 #define NEW_ID_ARG(name, index) ASSERT(type_code_at_index(message, index) == 'n'); uint32_t name = args[index].n;
 #define RESOURCE_ARG(type, name, index) ASSERT(type_code_at_index(message, index) == 'o'); ASSERT(message->types[index] == &type##_interface); struct wl_resource* name = (struct wl_resource*)args[index].o;
@@ -51,10 +49,9 @@ void* alloc_zeroed(size_t size);
 typedef void (*RequestOverrideFunction)(struct wl_resource* resource, const struct wl_message* message, union wl_argument* args);
 void install_request_override(const struct wl_interface* interface, const char* name, RequestOverrideFunction function);
 void use_default_impl(struct wl_resource* resource);
-void free_data_destroy_func(struct wl_resource *resource);
+void default_global_create(struct wl_display* display, const struct wl_interface* interface, int version);
 char type_code_at_index(const struct wl_message* message, int index);
 
-void wl_seat_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id);
-void install_overrides();
+void init();
 
 #endif // MOCK_SERVER_H
