@@ -12,8 +12,17 @@
 #include "mock-server.h"
 #include "linux/input.h"
 
+typedef enum
+{
+    SURFACE_ROLE_NONE = 0,
+    SURFACE_ROLE_XDG_TOPLEVEL,
+    SURFACE_ROLE_XDG_POPUP,
+    SURFACE_ROLE_LAYER,
+} SurfaceRole;
+
 typedef struct
 {
+    SurfaceRole role;
     struct wl_resource* surface;
     struct wl_resource* pending_frame;
     struct wl_resource* xdg_toplevel;
@@ -33,27 +42,18 @@ static struct wl_resource* seat_global = NULL;
 static struct wl_resource* pointer_global = NULL;
 static uint32_t click_serial = 0;
 
-static void assert_surface_can_be_given_role(SurfaceData* data)
+// Needs to be called before any role objects are asigned
+static void surface_data_set_role(SurfaceData* data, SurfaceRole role)
 {
-    char roles[200];
-    roles[0] = 0;
-    if (data->xdg_toplevel)
-    {
-        strcat(roles, "xdg_toplevel ");
-    }
-    if (data->xdg_popup)
-    {
-        strcat(roles, "xdg_popup ");
-    }
-    if (data->layer_surface)
-    {
-        strcat(roles, "layer_surface ");
-    }
-    if (strlen(roles))
-    {
-        FATAL_FMT("wl_surface@%d already has a role: %s", wl_resource_get_id(data->surface), roles);
-    }
+    ASSERT_EQ(data->role, SURFACE_ROLE_NONE, "%u");
+    char is_xdg_role = (role == SURFACE_ROLE_XDG_TOPLEVEL || role == SURFACE_ROLE_XDG_POPUP);
+    ASSERT_EQ(data->xdg_surface != NULL, is_xdg_role, "%d");
+    ASSERT(!data->xdg_toplevel);
+    ASSERT(!data->xdg_popup);
+    ASSERT(!data->layer_surface);
     ASSERT(!data->has_committed_buffer);
+    data->role = role;
+    data->initial_commit_for_role = 1;
 }
 
 static void wl_surface_frame(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
@@ -190,8 +190,7 @@ static void xdg_surface_get_toplevel(struct wl_resource *resource, const struct 
     wl_array_release(&states);
     xdg_surface_send_configure(resource, wl_display_next_serial(display));
     SurfaceData* data = wl_resource_get_user_data(resource);
-    assert_surface_can_be_given_role(data);
-    data->initial_commit_for_role = 1;
+    surface_data_set_role(data, SURFACE_ROLE_XDG_TOPLEVEL);
     wl_resource_set_user_data(toplevel, data);
     data->xdg_toplevel = toplevel;
 }
@@ -208,8 +207,7 @@ static void xdg_surface_get_popup(struct wl_resource *resource, const struct wl_
     xdg_popup_send_configure(popup, 0, 0, 100, 100);
     xdg_surface_send_configure(resource, wl_display_next_serial(display));
     SurfaceData* data = wl_resource_get_user_data(resource);
-    assert_surface_can_be_given_role(data);
-    data->initial_commit_for_role = 1;
+    surface_data_set_role(data, SURFACE_ROLE_XDG_POPUP);
     wl_resource_set_user_data(popup, data);
     data->xdg_popup = popup;
 }
@@ -251,8 +249,7 @@ static void zwlr_layer_shell_v1_get_layer_surface(struct wl_resource *resource, 
         id);
     use_default_impl(layer_surface);
     SurfaceData* data = wl_resource_get_user_data(surface);
-    assert_surface_can_be_given_role(data);
-    data->initial_commit_for_role = 1;
+    surface_data_set_role(data, SURFACE_ROLE_LAYER);
     wl_resource_set_user_data(layer_surface, data);
     data->layer_send_configure = 1;
     data->layer_surface = layer_surface;
