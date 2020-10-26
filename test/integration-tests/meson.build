@@ -5,6 +5,7 @@ integration_tests = [
     'test-is-layer-window',
     'test-single-anchors',
     'test-multi-anchors',
+    'test-set-anchor-normalizes-booleans',
     'test-set-layer',
     'test-get-layer',
     'test-set-size-request',
