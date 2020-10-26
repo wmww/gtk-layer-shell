@@ -86,7 +86,7 @@ gtk_layer_set_layer (GtkWindow *window, GtkLayerShellLayer layer)
 {
     LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
     if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
-    layer_surface_set_layer (layer_surface, gtk_layer_shell_layer_get_zwlr_layer_shell_v1_layer(layer));
+    layer_surface_set_layer (layer_surface, layer);
 }
 
 void

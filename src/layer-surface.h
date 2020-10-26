@@ -32,7 +32,7 @@ struct _LayerSurface
     int exclusive_zone; // The current exclusive zone (set either explicitly or automatically)
     gboolean auto_exclusive_zone; // If to automatically change the exclusive zone to match the window size
     gboolean keyboard_interactivity; // If this surface should get keyboard input
-    enum zwlr_layer_shell_v1_layer layer; // The current layer, needs surface recreation on old layer shell versions
+    GtkLayerShellLayer layer; // The current layer, needs surface recreation on old layer shell versions
 
     // Need the surface to be recreated to change
     GdkMonitor *monitor; // Can be null
@@ -55,7 +55,7 @@ void layer_surface_set_monitor (LayerSurface *self, GdkMonitor *monitor); // Can
 void layer_surface_set_name_space (LayerSurface *self, char const* name_space); // Makes a copy of the string, can be null
 
 // Can be set without remapping the surface
-void layer_surface_set_layer (LayerSurface *self, enum zwlr_layer_shell_v1_layer layer); // Remaps surface on old layer shell versions
+void layer_surface_set_layer (LayerSurface *self, GtkLayerShellLayer layer); // Remaps surface on old layer shell versions
 void layer_surface_set_anchor (LayerSurface *self, GtkLayerShellEdge edge, gboolean anchor_to_edge);
 void layer_surface_set_margin (LayerSurface *self, GtkLayerShellEdge edge, int margin_size);
 void layer_surface_set_exclusive_zone (LayerSurface *self, int exclusive_zone);

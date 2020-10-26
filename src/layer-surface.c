@@ -173,10 +173,11 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
         output = gdk_wayland_monitor_get_wl_output (self->monitor);
     }
 
+    enum zwlr_layer_shell_v1_layer layer = gtk_layer_shell_layer_get_zwlr_layer_shell_v1_layer(self->layer);
     self->layer_surface = zwlr_layer_shell_v1_get_layer_surface (layer_shell_global,
                                                                  wl_surface,
                                                                  output,
-                                                                 self->layer,
+                                                                 layer,
                                                                  name_space);
     g_return_if_fail (self->layer_surface);
 
@@ -313,7 +314,7 @@ layer_surface_new (GtkWindow *gtk_window)
     self->cached_layer_size = self->current_allocation;
     self->last_configure_size = self->current_allocation;
     self->monitor = NULL;
-    self->layer = ZWLR_LAYER_SHELL_V1_LAYER_TOP;
+    self->layer = GTK_LAYER_SHELL_LAYER_TOP;
     self->name_space = NULL;
     self->exclusive_zone = 0;
     self->auto_exclusive_zone = FALSE;
@@ -366,14 +367,15 @@ layer_surface_set_name_space (LayerSurface *self, char const* name_space)
 }
 
 void
-layer_surface_set_layer (LayerSurface *self, enum zwlr_layer_shell_v1_layer layer)
+layer_surface_set_layer (LayerSurface *self, GtkLayerShellLayer layer)
 {
     if (self->layer != layer) {
         self->layer = layer;
         if (self->layer_surface) {
             uint32_t version = zwlr_layer_surface_v1_get_version (self->layer_surface);
             if (version >= ZWLR_LAYER_SURFACE_V1_SET_LAYER_SINCE_VERSION) {
-                zwlr_layer_surface_v1_set_layer (self->layer_surface, self->layer);
+                enum zwlr_layer_shell_v1_layer wlr_layer = gtk_layer_shell_layer_get_zwlr_layer_shell_v1_layer(layer);
+                zwlr_layer_surface_v1_set_layer (self->layer_surface, wlr_layer);
                 custom_shell_surface_needs_commit ((CustomShellSurface *)self);
             } else {
                 custom_shell_surface_remap ((CustomShellSurface *)self);
