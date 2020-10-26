@@ -15,6 +15,7 @@ integration_tests = [
     'test-auto-exclusive-zone-weird-bool-values',
     'test-get-explicit-exclusive-zone',
     'test-get-auto-exclusive-zone',
+    'test-exclusive-zone-below-negative-1',
     'test-menu-popup',
     'test-window-with-initially-attached-buffer',
     'test-close-layer-surface',
