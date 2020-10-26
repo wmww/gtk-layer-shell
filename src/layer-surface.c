@@ -166,9 +166,7 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     struct zwlr_layer_shell_v1 *layer_shell_global = gtk_wayland_get_layer_shell_global ();
     g_return_if_fail (layer_shell_global);
 
-    const char *name_space = self->name_space;
-    if (name_space == NULL)
-        name_space = "gtk-layer-shell";
+    const char *name_space = layer_surface_get_namespace(self);
 
     struct wl_output *output = NULL;
     if (self->monitor) {
@@ -444,4 +442,13 @@ layer_surface_set_keyboard_interactivity (LayerSurface *self, gboolean interacti
             custom_shell_surface_needs_commit ((CustomShellSurface *)self);
         }
     }
+}
+
+const char*
+layer_surface_get_namespace (LayerSurface *self)
+{
+    if (self && self->name_space)
+        return self->name_space;
+    else
+        return "gtk-layer-shell";
 }

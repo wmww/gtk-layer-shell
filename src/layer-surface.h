@@ -62,4 +62,7 @@ void layer_surface_set_exclusive_zone (LayerSurface *self, int exclusive_zone);
 void layer_surface_auto_exclusive_zone_enable (LayerSurface *self);
 void layer_surface_set_keyboard_interactivity (LayerSurface *self, gboolean interactivity);
 
+// Returns the effective namespace (default if unset). Does not return ownership. Never returns NULL. Handles null self.
+const char* layer_surface_get_namespace (LayerSurface *self);
+
 #endif // LAYER_SHELL_SURFACE_H
