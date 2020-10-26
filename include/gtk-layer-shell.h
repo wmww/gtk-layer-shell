@@ -128,8 +128,9 @@ void gtk_layer_set_namespace (GtkWindow *window, char const* name_space);
  * @window: A layer surface.
  * @layer: The layer on which this surface appears.
  *
- * Set the "layer" on which the surface appears (controls if it is over top of or below other surfaces). If the @window is currently mapped, it will get remapped so the change
- * can take effect.
+ * Set the "layer" on which the surface appears (controls if it is over top of or below other surfaces). The layer may
+ * be changed on-the-fly in the current version of the layer shell protocol, but on compositors that only support an
+ * older version the @window is remapped so the change can take effect.
  *
  * Default is #GTK_LAYER_SHELL_LAYER_TOP
  */

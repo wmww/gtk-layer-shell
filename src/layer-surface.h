@@ -29,16 +29,15 @@ LayerSurface *custom_shell_surface_get_layer_surface (CustomShellSurface *shell_
 struct zwlr_layer_surface_v1 *layer_surface_get_get_zwlr_layer_surface_v1(LayerSurface *self);
 
 // Surface is remapped in order to set
-void layer_surface_set_layer (LayerSurface *self, enum zwlr_layer_shell_v1_layer layer);
 void layer_surface_set_monitor (LayerSurface *self, GdkMonitor *monitor); // Can be null for default
 void layer_surface_set_name_space (LayerSurface *self, char const* name_space); // Makes a copy of the string, can be null
 
 // Can be set without remapping the surface
+void layer_surface_set_layer (LayerSurface *self, enum zwlr_layer_shell_v1_layer layer); // Remaps surface on old layer shell versions
 void layer_surface_set_anchor (LayerSurface *self, GtkLayerShellEdge edge, gboolean anchor_to_edge);
 void layer_surface_set_margin (LayerSurface *self, GtkLayerShellEdge edge, int margin_size);
 void layer_surface_set_exclusive_zone (LayerSurface *self, int exclusive_zone);
 void layer_surface_auto_exclusive_zone_enable (LayerSurface *self);
-
 void layer_surface_set_keyboard_interactivity (LayerSurface *self, gboolean interactivity);
 
 #endif // LAYER_SHELL_SURFACE_H

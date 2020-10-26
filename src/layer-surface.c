@@ -367,23 +367,6 @@ layer_surface_get_get_zwlr_layer_surface_v1(LayerSurface *self)
 }
 
 void
-layer_surface_set_layer (LayerSurface *self, enum zwlr_layer_shell_v1_layer layer)
-{
-    if (self->layer != layer) {
-        self->layer = layer;
-        if (self->layer_surface) {
-            uint32_t version = zwlr_layer_surface_v1_get_version (self->layer_surface);
-            if (version >= ZWLR_LAYER_SURFACE_V1_SET_LAYER_SINCE_VERSION) {
-                zwlr_layer_surface_v1_set_layer (self->layer_surface, self->layer);
-                custom_shell_surface_needs_commit ((CustomShellSurface *)self);
-            } else {
-                custom_shell_surface_remap ((CustomShellSurface *)self);
-            }
-        }
-    }
-}
-
-void
 layer_surface_set_monitor (LayerSurface *self, GdkMonitor *monitor)
 {
     if (monitor) g_return_if_fail (GDK_IS_WAYLAND_MONITOR (monitor));
@@ -403,6 +386,23 @@ layer_surface_set_name_space (LayerSurface *self, char const* name_space)
         self->name_space = g_strdup (name_space);
         if (self->layer_surface) {
             custom_shell_surface_remap ((CustomShellSurface *)self);
+        }
+    }
+}
+
+void
+layer_surface_set_layer (LayerSurface *self, enum zwlr_layer_shell_v1_layer layer)
+{
+    if (self->layer != layer) {
+        self->layer = layer;
+        if (self->layer_surface) {
+            uint32_t version = zwlr_layer_surface_v1_get_version (self->layer_surface);
+            if (version >= ZWLR_LAYER_SURFACE_V1_SET_LAYER_SINCE_VERSION) {
+                zwlr_layer_surface_v1_set_layer (self->layer_surface, self->layer);
+                custom_shell_surface_needs_commit ((CustomShellSurface *)self);
+            } else {
+                custom_shell_surface_remap ((CustomShellSurface *)self);
+            }
         }
     }
 }
