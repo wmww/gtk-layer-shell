@@ -124,16 +124,41 @@ struct zwlr_layer_surface_v1 *gtk_layer_get_zwlr_layer_surface_v1 (GtkWindow *wi
 void gtk_layer_set_namespace (GtkWindow *window, char const* name_space);
 
 /**
+ * gtk_layer_get_namespace:
+ * @window: A layer surface.
+ *
+ * NOTE: this function does not return ownership of the string. Do not free the returned string.
+ * Future calls into the library may invalidate the returned string.
+ *
+ * Returns: a reference to the namespace property. If namespace is unset, returns the
+ * default namespace ("gtk-layer-shell"). Never returns %NULL.
+ *
+ * Since: 0.5
+ */
+const char *gtk_layer_get_namespace (GtkWindow *window);
+
+/**
  * gtk_layer_set_layer:
  * @window: A layer surface.
  * @layer: The layer on which this surface appears.
  *
- * Set the "layer" on which the surface appears (controls if it is over top of or below other surfaces). If the @window is currently mapped, it will get remapped so the change
- * can take effect.
+ * Set the "layer" on which the surface appears (controls if it is over top of or below other surfaces). The layer may
+ * be changed on-the-fly in the current version of the layer shell protocol, but on compositors that only support an
+ * older version the @window is remapped so the change can take effect.
  *
  * Default is #GTK_LAYER_SHELL_LAYER_TOP
  */
 void gtk_layer_set_layer (GtkWindow *window, GtkLayerShellLayer layer);
+
+/**
+ * gtk_layer_get_layer:
+ * @window: A layer surface.
+ *
+ * Returns: the current layer.
+ *
+ * Since: 0.5
+ */
+GtkLayerShellLayer gtk_layer_get_layer (GtkWindow *window);
 
 /**
  * gtk_layer_set_monitor:
@@ -146,6 +171,19 @@ void gtk_layer_set_layer (GtkWindow *window, GtkLayerShellLayer layer);
  * Default is %NULL
  */
 void gtk_layer_set_monitor (GtkWindow *window, GdkMonitor *monitor);
+
+/**
+ * gtk_layer_get_monitor:
+ * @window: A layer surface.
+ *
+ * NOTE: To get which monitor the surface is actually on, use
+ * gdk_display_get_monitor_at_window().
+ *
+ * Returns: the monitor this surface will/has requested to be on, can be %NULL.
+ *
+ * Since: 0.5
+ */
+GdkMonitor *gtk_layer_get_monitor (GtkWindow *window);
 
 /**
  * gtk_layer_set_anchor:
@@ -162,6 +200,16 @@ void gtk_layer_set_monitor (GtkWindow *window, GdkMonitor *monitor);
 void gtk_layer_set_anchor (GtkWindow *window, GtkLayerShellEdge edge, gboolean anchor_to_edge);
 
 /**
+ * gtk_layer_get_anchor:
+ * @window: A layer surface.
+ *
+ * Returns: if this surface is anchored to the given edge.
+ *
+ * Since: 0.5
+ */
+gboolean gtk_layer_get_anchor (GtkWindow *window, GtkLayerShellEdge edge);
+
+/**
  * gtk_layer_set_margin:
  * @window: A layer surface.
  * @edge: The #GtkLayerShellEdge for which to set the margin.
@@ -175,26 +223,61 @@ void gtk_layer_set_anchor (GtkWindow *window, GtkLayerShellEdge edge, gboolean a
 void gtk_layer_set_margin (GtkWindow *window, GtkLayerShellEdge edge, int margin_size);
 
 /**
+ * gtk_layer_get_margin:
+ * @window: A layer surface.
+ *
+ * Returns: the size of the margin for the given edge.
+ *
+ * Since: 0.5
+ */
+int gtk_layer_get_margin (GtkWindow *window, GtkLayerShellEdge edge);
+
+/**
  * gtk_layer_set_exclusive_zone:
  * @window: A layer surface.
  * @exclusive_zone: The size of the exclusive zone.
  *
- * If auto exclusive zone is enabled, exclusive zone will automatically be set to the
- * size of the @window + relevant margin. To disable auto exclusive zone, just set the
- * exclusive zone to 0 or any other fixed value. There is no need to manually set the
- * exclusive zone size when using auto exclusive zone.
+ * Has no effect unless the surface is anchored to an edge. Requests that the compositor
+ * does not place other surfaces within the given exclusive zone of the anchored edge.
+ * For example, a panel can request to not be covered by maximized windows. See
+ * wlr-layer-shell-unstable-v1.xml for details.
  *
  * Default is 0
  */
 void gtk_layer_set_exclusive_zone (GtkWindow *window, int exclusive_zone);
 
 /**
+ * gtk_layer_get_exclusive_zone:
+ * @window: A layer surface.
+ *
+ * Returns: the window's exclusive zone (which may have been set manually or automatically)
+ *
+ * Since: 0.5
+ */
+int gtk_layer_get_exclusive_zone (GtkWindow *window);
+
+/**
  * gtk_layer_auto_exclusive_zone_enable:
  * @window: A layer surface.
  *
- * Enables auto exclusive zone for @window.
+ * When auto exclusive zone is enabled, exclusive zone is automatically set to the
+ * size of the @window + relevant margin. To disable auto exclusive zone, just set the
+ * exclusive zone to 0 or any other fixed value.
+ *
+ * NOTE: you can control the auto exclusive zone by changing the margin on the non-anchored
+ * edge. This behavior is specific to gtk-layer-shell and not part of the underlying protocol
  */
 void gtk_layer_auto_exclusive_zone_enable (GtkWindow *window);
+
+/**
+ * gtk_layer_auto_exclusive_zone_is_enabled:
+ * @window: A layer surface.
+ *
+ * Returns: if the surface's exclusive zone is set to change based on the window's size
+ *
+ * Since: 0.5
+ */
+gboolean gtk_layer_auto_exclusive_zone_is_enabled (GtkWindow *window);
 
 /**
  * gtk_layer_set_keyboard_interactivity:
@@ -206,6 +289,16 @@ void gtk_layer_auto_exclusive_zone_enable (GtkWindow *window);
  * Default is %FALSE
  */
 void gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interacitvity);
+
+/**
+ * gtk_layer_get_keyboard_interactivity:
+ * @window: A layer surface.
+ *
+ * Returns: if keybaord interacitvity is enabled
+ *
+ * Since: 0.5
+ */
+gboolean gtk_layer_get_keyboard_interactivity (GtkWindow *window);
 
 G_END_DECLS
 

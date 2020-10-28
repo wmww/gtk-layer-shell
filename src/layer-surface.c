@@ -22,30 +22,6 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkwayland.h>
 
-struct _LayerSurface
-{
-    CustomShellSurface super;
-
-    // Can be set at any time
-    gboolean anchors[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER];
-    int margins[GTK_LAYER_SHELL_LAYER_ENTRY_NUMBER];
-    int exclusive_zone;
-    gboolean auto_exclusive_zone; // if to automatically change the exclusive zone to match the window size
-    GtkRequisition current_allocation; // Last size allocation, or (0, 0) if there hasn't been one
-    GtkRequisition cached_layer_size; // Last size sent to zwlr_layer_surface_v1_set_size (starts as 0, 0)
-    GtkRequisition last_configure_size; // Last size received from a configure event
-
-    gboolean keyboard_interactivity;
-
-    // Need the surface to be recreated to change
-    GdkMonitor *monitor;
-    enum zwlr_layer_shell_v1_layer layer;
-    const char* name_space; // can be null, freed on destruction
-
-    // The actual layer surface Wayland object (can be NULL)
-    struct zwlr_layer_surface_v1 *layer_surface;
-};
-
 /*
  * Sends the .set_size request if the current allocation differs from the last size sent
  * Needs to be called whenever current_allocation or anchors are changed
@@ -190,19 +166,18 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     struct zwlr_layer_shell_v1 *layer_shell_global = gtk_wayland_get_layer_shell_global ();
     g_return_if_fail (layer_shell_global);
 
-    const char *name_space = self->name_space;
-    if (name_space == NULL)
-        name_space = "gtk-layer-shell";
+    const char *name_space = layer_surface_get_namespace(self);
 
     struct wl_output *output = NULL;
     if (self->monitor) {
         output = gdk_wayland_monitor_get_wl_output (self->monitor);
     }
 
+    enum zwlr_layer_shell_v1_layer layer = gtk_layer_shell_layer_get_zwlr_layer_shell_v1_layer(self->layer);
     self->layer_surface = zwlr_layer_shell_v1_get_layer_surface (layer_shell_global,
                                                                  wl_surface,
                                                                  output,
-                                                                 self->layer,
+                                                                 layer,
                                                                  name_space);
     g_return_if_fail (self->layer_surface);
 
@@ -339,7 +314,7 @@ layer_surface_new (GtkWindow *gtk_window)
     self->cached_layer_size = self->current_allocation;
     self->last_configure_size = self->current_allocation;
     self->monitor = NULL;
-    self->layer = ZWLR_LAYER_SHELL_V1_LAYER_TOP;
+    self->layer = GTK_LAYER_SHELL_LAYER_TOP;
     self->name_space = NULL;
     self->exclusive_zone = 0;
     self->auto_exclusive_zone = FALSE;
@@ -368,23 +343,6 @@ layer_surface_get_get_zwlr_layer_surface_v1(LayerSurface *self)
 }
 
 void
-layer_surface_set_layer (LayerSurface *self, enum zwlr_layer_shell_v1_layer layer)
-{
-    if (self->layer != layer) {
-        self->layer = layer;
-        if (self->layer_surface) {
-            uint32_t version = zwlr_layer_surface_v1_get_version (self->layer_surface);
-            if (version >= ZWLR_LAYER_SURFACE_V1_SET_LAYER_SINCE_VERSION) {
-                zwlr_layer_surface_v1_set_layer (self->layer_surface, self->layer);
-                custom_shell_surface_needs_commit ((CustomShellSurface *)self);
-            } else {
-                custom_shell_surface_remap ((CustomShellSurface *)self);
-            }
-        }
-    }
-}
-
-void
 layer_surface_set_monitor (LayerSurface *self, GdkMonitor *monitor)
 {
     if (monitor) g_return_if_fail (GDK_IS_WAYLAND_MONITOR (monitor));
@@ -404,6 +362,24 @@ layer_surface_set_name_space (LayerSurface *self, char const* name_space)
         self->name_space = g_strdup (name_space);
         if (self->layer_surface) {
             custom_shell_surface_remap ((CustomShellSurface *)self);
+        }
+    }
+}
+
+void
+layer_surface_set_layer (LayerSurface *self, GtkLayerShellLayer layer)
+{
+    if (self->layer != layer) {
+        self->layer = layer;
+        if (self->layer_surface) {
+            uint32_t version = zwlr_layer_surface_v1_get_version (self->layer_surface);
+            if (version >= ZWLR_LAYER_SURFACE_V1_SET_LAYER_SINCE_VERSION) {
+                enum zwlr_layer_shell_v1_layer wlr_layer = gtk_layer_shell_layer_get_zwlr_layer_shell_v1_layer(layer);
+                zwlr_layer_surface_v1_set_layer (self->layer_surface, wlr_layer);
+                custom_shell_surface_needs_commit ((CustomShellSurface *)self);
+            } else {
+                custom_shell_surface_remap ((CustomShellSurface *)self);
+            }
         }
     }
 }
@@ -468,4 +444,13 @@ layer_surface_set_keyboard_interactivity (LayerSurface *self, gboolean interacti
             custom_shell_surface_needs_commit ((CustomShellSurface *)self);
         }
     }
+}
+
+const char*
+layer_surface_get_namespace (LayerSurface *self)
+{
+    if (self && self->name_space)
+        return self->name_space;
+    else
+        return "gtk-layer-shell";
 }

@@ -29,6 +29,8 @@
 #define FAIL_TEST_FMT(format, ...) do {fprintf(stderr, "Failure at %s:%d: " format "\n", __FILE__, __LINE__, ##__VA_ARGS__); mark_test_failed();} while (0)
 #define FAIL_TEST(message) FAIL_TEST_FMT(message"%s", "")
 #define ASSERT(assertion) do {if (!(assertion)) {FAIL_TEST_FMT("assertion failed: %s", #assertion);}} while (0)
+#define ASSERT_EQ(a, b, format) do {if (!((a) == (b))) {FAIL_TEST_FMT("expected %s == %s\n  %s: " format "\n  %s: " format "\n", #a, #b, #a, a, #b, b);}} while (0)
+#define ASSERT_STR_EQ(a, b) do {if (strcmp(a, b)) {FAIL_TEST_FMT("expected %s == %s\n  %s: \"%s\"\n  %s: \"%s\"\n", #a, #b, #a, a, #b, b);}} while (0)
 
 // NULL-terminated list of callbacks that will be called before quiting
 // Should be defined in the test file using TEST_CALLBACKS()
