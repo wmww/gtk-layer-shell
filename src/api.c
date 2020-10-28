@@ -77,6 +77,17 @@ gtk_layer_init_for_window (GtkWindow *window)
     }
 }
 
+gboolean
+gtk_layer_is_layer_window (GtkWindow *window)
+{
+    g_return_val_if_fail (window, FALSE);
+    CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (window);
+    if (!shell_surface)
+        return FALSE;
+    LayerSurface *layer_surface = custom_shell_surface_get_layer_surface (shell_surface);
+    return layer_surface != NULL;
+}
+
 struct zwlr_layer_surface_v1 *
 gtk_layer_get_zwlr_layer_surface_v1 (GtkWindow *window)
 {
