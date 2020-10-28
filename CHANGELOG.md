@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 - Tests: fix license test for release tarball (fixes [#73](https://github.com/wmww/gtk-layer-shell/issues/73))
+- Docs: add `Since: ` annotations for functions added since the initial release (fixes [#82](https://github.com/wmww/gtk-layer-shell/issues/82))
 
 ## [0.4.0] - 21 Oct 2020
 - Demo: show GTK Layer Shell version
