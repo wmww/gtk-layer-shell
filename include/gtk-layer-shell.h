@@ -97,6 +97,18 @@ guint gtk_layer_get_minor_version ();
 guint gtk_layer_get_micro_version ();
 
 /**
+ * gtk_layer_is_supported:
+ *
+ * May block for a Wayland roundtrip the first time it's called.
+ *
+ * Returns: %TRUE if the platform is Wayland and Wayland compositor supports the
+ * zwlr_layer_shell_v1 protocol.
+ *
+ * Since: 0.5
+ */
+gboolean gtk_layer_is_supported ();
+
+/**
  * gtk_layer_init_for_window:
  * @window: A #GtkWindow to be turned into a layer surface.
  *
