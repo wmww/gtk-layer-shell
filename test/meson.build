@@ -19,8 +19,6 @@ test_clients = [
     'test-get-namespace-default',
     'test-get-namespace-on-non-layer-window',
     'test-get-namespace-custom-namespace',
-    'test-set-monitor',
-    'test-get-monitor',
     'test-set-keyboard-interactivity',
     'test-get-keyboard-interactivity',
 ]
