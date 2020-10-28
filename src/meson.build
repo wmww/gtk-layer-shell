@@ -1,5 +1,5 @@
 srcs = files(
-    'gtk-layer-shell.c',
+    'api.c',
     'gtk-wayland.c',
     'custom-shell-surface.c',
     'layer-surface.c',
