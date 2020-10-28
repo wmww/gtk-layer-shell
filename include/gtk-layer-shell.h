@@ -73,6 +73,8 @@ typedef enum {
  * gtk_layer_get_major_version:
  *
  * Returns: the major version number of the GTK Layer Shell library
+ *
+ * Since: 0.4
  */
 guint gtk_layer_get_major_version ();
 
@@ -80,6 +82,8 @@ guint gtk_layer_get_major_version ();
  * gtk_layer_get_minor_version:
  *
  * Returns: the minor version number of the GTK Layer Shell library
+ *
+ * Since: 0.4
  */
 guint gtk_layer_get_minor_version ();
 
@@ -87,6 +91,8 @@ guint gtk_layer_get_minor_version ();
  * gtk_layer_get_micro_version:
  *
  * Returns: the micro/patch version number of the GTK Layer Shell library
+ *
+ * Since: 0.4
  */
 guint gtk_layer_get_micro_version ();
 
@@ -104,6 +110,8 @@ void gtk_layer_init_for_window (GtkWindow *window);
  * @window: A layer surface.
  *
  * Returns: The underlying layer surface Wayland object
+ *
+ * Since: 0.4
  */
 struct zwlr_layer_surface_v1 *gtk_layer_get_zwlr_layer_surface_v1 (GtkWindow *window);
 
