@@ -13,8 +13,6 @@ test_clients = [
     'test-auto-exclusive-zone-weird-bool-values',
     'test-get-explicit-exclusive-zone',
     'test-get-auto-exclusive-zone',
-    'test-get-monitor',
-    'test-set-monitor',
     'test-menu-popup',
     'test-window-with-initially-attached-buffer',
     'test-close-layer-surface',
