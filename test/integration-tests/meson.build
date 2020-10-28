@@ -24,4 +24,6 @@ integration_tests = [
     'test-get-namespace-custom-namespace',
     'test-set-keyboard-interactivity',
     'test-get-keyboard-interactivity',
+    'test-get-monitor',
+    'test-set-monitor',
 ]
