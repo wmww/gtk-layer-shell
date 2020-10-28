@@ -21,8 +21,9 @@ import subprocess
 import re
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.INFO)
 
+toplevel_dirs = ['demo', 'example', 'gtk-priv', 'include', 'src', 'test']
 ignore_patterns_file = 'test/license-ignore.txt'
 
 MIT_EXAMPLE = '''
@@ -84,6 +85,7 @@ def path_matches(base_path, original):
 
 def get_files(prefix, search_path):
     full_path = path.join(prefix, search_path);
+    assert path.exists(full_path), full_path + ' does not exist'
     if path.exists(path.join(full_path, 'build.ninja')):
         logger.info(search_path + ' ignored because it is a build directory')
         return []
@@ -104,7 +106,11 @@ def get_files(prefix, search_path):
         return []
 
 def get_important_files():
-    return get_files(get_project_root(), '')
+    result = []
+    for toplevel_dir in toplevel_dirs:
+        logger.info('Scanning toplevel directory ' + toplevel_dir)
+        result += get_files(get_project_root(), toplevel_dir)
+    return result
 
 def print_list(name, files):
     if files:
@@ -131,6 +137,7 @@ def main():
     logger.info('Ignore paths: \n  ' + '\n  '.join(get_ignore_patterns()))
     all_files = get_important_files()
     logger.info('Found ' + str(len(all_files)) + ' files')
+    assert len(all_files) > 10, 'There are ' + str(len(all_files)) + ' files (which is not as many as there should be)'
     mit_files = []
     lgpl3_files = []
     none_files = []
