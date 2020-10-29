@@ -1,8 +1,10 @@
 subdir('mock-server')
 
 test_clients = [
+    'test-is-supported-true',
     'basic-test',
     'test-expect-fail',
+    'test-is-layer-window',
     'test-anchors',
     'test-set-layer',
     'test-get-layer',

@@ -16,6 +16,8 @@
 #include "layer-surface.h"
 #include "xdg-toplevel-surface.h"
 
+#include <gdk/gdkwayland.h>
+
 guint
 gtk_layer_get_major_version ()
 {
@@ -28,13 +30,23 @@ gtk_layer_get_minor_version ()
     return GTK_LAYER_SHELL_MINOR;
 }
 
-guint gtk_layer_get_micro_version ()
+guint
+gtk_layer_get_micro_version ()
 {
     return GTK_LAYER_SHELL_MICRO;
 }
 
-static
-LayerSurface* gtk_window_get_layer_surface (GtkWindow *window)
+gboolean
+gtk_layer_is_supported ()
+{
+    if (!GDK_IS_WAYLAND_DISPLAY (gdk_display_get_default ()))
+        return FALSE;
+    gtk_wayland_init_if_needed ();
+    return gtk_wayland_get_layer_shell_global () != NULL;
+}
+
+static LayerSurface*
+gtk_window_get_layer_surface (GtkWindow *window)
 {
     g_return_val_if_fail (window, NULL);
     CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (window);
@@ -63,6 +75,17 @@ gtk_layer_init_for_window (GtkWindow *window)
             g_warning ("Shell does not support XDG shell stable. Falling back to default GTK behavior");
         }
     }
+}
+
+gboolean
+gtk_layer_is_layer_window (GtkWindow *window)
+{
+    g_return_val_if_fail (window, FALSE);
+    CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (window);
+    if (!shell_surface)
+        return FALSE;
+    LayerSurface *layer_surface = custom_shell_surface_get_layer_surface (shell_surface);
+    return layer_surface != NULL;
 }
 
 struct zwlr_layer_surface_v1 *
