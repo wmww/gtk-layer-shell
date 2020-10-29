@@ -1,10 +1,15 @@
 # Changelog
 
 ## [Unreleased]
-- Tests: fix license test for release tarball (fixes [#73](https://github.com/wmww/gtk-layer-shell/issues/73))
-- Docs: add `Since: ` annotations for functions added since the initial release (fixes [#82](https://github.com/wmww/gtk-layer-shell/issues/82))
+
+## [0.5.0] - 28 Oct 2020
+- API: add getters for all properties (fixes [#56](https://github.com/wmww/gtk-layer-shell/issues/56))
 - API: add `gtk_layer_is_supported()` (fixes [#83](https://github.com/wmww/gtk-layer-shell/issues/83))
 - API: add `gtk_layer_is_layer_window(window)`
+- Docs: add `Since: ` annotations for functions added since the initial release (fixes [#82](https://github.com/wmww/gtk-layer-shell/issues/82))
+- Fix: accept non-1 true boolean values (thanks [@alebastr](https://github.com/alebastr))
+- Tests: fix license test for release tarball (fixes [#73](https://github.com/wmww/gtk-layer-shell/issues/73))
+- Tests: test popup with grab (the most likely thing to break on an incompatible GTK version) (fixes [#68](https://github.com/wmww/gtk-layer-shell/issues/68))
 
 ## [0.4.0] - 21 Oct 2020
 - Demo: show GTK Layer Shell version
