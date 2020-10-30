@@ -73,15 +73,12 @@ def format_process_report(name, process, streams):
     return ''.join(streams) + name + ' exit code: ' + str(process.returncode)
 
 def run_test(name, server_bin, client_bin, xdg_runtime, wayland_display):
-    server = subprocess.Popen(
-        server_bin,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        env={
-            'XDG_RUNTIME_DIR': xdg_runtime,
-            'WAYLAND_DISPLAY': wayland_display,
-            'WAYLAND_DEBUG': '1',
-        })
+    env = os.environ.copy()
+    env['XDG_RUNTIME_DIR'] = xdg_runtime
+    env['WAYLAND_DISPLAY'] = wayland_display
+    env['WAYLAND_DEBUG'] = '1'
+
+    server = subprocess.Popen(server_bin, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
 
     try:
         wait_until_appears(path.join(xdg_runtime, wayland_display))
@@ -90,15 +87,7 @@ def run_test(name, server_bin, client_bin, xdg_runtime, wayland_display):
         server_streams = decode_streams(server.communicate())
         raise RuntimeError(format_process_report('server', server, server_streams) + '\n\n' + str(e))
 
-    client = subprocess.Popen(
-        client_bin,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        env={
-            'XDG_RUNTIME_DIR': xdg_runtime,
-            'WAYLAND_DISPLAY': wayland_display,
-            'WAYLAND_DEBUG': '1',
-        })
+    client = subprocess.Popen(client_bin, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
 
     try:
         client_streams = decode_streams(client.communicate(timeout=20))
