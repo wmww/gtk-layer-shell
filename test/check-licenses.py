@@ -21,7 +21,7 @@ import subprocess
 import re
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 
 toplevel_dirs = ['demo', 'example', 'gtk-priv', 'include', 'src', 'test']
 ignore_patterns_file = 'test/license-ignore.txt'
