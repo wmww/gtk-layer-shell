@@ -20,6 +20,7 @@ import sys
 import shutil
 import time
 import subprocess
+import threading
 
 def get_xdg_runtime_dir():
     tmp_runtime_dir = '/tmp/layer-shell-test-runtime-dir-' + str(os.getpid())
@@ -49,9 +50,6 @@ def wait_until_appears(p):
         time.sleep(0.01)
     raise RuntimeError(p + ' did not appear in ' + str(timeout) + ' seconds')
 
-def decode_streams(streams):
-    return [stream.decode('utf-8') for stream in streams]
-
 def format_stream(name, stream):
     l_pad = 18 - len(name) // 2
     r_pad = l_pad
@@ -64,13 +62,75 @@ def format_stream(name, stream):
     footer = '─' * 40 + '┈'
     return '╭' + header + '\n│\n│' + body + '\n│\n╰' + footer
 
-def format_process_report(name, process, streams):
+def format_process_report(name, process, stdout, stderr):
     streams = (
-        format_stream(name + ' stdout', streams[0]) + '\n\n',
-        format_stream(name + ' stderr', streams[1]) + '\n\n')
+        format_stream(name + ' stdout', stdout) + '\n\n',
+        format_stream(name + ' stderr', stderr) + '\n\n')
     if name == 'server':
         streams = (streams[1], streams[0])
     return ''.join(streams) + name + ' exit code: ' + str(process.returncode)
+
+class Pipe:
+    def __init__(self, name):
+        readable, writable = os.pipe()
+        self.fd = writable
+        self.data = bytes()
+        self.result = None
+        # Read the data coming out of the pipe on a background thread
+        # This keeps the buffer from filling up and blocking
+        self.reader_thread = threading.Thread(name=name, target=self.read, args=(readable,))
+        self.reader_thread.start()
+
+    def read(self, readable):
+        while True:
+            data = os.read(readable, 1000)
+            if not data:
+                # We've reached the end of the data
+                return
+            self.data += data
+        os.close(readable)
+
+    def close(self):
+        if self.reader_thread.is_alive():
+            os.close(self.fd)
+            self.reader_thread.join(timeout=1)
+            if self.reader_thread.is_alive():
+                raise RuntimeError('Failed to join pipe reader thread')
+
+    def collect_str(self):
+        if self.result is None:
+            self.close()
+            self.result = self.data.decode('utf-8')
+            data = None
+        return self.result
+
+class Program:
+    def __init__(self, name, args, env):
+        self.name = name
+        self.stdout = Pipe(name + ' stdout')
+        self.stderr = Pipe(name + ' stderr')
+        self.subprocess = subprocess.Popen(args, stdout=self.stdout.fd, stderr=self.stderr.fd, env=env)
+
+    def finish(self, timeout=None):
+        '''Must always be called or script will hang on shutdown'''
+        try:
+            self.subprocess.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            self.subprocess.kill()
+            self.subprocess.wait()
+            raise
+        finally:
+            self.stdout.close()
+            self.stderr.close()
+
+    def kill(self):
+        self.subprocess.kill()
+        self.finish(timeout=1)
+
+    def format_output(self):
+        if self.subprocess.returncode is None:
+            raise RuntimeError('Program.format_output() called before process exited')
+        return format_process_report(self.name, self.subprocess, self.stdout.collect_str(), self.stderr.collect_str())
 
 def run_test(name, server_bin, client_bin, xdg_runtime, wayland_display):
     env = os.environ.copy()
@@ -78,44 +138,41 @@ def run_test(name, server_bin, client_bin, xdg_runtime, wayland_display):
     env['WAYLAND_DISPLAY'] = wayland_display
     env['WAYLAND_DEBUG'] = '1'
 
-    server = subprocess.Popen(server_bin, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+    server = Program('server', server_bin, env)
 
     try:
         wait_until_appears(path.join(xdg_runtime, wayland_display))
     except RuntimeError as e:
         server.kill()
-        server_streams = decode_streams(server.communicate())
-        raise RuntimeError(format_process_report('server', server, server_streams) + '\n\n' + str(e))
+        raise RuntimeError(server.format_output() + '\n\n' + str(e))
 
-    client = subprocess.Popen(client_bin, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+    client = Program(name, client_bin, env)
 
     try:
-        client_streams = decode_streams(client.communicate(timeout=20))
+        client.finish(timeout=10)
     except subprocess.TimeoutExpired:
         client.kill()
         time.sleep(1)
         server.kill()
-        client_streams = decode_streams(client.communicate())
-        server.communicate(timeout=1)
-        raise RuntimeError(format_process_report(name, client, client_streams) + '\n\n' + name + ' timed out')
+        raise RuntimeError(client.format_output() + '\n\n' + name + ' timed out')
 
     try:
-        server_streams = decode_streams(server.communicate(timeout=1))
+        server.finish(timeout=1)
     except subprocess.TimeoutExpired:
         server.kill()
-        server_streams = decode_streams(server.communicate())
-        raise RuntimeError(format_process_report('server', server, server_streams) + '\n\nserver timed out')
+        server.subprocess.wait()
+        raise RuntimeError(server.format_output() + '\n\nserver timed out')
 
-    if server.returncode != 0:
-        raise RuntimeError(format_process_report('server', server, server_streams) + '\n\nserver failed')
+    if server.subprocess.returncode != 0:
+        raise RuntimeError(server.format_output() + '\n\nserver failed')
 
-    if client.returncode != 0:
-        raise RuntimeError(format_process_report(name, client, client_streams) + '\n\n' + name + ' failed')
+    if client.subprocess.returncode != 0:
+        raise RuntimeError(client.format_output() + '\n\n' + name + ' failed')
 
-    if client_streams[0].strip() != '':
-        raise RuntimeError(format_stream(name + ' stdout', client_streams[0]) + '\n\n' + name + ' stdout not empty')
+    if client.stdout.collect_str().strip() != '':
+        raise RuntimeError(format_stream(name + ' stdout', client.stdout.collect_str()) + '\n\n' + name + ' stdout not empty')
 
-    return client_streams[1]
+    return client.stderr.collect_str()
 
 def line_contains(line, tokens):
     found = True
