@@ -152,6 +152,7 @@ static void wl_compositor_create_surface(struct wl_resource* resource, const str
 
 void wl_seat_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id)
 {
+    ASSERT(!seat_global);
     seat_global = wl_resource_create(client, &wl_seat_interface, version, id);
     use_default_impl(seat_global);
     wl_seat_send_capabilities(seat_global, WL_SEAT_CAPABILITY_POINTER | WL_SEAT_CAPABILITY_KEYBOARD);
