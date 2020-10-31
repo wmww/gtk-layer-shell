@@ -22,11 +22,14 @@ import time
 import subprocess
 import threading
 
+cleanup_funcs = []
+
 def get_xdg_runtime_dir():
     tmp_runtime_dir = '/tmp/layer-shell-test-runtime-dir-' + str(os.getpid())
     if (path.exists(tmp_runtime_dir)):
         wipe_xdg_runtime_dir(tmp_runtime_dir)
     os.mkdir(tmp_runtime_dir)
+    cleanup_funcs.append(lambda: wipe_xdg_runtime_dir(tmp_runtime_dir))
     return tmp_runtime_dir
 
 def wipe_xdg_runtime_dir(p):
@@ -80,6 +83,7 @@ class Pipe:
         # This keeps the buffer from filling up and blocking
         self.reader_thread = threading.Thread(name=name, target=self.read, args=(readable,))
         self.reader_thread.start()
+        cleanup_funcs.append(lambda: self.close())
 
     def read(self, readable):
         while True:
@@ -95,7 +99,7 @@ class Pipe:
             os.close(self.fd)
             self.reader_thread.join(timeout=1)
             if self.reader_thread.is_alive():
-                raise RuntimeError('Failed to join pipe reader thread')
+                assert False, 'Failed to join pipe reader thread'
 
     def collect_str(self):
         if self.result is None:
@@ -110,27 +114,35 @@ class Program:
         self.stdout = Pipe(name + ' stdout')
         self.stderr = Pipe(name + ' stderr')
         self.subprocess = subprocess.Popen(args, stdout=self.stdout.fd, stderr=self.stderr.fd, env=env)
+        cleanup_funcs.append(lambda: self.kill())
 
     def finish(self, timeout=None):
-        '''Must always be called or script will hang on shutdown'''
         try:
             self.subprocess.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
-            self.subprocess.kill()
-            self.subprocess.wait()
-            raise
-        finally:
-            self.stdout.close()
-            self.stderr.close()
+            self.kill()
+            raise RuntimeError(self.format_output() + '\n\n' + name + ' timed out')
 
     def kill(self):
-        self.subprocess.kill()
-        self.finish(timeout=1)
+        if self.subprocess.returncode is None:
+            self.subprocess.kill()
+            self.subprocess.wait()
 
     def format_output(self):
         if self.subprocess.returncode is None:
-            raise RuntimeError('Program.format_output() called before process exited')
+            assert False, 'Program.format_output() called before process exited'
         return format_process_report(self.name, self.subprocess, self.stdout.collect_str(), self.stderr.collect_str())
+
+    def check_returncode(self):
+        if self.subprocess.returncode is None:
+            assert False, repr(name) + '.check_returncode() called before process exited'
+        if self.subprocess.returncode != 0:
+            raise RuntimeError(
+                self.format_output() + '\n\n' +
+                name + ' failed (return code ' + str(self.subprocess.returncode) + ')')
+
+    def collect_output(self):
+        return self.stdout.collect_str(), self.stderr.collect_str()
 
 def run_test(name, server_bin, client_bin, xdg_runtime, wayland_display):
     env = os.environ.copy()
@@ -147,32 +159,18 @@ def run_test(name, server_bin, client_bin, xdg_runtime, wayland_display):
         raise RuntimeError(server.format_output() + '\n\n' + str(e))
 
     client = Program(name, client_bin, env)
+    client.finish(timeout=10)
+    server.finish(timeout=1)
 
-    try:
-        client.finish(timeout=10)
-    except subprocess.TimeoutExpired:
-        client.kill()
-        time.sleep(1)
-        server.kill()
-        raise RuntimeError(client.format_output() + '\n\n' + name + ' timed out')
+    server.check_returncode()
+    client.check_returncode()
 
-    try:
-        server.finish(timeout=1)
-    except subprocess.TimeoutExpired:
-        server.kill()
-        server.subprocess.wait()
-        raise RuntimeError(server.format_output() + '\n\nserver timed out')
+    client_stdout, client_stderr = client.collect_output()
 
-    if server.subprocess.returncode != 0:
-        raise RuntimeError(server.format_output() + '\n\nserver failed')
+    if client_stdout.strip() != '':
+        raise RuntimeError(format_stream(name + ' stdout', client_stdout) + '\n\n' + name + ' stdout not empty')
 
-    if client.subprocess.returncode != 0:
-        raise RuntimeError(client.format_output() + '\n\n' + name + ' failed')
-
-    if client.stdout.collect_str().strip() != '':
-        raise RuntimeError(format_stream(name + ' stdout', client.stdout.collect_str()) + '\n\n' + name + ' stdout not empty')
-
-    return client.stderr.collect_str()
+    return client_stderr
 
 def line_contains(line, tokens):
     found = True
@@ -198,27 +196,33 @@ def verify_result(lines):
                 raise RuntimeError(section + '\n\ndid not find "' + ' '.join(assertions[0]) + '"')
             section_start = i + 1
 
+def main():
+    name = sys.argv[2]
+    server_bin = get_bin('mock-server/mock-server')
+    client_bin = get_bin(name)
+    wayland_display = 'wayland-test'
+    xdg_runtime = get_xdg_runtime_dir()
+
+    client_stderr = run_test(name, server_bin, client_bin, xdg_runtime, wayland_display)
+    client_lines = [line.strip() for line in client_stderr.strip().splitlines()]
+
+    try:
+        verify_result(client_lines)
+    except RuntimeError as e:
+        raise RuntimeError(format_stream(name + ' stderr', client_stderr) + '\n\n' + str(e))
+
+
 if __name__ == '__main__':
     assert len(sys.argv) == 3, 'Incorrect number of args. ' + usage
-    name = sys.argv[2]
+    fail = False
     try:
-        server_bin = get_bin('mock-server/mock-server')
-        client_bin = get_bin(name)
-        wayland_display = 'wayland-test'
-        xdg_runtime = get_xdg_runtime_dir()
-
-        try:
-            client_stderr = run_test(name, server_bin, client_bin, xdg_runtime, wayland_display)
-        finally:
-            wipe_xdg_runtime_dir(xdg_runtime)
-
-        client_lines = [line.strip() for line in client_stderr.strip().splitlines()]
-        try:
-            verify_result(client_lines)
-        except RuntimeError as e:
-            raise RuntimeError(format_stream(name + ' stderr', client_stderr) + '\n\n' + str(e))
-
+        main()
         print('Passed')
     except RuntimeError as e:
+        fail = True
         print(e)
+    finally:
+        for func in cleanup_funcs:
+            func()
+    if fail:
         exit(1)
