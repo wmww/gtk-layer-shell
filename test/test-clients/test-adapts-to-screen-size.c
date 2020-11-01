@@ -16,7 +16,7 @@ static GtkWindow* window;
 static void callback_0()
 {
     EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_size 0 0);
-    EXPECT_MESSAGE(.create_buffer 1920 1080);
+    EXPECT_MESSAGE(.create_buffer 1920 1080); // size must match DEFAULT_OUTPUT_WIDTH/DEFAULT_OUTPUT_HEIGHT in common.h
 
     window = create_default_window();
 
@@ -36,7 +36,7 @@ static void callback_0()
 static void callback_1()
 {
     EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_size 600 0);
-    EXPECT_MESSAGE(.create_buffer 600 1080);
+    EXPECT_MESSAGE(.create_buffer 600 1080); // size must match DEFAULT_OUTPUT_HEIGHT in common.h
 
     gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_LEFT, FALSE);
 }

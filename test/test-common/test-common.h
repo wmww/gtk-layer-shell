@@ -9,22 +9,22 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "gtk-layer-shell.h"
-#include "test-common.h"
+#ifndef TEST_COMMON_H
+#define TEST_COMMON_H
 
-int main(int argc, char** argv)
-{
-    ASSERT_EQ(argc, 2, "%d");
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 
-    char version_provided_by_gtk_layer_shell[1024];
-    sprintf(
-        version_provided_by_gtk_layer_shell,
-        "%d.%d.%d",
-        gtk_layer_get_major_version(),
-        gtk_layer_get_minor_version(),
-        gtk_layer_get_micro_version());
+#define DEFAULT_OUTPUT_WIDTH 1920
+#define DEFAULT_OUTPUT_HEIGHT 1080
 
-    ASSERT_STR_EQ(version_provided_by_gtk_layer_shell, argv[1]);
+#define FATAL_FMT(format, ...) do {printf("Fatal error at %s:%d in %s(): " format "\n", __FILE__, __LINE__, __func__, ##__VA_ARGS__); exit(1);} while (0)
+#define FATAL(message) FATAL_FMT(message"%s", "")
+#define ASSERT(assertion) do {if (!(assertion)) {FATAL_FMT("assertion failed: %s", #assertion);}} while (0)
+#define ASSERT_EQ(a, b, format) do {if (!((a) == (b))) {FATAL_FMT("expected %s == %s\n  %s: " format "\n  %s: " format "\n", #a, #b, #a, a, #b, b);}} while (0)
+#define ASSERT_STR_EQ(a, b) do {if (strcmp(a, b)) {FATAL_FMT("expected %s == %s\n  %s: \"%s\"\n  %s: \"%s\"\n", #a, #b, #a, a, #b, b);}} while (0)
 
-    return 0;
-}
+#endif // TEST_COMMON_H
+

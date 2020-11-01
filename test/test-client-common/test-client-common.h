@@ -9,10 +9,11 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef TEST_CLIENT_COMMON
-#define TEST_CLIENT_COMMON
+#ifndef TEST_CLIENT_COMMON_H
+#define TEST_CLIENT_COMMON_H
 
 #include "gtk-layer-shell.h"
+#include "test-common.h"
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkwayland.h>
@@ -23,14 +24,6 @@
 // Tell the test script that all expected messages should now be fufilled
 // (called automatically before each callback and at the end of the test)
 #define CHECK_EXPECTATIONS() fprintf(stderr, "CHECK EXPECTATIONS COMPLETED\n")
-
-// Test failures quit GTK main and set a non-zero return code, but let GTK shut down instead of exiting immediately
-// do {...} while (0) construct is used to force ; at the end of lines
-#define FAIL_TEST_FMT(format, ...) do {fprintf(stderr, "Failure at %s:%d: " format "\n", __FILE__, __LINE__, ##__VA_ARGS__); mark_test_failed();} while (0)
-#define FAIL_TEST(message) FAIL_TEST_FMT(message"%s", "")
-#define ASSERT(assertion) do {if (!(assertion)) {FAIL_TEST_FMT("assertion failed: %s", #assertion);}} while (0)
-#define ASSERT_EQ(a, b, format) do {if (!((a) == (b))) {FAIL_TEST_FMT("expected %s == %s\n  %s: " format "\n  %s: " format "\n", #a, #b, #a, a, #b, b);}} while (0)
-#define ASSERT_STR_EQ(a, b) do {if (strcmp(a, b)) {FAIL_TEST_FMT("expected %s == %s\n  %s: \"%s\"\n  %s: \"%s\"\n", #a, #b, #a, a, #b, b);}} while (0)
 
 // NULL-terminated list of callbacks that will be called before quiting
 // Should be defined in the test file using TEST_CALLBACKS()
@@ -43,4 +36,4 @@ GtkWindow* create_default_window();
 void mark_test_failed();
 void wayland_roundtrip();
 
-#endif // TEST_CLIENT_COMMON
+#endif // TEST_CLIENT_COMMON_H

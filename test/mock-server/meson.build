@@ -8,4 +8,5 @@ mock_server = executable(
     'mock-server',
     mock_server_srcs, server_protocol_srcs,
     c_args: ['-Wno-unused-parameter'],
+    include_directories: [test_common_inc],
     dependencies: [wayland_server])
