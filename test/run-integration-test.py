@@ -57,24 +57,25 @@ def wait_until_appears(p):
     raise TestError(p + ' did not appear in ' + str(timeout) + ' seconds')
 
 def format_stream(name, stream):
-    l_pad = 18 - len(name) // 2
+    l_pad = 28 - len(name) // 2
     r_pad = l_pad
     if len(name) % 2 == 1:
-        r_pad += 1
+        r_pad -= 1
     l_pad = max(l_pad, 1)
     r_pad = max(r_pad, 1)
     header = '─' * l_pad + '┤ ' + name + ' ├' + '─' * r_pad + '┈'
     body = '\n│'.join('  ' + line for line in stream.strip().splitlines())
-    footer = '─' * 40 + '┈'
+    footer = '─' * 60 + '┈'
     return '╭' + header + '\n│\n│' + body + '\n│\n╰' + footer
 
 def format_process_report(name, process, stdout, stderr):
-    streams = (
-        format_stream(name + ' stdout', stdout) + '\n\n',
-        format_stream(name + ' stderr', stderr) + '\n\n')
-    if name == 'server':
-        streams = (streams[1], streams[0])
-    return ''.join(streams) + name + ' exit code: ' + str(process.returncode)
+    result = format_stream(name + ' stderr', stderr) + '\n\n'
+    if stdout:
+        result += format_stream(name + ' stdout', stdout) + '\n\n'
+    else:
+        result += 'stdout empty, '
+    result += 'exit code: ' + str(process.returncode)
+    return result
 
 class Pipe:
     def __init__(self, name):
