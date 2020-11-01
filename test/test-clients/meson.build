@@ -1,7 +1,7 @@
 test_clients = [
     'test-is-supported-true',
-    'basic-test',
     'test-expect-fail',
+    'test-creation-properties',
     'test-is-layer-window',
     'test-anchors',
     'test-set-layer',

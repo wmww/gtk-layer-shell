@@ -48,12 +48,6 @@ GtkWindow* create_default_window()
     return window;
 }
 
-void mark_test_failed()
-{
-    return_code = 1;
-    gtk_main_quit();
-}
-
 void wayland_roundtrip()
 {
     GdkDisplay* gdk_display = gdk_display_get_default();
