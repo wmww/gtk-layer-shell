@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [0.5.1] - 1 Nov 2020
+- Tests: fix integration test timeout on GTK v3.24.23 (fixes [#91](https://github.com/wmww/gtk-layer-shell/issues/91))
+
 ## [0.5.0] - 28 Oct 2020
 - API: add getters for all properties (fixes [#56](https://github.com/wmww/gtk-layer-shell/issues/56))
 - API: add `gtk_layer_is_supported()` (fixes [#83](https://github.com/wmww/gtk-layer-shell/issues/83))
