@@ -21,7 +21,7 @@ import subprocess
 import re
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 
 toplevel_dirs = ['demo', 'example', 'gtk-priv', 'include', 'src', 'test']
 ignore_patterns_file = 'test/license-ignore.txt'
@@ -145,18 +145,18 @@ def main():
     mit_example = canonify_str(MIT_EXAMPLE)
     lgpl3_example = canonify_str(LGPL3_EXAMPLE)
     for p in all_files:
-            contents = load_file(path.join(get_project_root(), p))
-            found = 0
-            if mit_example in contents:
-                mit_files.append(p)
-                found += 1
-            if lgpl3_example in contents:
-                lgpl3_files.append(p)
-                found += 1
-            if found > 1:
-                multiples_files.append(p)
-            elif found < 1:
-                none_files.append(p)
+        contents = load_file(path.join(get_project_root(), p))
+        found = 0
+        if mit_example in contents:
+            mit_files.append(p)
+            found += 1
+        if lgpl3_example in contents:
+            lgpl3_files.append(p)
+            found += 1
+        if found > 1:
+            multiples_files.append(p)
+        elif found < 1:
+            none_files.append(p)
     print()
     print_list('MIT', mit_files)
     print_list('LGPLv3', lgpl3_files)
