@@ -1,4 +1,4 @@
-test_clients = [
+integration_tests = [
     'test-is-supported-true',
     'test-expect-fail',
     'test-creation-properties',

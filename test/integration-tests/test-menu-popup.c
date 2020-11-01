@@ -9,47 +9,33 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "test-client-common.h"
+#include "integration-test-common.h"
 
 static GtkWindow* window;
 
 static void callback_0()
 {
-    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_size 0 0);
-    EXPECT_MESSAGE(.create_buffer 1920 1080); // size must match DEFAULT_OUTPUT_WIDTH/DEFAULT_OUTPUT_HEIGHT in common.h
+    // The mock server will automatically click on our window, triggering the menu to open
 
-    window = create_default_window();
+    EXPECT_MESSAGE(zwlr_layer_shell_v1 .get_layer_surface);
+    EXPECT_MESSAGE(xdg_wm_base .get_xdg_surface);
+    EXPECT_MESSAGE(xdg_surface .get_popup);
+    EXPECT_MESSAGE(xdg_popup .grab);
+
+    window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+    GtkWidget *menu_bar = gtk_menu_bar_new();
+    gtk_container_add(GTK_CONTAINER(window), menu_bar);
+    GtkWidget *menu_item = gtk_menu_item_new_with_label("Popup menu");
+    gtk_container_add(GTK_CONTAINER(menu_bar), menu_item);
+    GtkWidget *submenu = gtk_menu_new();
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
+    GtkWidget *close_item = gtk_menu_item_new_with_label("Menu item");
+    gtk_menu_shell_append(GTK_MENU_SHELL(submenu), close_item);
 
     gtk_layer_init_for_window(window);
-    gtk_layer_set_layer(window, GTK_LAYER_SHELL_LAYER_BOTTOM);
-    gtk_layer_set_namespace(window, "foobar");
-    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_BOTTOM, TRUE);
-    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_TOP, TRUE);
-    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_LEFT, TRUE);
-    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_RIGHT, TRUE);
-
-    gtk_widget_set_size_request(GTK_WIDGET(window), 600, 700);
-    gtk_window_resize(window, 1, 1);
     gtk_widget_show_all(GTK_WIDGET(window));
-}
-
-static void callback_1()
-{
-    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_size 600 0);
-    EXPECT_MESSAGE(.create_buffer 600 1080); // size must match DEFAULT_OUTPUT_HEIGHT in common.h
-
-    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_LEFT, FALSE);
-}
-
-static void callback_2()
-{
-    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_size 600 700);
-    EXPECT_MESSAGE(.create_buffer 600 700);
-    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_BOTTOM, FALSE);
 }
 
 TEST_CALLBACKS(
     callback_0,
-    callback_1,
-    callback_2,
 )

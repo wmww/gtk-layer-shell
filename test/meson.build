@@ -1,30 +1,30 @@
 subdir('test-common')
 subdir('mock-server')
-subdir('test-client-common')
-subdir('test-clients')
+subdir('integration-test-common')
+subdir('integration-tests')
 subdir('unit-tests')
 
 py = find_program('python3')
 run_test_script = files(meson.current_source_dir() + '/run-integration-test.py')
 
-foreach test_client : test_clients
-    test_client_srcs = files('test-clients/' + test_client + '.c')
+foreach integration_test : integration_tests
+    integration_test_srcs = files('integration-tests/' + integration_test + '.c')
     exe = executable(
-        test_client,
-        [test_client_srcs, test_client_common_srcs],
+        integration_test,
+        [integration_test_srcs, integration_test_common_srcs],
         dependencies: [gtk, wayland_client],
-        include_directories: [gtk_layer_shell_inc, test_client_common_inc, test_common_inc],
+        include_directories: [gtk_layer_shell_inc, integration_test_common_inc, test_common_inc],
         link_with: [gtk_layer_shell_lib])
-    expect_fail = test_client.endswith('expect-fail')
+    expect_fail = integration_test.endswith('expect-fail')
     test(
-        test_client,
+        integration_test,
         py,
         should_fail: expect_fail,
         workdir: meson.current_source_dir(),
         args: [
             run_test_script,
             meson.current_build_dir(),
-            test_client
+            integration_test
         ])
 endforeach
 

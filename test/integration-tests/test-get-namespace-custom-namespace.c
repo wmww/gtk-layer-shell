@@ -9,12 +9,18 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "test-client-common.h"
+#include "integration-test-common.h"
+
+static GtkWindow* window;
 
 static void callback_0()
 {
-    ASSERT(gtk_layer_is_supported());
-    ASSERT(gtk_layer_is_supported());
+    window = create_default_window();
+    gtk_layer_init_for_window(window);
+    gtk_layer_set_namespace(window, "foobar");
+    gtk_widget_show_all(GTK_WIDGET(window));
+    const char *name_space = gtk_layer_get_namespace(window);
+    ASSERT_STR_EQ(name_space, "foobar");
 }
 
 TEST_CALLBACKS(
