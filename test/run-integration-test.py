@@ -90,7 +90,7 @@ class Pipe:
             data = os.read(readable, 1000)
             if not data:
                 # We've reached the end of the data
-                return
+                break
             self.data += data
         os.close(readable)
 
