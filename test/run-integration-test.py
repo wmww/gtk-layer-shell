@@ -24,6 +24,9 @@ import threading
 
 cleanup_funcs = []
 
+class TestError(RuntimeError):
+    pass
+
 def get_xdg_runtime_dir():
     tmp_runtime_dir = '/tmp/layer-shell-test-runtime-dir-' + str(os.getpid())
     if (path.exists(tmp_runtime_dir)):
@@ -51,7 +54,7 @@ def wait_until_appears(p):
         if path.exists(p):
             return
         time.sleep(0.01)
-    raise RuntimeError(p + ' did not appear in ' + str(timeout) + ' seconds')
+    raise TestError(p + ' did not appear in ' + str(timeout) + ' seconds')
 
 def format_stream(name, stream):
     l_pad = 18 - len(name) // 2
@@ -98,8 +101,7 @@ class Pipe:
         if self.reader_thread.is_alive():
             os.close(self.fd)
             self.reader_thread.join(timeout=1)
-            if self.reader_thread.is_alive():
-                assert False, 'Failed to join pipe reader thread'
+            assert not self.reader_thread.is_alive(), 'Failed to join pipe reader thread'
 
     def collect_str(self):
         if self.result is None:
@@ -121,7 +123,7 @@ class Program:
             self.subprocess.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
             self.kill()
-            raise RuntimeError(self.format_output() + '\n\n' + name + ' timed out')
+            raise TestError(self.format_output() + '\n\n' + self.name + ' timed out')
 
     def kill(self):
         if self.subprocess.returncode is None:
@@ -129,17 +131,15 @@ class Program:
             self.subprocess.wait()
 
     def format_output(self):
-        if self.subprocess.returncode is None:
-            assert False, 'Program.format_output() called before process exited'
+        assert self.subprocess.returncode is not None, 'Program.format_output() called before process exited'
         return format_process_report(self.name, self.subprocess, self.stdout.collect_str(), self.stderr.collect_str())
 
     def check_returncode(self):
-        if self.subprocess.returncode is None:
-            assert False, repr(name) + '.check_returncode() called before process exited'
+        assert self.subprocess.returncode is not None, repr(self.name) + '.check_returncode() called before process exited'
         if self.subprocess.returncode != 0:
-            raise RuntimeError(
+            raise TestError(
                 self.format_output() + '\n\n' +
-                name + ' failed (return code ' + str(self.subprocess.returncode) + ')')
+                self.name + ' failed (return code ' + str(self.subprocess.returncode) + ')')
 
     def collect_output(self):
         return self.stdout.collect_str(), self.stderr.collect_str()
@@ -154,9 +154,9 @@ def run_test(name, server_bin, client_bin, xdg_runtime, wayland_display):
 
     try:
         wait_until_appears(path.join(xdg_runtime, wayland_display))
-    except RuntimeError as e:
+    except TestError as e:
         server.kill()
-        raise RuntimeError(server.format_output() + '\n\n' + str(e))
+        raise TestError(server.format_output() + '\n\n' + str(e))
 
     client = Program(name, client_bin, env)
     client.finish(timeout=10)
@@ -168,7 +168,7 @@ def run_test(name, server_bin, client_bin, xdg_runtime, wayland_display):
     client_stdout, client_stderr = client.collect_output()
 
     if client_stdout.strip() != '':
-        raise RuntimeError(format_stream(name + ' stdout', client_stdout) + '\n\n' + name + ' stdout not empty')
+        raise TestError(format_stream(name + ' stdout', client_stdout) + '\n\n' + name + ' stdout not empty')
 
     return client_stderr
 
@@ -193,7 +193,7 @@ def verify_result(lines):
         elif line == 'CHECK EXPECTATIONS COMPLETED' or i == len(lines) - 1:
             if assertions:
                 section = format_stream('relevant section', '\n'.join(lines[section_start:i]))
-                raise RuntimeError(section + '\n\ndid not find "' + ' '.join(assertions[0]) + '"')
+                raise TestError(section + '\n\ndid not find "' + ' '.join(assertions[0]) + '"')
             section_start = i + 1
 
 def main():
@@ -208,9 +208,8 @@ def main():
 
     try:
         verify_result(client_lines)
-    except RuntimeError as e:
-        raise RuntimeError(format_stream(name + ' stderr', client_stderr) + '\n\n' + str(e))
-
+    except TestError as e:
+        raise TestError(format_stream(name + ' stderr', client_stderr) + '\n\n' + str(e))
 
 if __name__ == '__main__':
     assert len(sys.argv) == 3, 'Incorrect number of args. ' + usage
@@ -218,7 +217,7 @@ if __name__ == '__main__':
     try:
         main()
         print('Passed')
-    except RuntimeError as e:
+    except TestError as e:
         fail = True
         print(e)
     finally:
