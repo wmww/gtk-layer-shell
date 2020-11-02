@@ -24,6 +24,11 @@ import threading
 
 cleanup_funcs = []
 
+class Color:
+    normal = '\x1b[0m'
+    gray = '\x1b[90m'
+    decoration = gray
+
 class TestError(RuntimeError):
     pass
 
@@ -56,10 +61,14 @@ def format_stream(name, stream):
         r_pad -= 1
     l_pad = max(l_pad, 1)
     r_pad = max(r_pad, 1)
-    header = '─' * l_pad + '┤ ' + name + ' ├' + '─' * r_pad + '┈'
-    body = '\n│'.join('  ' + line for line in stream.strip().splitlines())
+    header = '─' * l_pad + '┤ ' + Color.normal + name + Color.decoration + ' ├' + '─' * r_pad + '┈'
+    divider = '\n' + Color.decoration + '│' + Color.normal
+    body = divider.join('  ' + line for line in stream.strip().splitlines())
     footer = '─' * 60 + '┈'
-    return '╭' + header + '\n│\n│' + body + '\n│\n╰' + footer
+    return (
+        Color.decoration + '╭' + header + Color.normal +
+        divider + divider + body + divider +
+        '\n' + Color.decoration + '╰' + footer + Color.normal)
 
 def format_process_report(name, process, stdout, stderr):
     result = format_stream(name + ' stderr', stderr) + '\n\n'
