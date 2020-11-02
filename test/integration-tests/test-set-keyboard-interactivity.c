@@ -9,15 +9,20 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "test-client-common.h"
+#include "integration-test-common.h"
 
 static GtkWindow* window;
 
 static void callback_0()
 {
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_keyboard_interactivity 1);
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_keyboard_interactivity 0);
+
     window = create_default_window();
-    const char *name_space = gtk_layer_get_namespace(window);
-    ASSERT_STR_EQ(name_space, "gtk-layer-shell");
+    gtk_layer_init_for_window(window);
+    gtk_layer_set_keyboard_interactivity(window, TRUE);
+    gtk_widget_show_all(GTK_WIDGET(window));
+    gtk_layer_set_keyboard_interactivity(window, FALSE);
 }
 
 TEST_CALLBACKS(

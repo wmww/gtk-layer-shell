@@ -102,9 +102,9 @@ static void wl_surface_commit(struct wl_resource *resource, const struct wl_mess
         int width = data->layer_set_w;
         int height = data->layer_set_h;
         if (horiz)
-            width = OUTPUT_WIDTH;
+            width = DEFAULT_OUTPUT_WIDTH;
         if (vert)
-            height = OUTPUT_HEIGHT;
+            height = DEFAULT_OUTPUT_HEIGHT;
         zwlr_layer_surface_v1_send_configure(data->layer_surface, wl_display_next_serial(display), width, height);
         data->layer_send_configure = 0;
 

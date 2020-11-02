@@ -9,41 +9,29 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "test-client-common.h"
+#include "integration-test-common.h"
 
 static GtkWindow* window;
 
 static void callback_0()
 {
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_exclusive_zone 300);
+
     window = create_default_window();
-    gtk_widget_set_size_request(GTK_WIDGET(window), 300, 200);
+
     gtk_layer_init_for_window(window);
-
-    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_BOTTOM, TRUE);
-    ASSERT(!gtk_layer_auto_exclusive_zone_is_enabled(window));
     gtk_layer_auto_exclusive_zone_enable(window);
-    ASSERT(gtk_layer_auto_exclusive_zone_is_enabled(window));
+
+    // Note that true bools are normally 1, but can be other non-zero values
+    // This used to cause a problem, as noted in https://github.com/wmww/gtk-layer-shell/pull/79
+    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_BOTTOM, 1);
+    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_TOP, 2);
+    gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_LEFT, 3);
+
+    gtk_widget_set_size_request(GTK_WIDGET(window), 300, 200);
     gtk_widget_show_all(GTK_WIDGET(window));
-}
-
-static void callback_1()
-{
-    ASSERT_EQ(gtk_layer_get_exclusive_zone(window), 200, "%d");
-    gtk_widget_set_size_request(GTK_WIDGET(window), 320, 240);
-    gtk_window_resize(window, 1, 1);
-}
-
-static void callback_2()
-{
-    ASSERT_EQ(gtk_layer_get_exclusive_zone(window), 240, "%d");
-
-    ASSERT(gtk_layer_auto_exclusive_zone_is_enabled(window));
-    gtk_layer_set_exclusive_zone(window, 20);
-    ASSERT(!gtk_layer_auto_exclusive_zone_is_enabled(window));
 }
 
 TEST_CALLBACKS(
     callback_0,
-    callback_1,
-    callback_2,
 )

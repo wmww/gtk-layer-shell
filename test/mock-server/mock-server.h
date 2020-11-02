@@ -20,23 +20,12 @@
 #ifndef MOCK_SERVER_H
 #define MOCK_SERVER_H
 
+#include "test-common.h"
 #include <wayland-server.h>
 #include "xdg-shell-server.h"
 #include "wlr-layer-shell-unstable-v1-server.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
 
 extern struct wl_display* display;
-
-#define OUTPUT_WIDTH 1920
-#define OUTPUT_HEIGHT 1080
-
-#define FATAL_FMT(format, ...) do {printf("Fatal error at %s:%d in %s(): " format "\n", __FILE__, __LINE__, __func__, ##__VA_ARGS__); exit(1);} while (0)
-#define FATAL(message) FATAL_FMT(message"%s", "")
-#define ASSERT(assertion) do {if (!(assertion)) {FATAL_FMT("assertion failed: %s", #assertion);}} while (0)
-#define ASSERT_EQ(a, b, format) do {if (!((a) == (b))) {FATAL_FMT("expected %s == %s\n  %s: " format "\n  %s: " format "\n", #a, #b, #a, a, #b, b);}} while (0)
 
 #define ALLOC_STRUCT(type) ((type*)alloc_zeroed(sizeof(type)))
 void* alloc_zeroed(size_t size);

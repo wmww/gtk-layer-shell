@@ -9,22 +9,20 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "gtk-layer-shell.h"
-#include "test-common.h"
+#include "integration-test-common.h"
 
-int main(int argc, char** argv)
+static GtkWindow *window;
+
+static void callback_0()
 {
-    ASSERT_EQ(argc, 2, "%d");
+    // This should fail because the tokens are in the wrong order
+    EXPECT_MESSAGE(.get_layer_surface zwlr_layer_shell_v1);
 
-    char version_provided_by_gtk_layer_shell[1024];
-    sprintf(
-        version_provided_by_gtk_layer_shell,
-        "%d.%d.%d",
-        gtk_layer_get_major_version(),
-        gtk_layer_get_minor_version(),
-        gtk_layer_get_micro_version());
-
-    ASSERT_STR_EQ(version_provided_by_gtk_layer_shell, argv[1]);
-
-    return 0;
+    window = create_default_window();
+    gtk_layer_init_for_window(window);
+    gtk_widget_show_all(GTK_WIDGET(window));
 }
+
+TEST_CALLBACKS(
+    callback_0,
+)

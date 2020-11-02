@@ -12,7 +12,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 '''
 
 # This script runs an integration test. See test/README.md for details
-usage = 'Usage: python3 run-test <test-build-dir> <test-name>'
+usage = 'Usage: python3 run-test <test-binary>'
 
 import os
 from os import path
@@ -23,6 +23,14 @@ import subprocess
 import threading
 
 cleanup_funcs = []
+
+class Color:
+    normal = '\x1b[0m'
+    gray = '\x1b[90m'
+    decoration = gray
+
+class TestError(RuntimeError):
+    pass
 
 def get_xdg_runtime_dir():
     tmp_runtime_dir = '/tmp/layer-shell-test-runtime-dir-' + str(os.getpid())
@@ -37,13 +45,6 @@ def wipe_xdg_runtime_dir(p):
     assert 'layer-shell-test-runtime-dir' in p, 'Sanity check'
     shutil.rmtree(p)
 
-def get_bin(p):
-    build_dir = sys.argv[1]
-    assert path.isdir(build_dir), build_dir + ' not a directory'
-    p = path.join(build_dir, p)
-    assert path.exists(p), p + ' does not exist'
-    return p
-
 def wait_until_appears(p):
     sleep_time = 0.01
     timeout = 5.0
@@ -51,27 +52,32 @@ def wait_until_appears(p):
         if path.exists(p):
             return
         time.sleep(0.01)
-    raise RuntimeError(p + ' did not appear in ' + str(timeout) + ' seconds')
+    raise TestError(p + ' did not appear in ' + str(timeout) + ' seconds')
 
 def format_stream(name, stream):
-    l_pad = 18 - len(name) // 2
+    l_pad = 28 - len(name) // 2
     r_pad = l_pad
     if len(name) % 2 == 1:
-        r_pad += 1
+        r_pad -= 1
     l_pad = max(l_pad, 1)
     r_pad = max(r_pad, 1)
-    header = '─' * l_pad + '┤ ' + name + ' ├' + '─' * r_pad + '┈'
-    body = '\n│'.join('  ' + line for line in stream.strip().splitlines())
-    footer = '─' * 40 + '┈'
-    return '╭' + header + '\n│\n│' + body + '\n│\n╰' + footer
+    header = '─' * l_pad + '┤ ' + Color.normal + name + Color.decoration + ' ├' + '─' * r_pad + '┈'
+    divider = '\n' + Color.decoration + '│' + Color.normal
+    body = divider.join('  ' + line for line in stream.strip().splitlines())
+    footer = '─' * 60 + '┈'
+    return (
+        Color.decoration + '╭' + header + Color.normal +
+        divider + divider + body + divider +
+        '\n' + Color.decoration + '╰' + footer + Color.normal)
 
 def format_process_report(name, process, stdout, stderr):
-    streams = (
-        format_stream(name + ' stdout', stdout) + '\n\n',
-        format_stream(name + ' stderr', stderr) + '\n\n')
-    if name == 'server':
-        streams = (streams[1], streams[0])
-    return ''.join(streams) + name + ' exit code: ' + str(process.returncode)
+    result = format_stream(name + ' stderr', stderr) + '\n\n'
+    if stdout:
+        result += format_stream(name + ' stdout', stdout) + '\n\n'
+    else:
+        result += 'stdout empty, '
+    result += 'exit code: ' + str(process.returncode)
+    return result
 
 class Pipe:
     def __init__(self, name):
@@ -98,8 +104,7 @@ class Pipe:
         if self.reader_thread.is_alive():
             os.close(self.fd)
             self.reader_thread.join(timeout=1)
-            if self.reader_thread.is_alive():
-                assert False, 'Failed to join pipe reader thread'
+            assert not self.reader_thread.is_alive(), 'Failed to join pipe reader thread'
 
     def collect_str(self):
         if self.result is None:
@@ -121,7 +126,7 @@ class Program:
             self.subprocess.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
             self.kill()
-            raise RuntimeError(self.format_output() + '\n\n' + name + ' timed out')
+            raise TestError(self.format_output() + '\n\n' + self.name + ' timed out')
 
     def kill(self):
         if self.subprocess.returncode is None:
@@ -129,17 +134,15 @@ class Program:
             self.subprocess.wait()
 
     def format_output(self):
-        if self.subprocess.returncode is None:
-            assert False, 'Program.format_output() called before process exited'
+        assert self.subprocess.returncode is not None, 'Program.format_output() called before process exited'
         return format_process_report(self.name, self.subprocess, self.stdout.collect_str(), self.stderr.collect_str())
 
     def check_returncode(self):
-        if self.subprocess.returncode is None:
-            assert False, repr(name) + '.check_returncode() called before process exited'
+        assert self.subprocess.returncode is not None, repr(self.name) + '.check_returncode() called before process exited'
         if self.subprocess.returncode != 0:
-            raise RuntimeError(
+            raise TestError(
                 self.format_output() + '\n\n' +
-                name + ' failed (return code ' + str(self.subprocess.returncode) + ')')
+                self.name + ' failed (return code ' + str(self.subprocess.returncode) + ')')
 
     def collect_output(self):
         return self.stdout.collect_str(), self.stderr.collect_str()
@@ -154,9 +157,9 @@ def run_test(name, server_bin, client_bin, xdg_runtime, wayland_display):
 
     try:
         wait_until_appears(path.join(xdg_runtime, wayland_display))
-    except RuntimeError as e:
+    except TestError as e:
         server.kill()
-        raise RuntimeError(server.format_output() + '\n\n' + str(e))
+        raise TestError(server.format_output() + '\n\n' + str(e))
 
     client = Program(name, client_bin, env)
     client.finish(timeout=10)
@@ -168,7 +171,7 @@ def run_test(name, server_bin, client_bin, xdg_runtime, wayland_display):
     client_stdout, client_stderr = client.collect_output()
 
     if client_stdout.strip() != '':
-        raise RuntimeError(format_stream(name + ' stdout', client_stdout) + '\n\n' + name + ' stdout not empty')
+        raise TestError(format_stream(name + ' stdout', client_stdout) + '\n\n' + name + ' stdout not empty')
 
     return client_stderr
 
@@ -193,13 +196,15 @@ def verify_result(lines):
         elif line == 'CHECK EXPECTATIONS COMPLETED' or i == len(lines) - 1:
             if assertions:
                 section = format_stream('relevant section', '\n'.join(lines[section_start:i]))
-                raise RuntimeError(section + '\n\ndid not find "' + ' '.join(assertions[0]) + '"')
+                raise TestError(section + '\n\ndid not find "' + ' '.join(assertions[0]) + '"')
             section_start = i + 1
 
 def main():
-    name = sys.argv[2]
-    server_bin = get_bin('mock-server/mock-server')
-    client_bin = get_bin(name)
+    client_bin = sys.argv[1]
+    name = path.basename(client_bin)
+    server_bin = path.join(path.dirname(client_bin), 'mock-server', 'mock-server')
+    assert path.exists(client_bin), 'Could not find client at ' + client_bin
+    assert path.exists(server_bin), 'Could not find server at ' + server_bin
     wayland_display = 'wayland-test'
     xdg_runtime = get_xdg_runtime_dir()
 
@@ -208,17 +213,16 @@ def main():
 
     try:
         verify_result(client_lines)
-    except RuntimeError as e:
-        raise RuntimeError(format_stream(name + ' stderr', client_stderr) + '\n\n' + str(e))
-
+    except TestError as e:
+        raise TestError(format_stream(name + ' stderr', client_stderr) + '\n\n' + str(e))
 
 if __name__ == '__main__':
-    assert len(sys.argv) == 3, 'Incorrect number of args. ' + usage
+    assert len(sys.argv) == 2, 'Incorrect number of args. ' + usage
     fail = False
     try:
         main()
         print('Passed')
-    except RuntimeError as e:
+    except TestError as e:
         fail = True
         print(e)
     finally:

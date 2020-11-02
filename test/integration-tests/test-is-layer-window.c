@@ -9,20 +9,32 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "test-client-common.h"
+#include "integration-test-common.h"
 
-static GtkWindow* window;
+static GtkWindow* window_a;
+static GtkWindow* window_b;
 
 static void callback_0()
 {
-    window = create_default_window();
-    gtk_layer_init_for_window(window);
-    gtk_layer_set_namespace(window, "foobar");
-    gtk_widget_show_all(GTK_WIDGET(window));
-    const char *name_space = gtk_layer_get_namespace(window);
-    ASSERT_STR_EQ(name_space, "foobar");
+    window_a = create_default_window();
+    window_b = create_default_window();
+
+    gtk_layer_init_for_window(window_a);
+
+    ASSERT(gtk_layer_is_layer_window(window_a));
+    ASSERT(!gtk_layer_is_layer_window(window_b));
+
+    gtk_widget_show_all(GTK_WIDGET(window_a));
+    gtk_widget_show_all(GTK_WIDGET(window_b));
+}
+
+static void callback_1()
+{
+    ASSERT(gtk_layer_is_layer_window(window_a));
+    ASSERT(!gtk_layer_is_layer_window(window_b));
 }
 
 TEST_CALLBACKS(
     callback_0,
+    callback_1,
 )

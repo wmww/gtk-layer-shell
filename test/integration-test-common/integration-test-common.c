@@ -9,7 +9,7 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "test-client-common.h"
+#include "integration-test-common.h"
 
 // How long each callback has to run
 #define STEP_TIME 300
@@ -46,12 +46,6 @@ GtkWindow* create_default_window()
     gtk_container_add(GTK_CONTAINER(window), label);
     gtk_container_set_border_width(GTK_CONTAINER(window), 12);
     return window;
-}
-
-void mark_test_failed()
-{
-    return_code = 1;
-    gtk_main_quit();
 }
 
 void wayland_roundtrip()

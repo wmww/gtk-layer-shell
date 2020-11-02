@@ -1,66 +1,31 @@
+subdir('test-common')
 subdir('mock-server')
+subdir('integration-test-common')
+subdir('integration-tests')
+subdir('unit-tests')
 
-test_clients = [
-    'test-is-supported-true',
-    'basic-test',
-    'test-expect-fail',
-    'test-is-layer-window',
-    'test-anchors',
-    'test-set-layer',
-    'test-get-layer',
-    'test-set-size-request',
-    'test-adapts-to-screen-size',
-    'test-auto-exclusive-zone-no-margin',
-    'test-auto-exclusive-zone-with-margin',
-    'test-auto-exclusive-zone-weird-bool-values',
-    'test-get-explicit-exclusive-zone',
-    'test-get-auto-exclusive-zone',
-    'test-menu-popup',
-    'test-window-with-initially-attached-buffer',
-    'test-close-layer-surface',
-    'test-get-namespace-default',
-    'test-get-namespace-on-non-layer-window',
-    'test-get-namespace-custom-namespace',
-    'test-set-keyboard-interactivity',
-    'test-get-keyboard-interactivity',
-]
-
-test_client_common_inc = include_directories('test-client-common')
 py = find_program('python3')
 run_test_script = files(meson.current_source_dir() + '/run-integration-test.py')
 
-foreach test_client : test_clients
-    srcs = files(
-        'test-client-common/test-client-common.h',
-        'test-client-common/test-client-common.c',
-        'test-clients/' + test_client + '.c',
-    )
+foreach integration_test : integration_tests
+    integration_test_srcs = files('integration-tests/' + integration_test + '.c')
     exe = executable(
-        test_client,
-        srcs,
+        integration_test,
+        [integration_test_srcs, integration_test_common_srcs],
         dependencies: [gtk, wayland_client],
-        include_directories: [gtk_layer_shell_inc, test_client_common_inc],
+        include_directories: [gtk_layer_shell_inc, integration_test_common_inc, test_common_inc],
         link_with: [gtk_layer_shell_lib])
-    expect_fail = test_client.endswith('expect-fail')
+    expect_fail = integration_test.endswith('expect-fail')
     test(
-        test_client,
+        integration_test,
         py,
         should_fail: expect_fail,
         workdir: meson.current_source_dir(),
         args: [
             run_test_script,
-            meson.current_build_dir(),
-            test_client
+            meson.current_build_dir() + '/' + integration_test,
         ])
 endforeach
-
-test_get_version = executable(
-    'test-get-version',
-    ['unit-tests/test-get-version.c'],
-    dependencies: [gtk],
-    include_directories: [gtk_layer_shell_inc],
-    link_with: [gtk_layer_shell_lib])
-test('test-get-version', test_get_version, args: [meson.project_version()])
 
 check_licenses_script = files(meson.current_source_dir() + '/check-licenses.py')
 test('check-licenses', py, args: [check_licenses_script])

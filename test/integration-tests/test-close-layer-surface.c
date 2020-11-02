@@ -9,7 +9,7 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "test-client-common.h"
+#include "integration-test-common.h"
 
 static GtkWindow* window;
 
@@ -17,17 +17,17 @@ static void callback_0()
 {
     window = create_default_window();
     gtk_layer_init_for_window(window);
-    gtk_layer_set_layer(window, GTK_LAYER_SHELL_LAYER_OVERLAY);
-    ASSERT_EQ(gtk_layer_get_layer(window), GTK_LAYER_SHELL_LAYER_OVERLAY, "%d");
     gtk_widget_show_all(GTK_WIDGET(window));
-    gtk_layer_set_layer(window, GTK_LAYER_SHELL_LAYER_TOP);
-    ASSERT_EQ(gtk_layer_get_layer(window), GTK_LAYER_SHELL_LAYER_TOP, "%d");
-    gtk_layer_set_layer(window, GTK_LAYER_SHELL_LAYER_BACKGROUND);
-    ASSERT_EQ(gtk_layer_get_layer(window), GTK_LAYER_SHELL_LAYER_BACKGROUND, "%d");
-    gtk_layer_set_layer(window, GTK_LAYER_SHELL_LAYER_BOTTOM);
-    ASSERT_EQ(gtk_layer_get_layer(window), GTK_LAYER_SHELL_LAYER_BOTTOM, "%d");
+}
+
+static void callback_1()
+{
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .destroy);
+    EXPECT_MESSAGE(wl_surface .destroy);
+    gtk_window_close(window);
 }
 
 TEST_CALLBACKS(
     callback_0,
+    callback_1,
 )
