@@ -416,6 +416,8 @@ void
 layer_surface_set_exclusive_zone (LayerSurface *self, int exclusive_zone)
 {
     self->auto_exclusive_zone = FALSE;
+    if (exclusive_zone < -1)
+        exclusive_zone = -1;
     if (self->exclusive_zone != exclusive_zone) {
         self->exclusive_zone = exclusive_zone;
         if (self->layer_surface) {
