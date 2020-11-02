@@ -63,11 +63,11 @@ def format_stream(name, stream):
     r_pad = max(r_pad, 1)
     header = '─' * l_pad + '┤ ' + Color.normal + name + Color.decoration + ' ├' + '─' * r_pad + '┈'
     divider = '\n' + Color.decoration + '│' + Color.normal
-    body = divider.join('  ' + line for line in stream.strip().splitlines())
+    body = divider.join(' ' + line for line in stream.strip().splitlines())
     footer = '─' * 60 + '┈'
     return (
         Color.decoration + '╭' + header + Color.normal +
-        divider + divider + body + divider +
+        divider + body +
         '\n' + Color.decoration + '╰' + footer + Color.normal)
 
 def format_process_report(name, process, stdout, stderr):
