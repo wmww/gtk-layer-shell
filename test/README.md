@@ -5,9 +5,9 @@ This directory is home to the gtk-layer-shell test suite.
 `ninja -C build test` (where `build` is the path to your build directory).
 
 ### To add a new integration test
-1. Copy an existing test client
-2. Set the new expected protocol messages and implementation
-3. Add its name to the `test_clients` list in `test/meson.build`
+1. Copy an existing integration test file
+2. Implement your test as a series of one or more callbacks
+3. Add its name to the list in `test/integration-tests/meson.build`
 
 ## Scrpts
 - `check-licenses.py` makes sure all files have licenses at the top
@@ -15,15 +15,15 @@ This directory is home to the gtk-layer-shell test suite.
 - `run-integration-test.py` runs a single integration test
 
 ## Integration tests
-Most of the potential bugs in GTK Layer Shell arise from interactions between the library, GTK and the Wayland compositor, so unit tests aren't particularly useful. Instead, most of our tests are integration tests. The integration tests consist of the following components:
+Most of the potential bugs in GTK Layer Shell arise from interactions between the library, GTK and the Wayland compositor, so unit tests aren't particularly useful. Instead, most of our tests are integration tests.
 
-### Test clients
-Each integration test is a single unique GTK app that uses GTK Layer Shell (called a test client). All test clients are located in `test-clients`. Anything common to multiple test clients gets pulled into `test-client-common`. Test clients consist of a sequence of callbacks. At the start of each callback the client can state that specific Wayland messages should be sent during or after the callback is run (see expectations format below). Each meson test runs a single test client.
+### Integration test app
+Each integration test is a single unique GTK app that uses GTK Layer Shell. All test clients are located in `integration-tests`. Anything common to multiple tests gets pulled into `integration-test-common` or `test-common`. Tests consist of a sequence of callbacks. At the start of each callback the app can state that specific Wayland messages should be sent during or after the callback is run (see expectations format below). Each meson test runs a single integration test.
 
-Test clients can be run directly on a normal Wayland protocol (this may be useful for debugging). To make them run slower to give you time to see what's happening, increase `STEP_TIME` in `test-client-common/test-client-common.c`
+Integration tests can be run directly on a normal Wayland compositor (this may be useful for debugging). To make them run slower to give you time to see what's happening, increase `STEP_TIME` in `integration-test-common/integration-test-common.c`
 
 ### Expectations format
-Test clients emit protocol expectations by using the `EXPECT_MESSAGE` macro. Each expectation is a white-space-separated sequence of tokens written to a line of stdout. The first element must be `EXPECT:` (this is automatically inserted by `EXPECT_MESSAGE`). For an expectation to match a message, each following token must appear in order in the message line. The list of expected messages must match in the correct order. Messages are matched against the output of the client run with `WAYLAND_DEBUG=1`. Events and requests are not distinguished.
+Integration tests emit protocol expectations by using the `EXPECT_MESSAGE` macro. Each expectation is a white-space-separated sequence of tokens written to a line of stdout. The first element must be `EXPECT:` (this is automatically inserted by `EXPECT_MESSAGE`). For an expectation to match a message, each following token must appear in order in the message line. The list of expected messages must match in the correct order. Messages are matched against the output of the app run with `WAYLAND_DEBUG=1`. Events and requests are not distinguished.
 
 When the script encounters `CHECK EXPECTATIONS COMPLETED` (emitted by the `CHECK_EXPECTATIONS()` macro), it will assert that all previous expectations have been met. This is emitted automatically at the start of each test callback.
 
@@ -31,7 +31,7 @@ When the script encounters `CHECK EXPECTATIONS COMPLETED` (emitted by the `CHECK
 `ninja -C build test` will run `run-integration-test.py` for each test defined in `test/meson.build`. This script:
 - Creates a temporary directory in `/tmp` to serve as `XDG_RUNTIME_DIR` (this allows tests to run in parallel without interfering with each other)
 - Spins up a mock Wayland server
-- Runs the given test client within it
+- Runs the given integration test within it
 - (Both are run with `WAYLAND_DEBUG=1` so protocol messages are written to stderr by libwayland)
 - Ensures both the client and server exit successfully
 - Parses the client's protocol message expectations
