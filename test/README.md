@@ -13,6 +13,7 @@ This directory is home to the gtk-layer-shell test suite.
 - `check-licenses.py` makes sure all files have licenses at the top
 - `tests-not-enabled.py` is only run if tests are disabled, and explains to the user how to enable them
 - `run-integration-test.py` runs a single integration test
+- `check-all-tests-are-in-meson.py` fails if any test files exist that haven't been added to meson (an easy mistake to make)
 
 ## Integration tests
 Most of the potential bugs in GTK Layer Shell arise from interactions between the library, GTK and the Wayland compositor, so unit tests aren't particularly useful. Instead, most of our tests are integration tests.
