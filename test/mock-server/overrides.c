@@ -40,6 +40,7 @@ typedef struct
 
 static struct wl_resource* seat_global = NULL;
 static struct wl_resource* pointer_global = NULL;
+static struct wl_resource* output_global = NULL;
 static uint32_t click_serial = 0;
 
 // Needs to be called before any role objects are asigned
@@ -156,6 +157,14 @@ void wl_seat_bind(struct wl_client* client, void* data, uint32_t version, uint32
     seat_global = wl_resource_create(client, &wl_seat_interface, version, id);
     use_default_impl(seat_global);
     wl_seat_send_capabilities(seat_global, WL_SEAT_CAPABILITY_POINTER | WL_SEAT_CAPABILITY_KEYBOARD);
+};
+
+void wl_output_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id)
+{
+    ASSERT(!output_global);
+    output_global = wl_resource_create(client, &wl_output_interface, version, id);
+    use_default_impl(output_global);
+    wl_output_send_done(output_global);
 };
 
 static void wl_seat_get_pointer(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
@@ -314,8 +323,8 @@ void init()
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, destroy);
 
     wl_global_create(display, &wl_seat_interface, 6, NULL, wl_seat_bind);
+    wl_global_create(display, &wl_output_interface, 2, NULL, wl_output_bind);
     default_global_create(display, &wl_shm_interface, 1);
-    default_global_create(display, &wl_output_interface, 2);
     default_global_create(display, &wl_data_device_manager_interface, 2);
     default_global_create(display, &wl_compositor_interface, 4);
     default_global_create(display, &xdg_wm_base_interface, 2);
