@@ -12,7 +12,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 '''
 
 # This script runs an integration test. See test/README.md for details
-usage = 'Usage: python3 run-test <test-build-dir> <test-name>'
+usage = 'Usage: python3 run-test <test-binary>'
 
 import os
 from os import path
@@ -39,13 +39,6 @@ def wipe_xdg_runtime_dir(p):
     assert p.startswith('/tmp'), 'Sanity check'
     assert 'layer-shell-test-runtime-dir' in p, 'Sanity check'
     shutil.rmtree(p)
-
-def get_bin(p):
-    build_dir = sys.argv[1]
-    assert path.isdir(build_dir), build_dir + ' not a directory'
-    p = path.join(build_dir, p)
-    assert path.exists(p), p + ' does not exist'
-    return p
 
 def wait_until_appears(p):
     sleep_time = 0.01
@@ -198,9 +191,11 @@ def verify_result(lines):
             section_start = i + 1
 
 def main():
-    name = sys.argv[2]
-    server_bin = get_bin('mock-server/mock-server')
-    client_bin = get_bin(name)
+    client_bin = sys.argv[1]
+    name = path.basename(client_bin)
+    server_bin = path.join(path.dirname(client_bin), 'mock-server', 'mock-server')
+    assert path.exists(client_bin), 'Could not find client at ' + client_bin
+    assert path.exists(server_bin), 'Could not find server at ' + server_bin
     wayland_display = 'wayland-test'
     xdg_runtime = get_xdg_runtime_dir()
 
@@ -213,7 +208,7 @@ def main():
         raise TestError(format_stream(name + ' stderr', client_stderr) + '\n\n' + str(e))
 
 if __name__ == '__main__':
-    assert len(sys.argv) == 3, 'Incorrect number of args. ' + usage
+    assert len(sys.argv) == 2, 'Incorrect number of args. ' + usage
     fail = False
     try:
         main()

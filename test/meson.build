@@ -23,8 +23,7 @@ foreach integration_test : integration_tests
         workdir: meson.current_source_dir(),
         args: [
             run_test_script,
-            meson.current_build_dir(),
-            integration_test
+            meson.current_build_dir() + '/' + integration_test,
         ])
 endforeach
 
