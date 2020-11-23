@@ -23,7 +23,7 @@ import re
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.WARNING)
 
-toplevel_dirs = ['demo', 'example', 'gtk-priv', 'include', 'src', 'test']
+toplevel_dirs = ['include', 'src', 'gtk-priv', 'examples', 'test']
 ignore_patterns_file = 'test/license-ignore.txt'
 
 MIT_EXAMPLE = '''
