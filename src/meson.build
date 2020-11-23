@@ -17,8 +17,8 @@ version_args = [
 gtk_layer_shell_lib = library('gtk-layer-shell',
     srcs, client_protocol_srcs,
     c_args: version_args,
-    include_directories: [gtk_layer_shell_inc, gtk_priv_inc],
-    dependencies: [gtk, wayland_client],
+    include_directories: [gtk_layer_shell_inc],
+    dependencies: [gtk, wayland_client, gtk_priv],
     version: meson.project_version(),
     soversion: lib_so_version,
     install: true)
@@ -27,7 +27,7 @@ pkg_config_name = 'gtk-layer-shell-0'
 
 gir = gnome.generate_gir(
     gtk_layer_shell_lib,
-    sources: srcs + [ '../include/gtk-layer-shell.h' ],
+    sources: srcs + files('../include/gtk-layer-shell.h'),
     namespace: 'GtkLayerShell',
     nsversion: '0.1',
     identifier_prefix: 'GtkLayerShell',

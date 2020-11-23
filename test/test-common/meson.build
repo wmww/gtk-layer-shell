@@ -1,1 +1,2 @@
-test_common_inc = include_directories('.')
+test_common = declare_dependency(
+    include_directories: include_directories('.'))

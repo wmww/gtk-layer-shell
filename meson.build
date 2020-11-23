@@ -26,11 +26,15 @@ wayland_protocols = dependency('wayland-protocols', version: '>=1.16', required:
 pkg_config = import('pkgconfig')
 gnome = import('gnome')
 
-gtk_priv_inc = include_directories('./gtk-priv/h')
-
 subdir('include')
 subdir('protocol')
+subdir('gtk-priv')
 subdir('src')
+
+gtk_layer_shell = declare_dependency(
+    link_with: gtk_layer_shell_lib,
+    include_directories: gtk_layer_shell_inc)
+
 subdir('examples')
 
 if get_option('docs')
@@ -45,7 +49,3 @@ else
     tests_not_enabled_script = files(meson.current_source_dir() + '/test/tests-not-enabled.py')
     test('Tests not enabled', py, args: [tests_not_enabled_script])
 endif
-
-gtk_layer_shell_dep = declare_dependency(
-    link_with: gtk_layer_shell_lib,
-    include_directories: gtk_layer_shell_inc)
