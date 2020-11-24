@@ -44,19 +44,20 @@ sudo apt install meson libwayland-dev libgtk-3-dev gobject-introspection libgire
 ```
 
 ### Meson options
-* `-Dexamples`: If to build the example apps. The gtk-layer-demo example is installed if built (default: `false`)
-* `-Ddocs`: If to generate the docs (default: `false`)
-* `-Dtests`: If to build the tests (default: `false`)
+* `-Dexamples` (default `false`): If to build the example C apps; gtk-layer-demo is installed if examples are built; The Vala example is never built with the rest of the project
+* `-Ddocs` (default `false`): If to generate the docs
+* `-Dtests` (default `false`): If to build the tests
 
 ### Running the tests
 * `ninja -C build test`
 
 ## Using the library
 * `gtk-layer-demo` is installed if examples are enabled. Its UI exposes all features of the library, and it's useful for testing layer shell support in compositors
-* [gtk-layer-shell.h](include/gtk-layer-shell.h) shows the full API
-* [simple-example](examples/simple-example.c) is a minimal working app
+* [gtk-layer-shell.h](include/gtk-layer-shell.h) shows the full API, which can be used directly in C or C++
+* [simple-example](examples/simple-example.c) is a minimal working C app
 * [examples/demo/](examples/demo/) contains the code for `gtk-layer-demo` (a more complex app)
-* The easiest way to build is to use the `gtk-layer-shell-0` pkg-config package. Refer to your build system or the pkg-config docs for further instructions
+* The easiest way to build C and C++ apps is to use the `gtk-layer-shell-0` pkg-config package. Refer to your build system or the pkg-config docs for further instructions
+* [examples/vala-standalone](examples/vala-standalone) contains a minimal working standalone Vala project, see [the readme](examples/vala-standalone/README.md) for details
 
 ## Licensing
 GTK Layer Shell is licensed under the GNU Lesser General Public License version 3.0 or any later version.

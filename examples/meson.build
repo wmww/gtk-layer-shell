@@ -1,4 +1,5 @@
 subdir('demo')
+# vala-standalone is it's own meson project, so do not subdir() it
 
 executable(
     'gtk-layer-demo',
