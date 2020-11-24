@@ -11,10 +11,8 @@ foreach integration_test : integration_tests
     integration_test_srcs = files('integration-tests/' + integration_test + '.c')
     exe = executable(
         integration_test,
-        [integration_test_srcs, integration_test_common_srcs],
-        dependencies: [gtk, wayland_client],
-        include_directories: [gtk_layer_shell_inc, integration_test_common_inc, test_common_inc],
-        link_with: [gtk_layer_shell_lib])
+        integration_test_srcs,
+        dependencies: [gtk, wayland_client, gtk_layer_shell, integration_test_common])
     expect_fail = integration_test.endswith('expect-fail')
     test(
         integration_test,

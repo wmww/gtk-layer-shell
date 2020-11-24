@@ -1,2 +1,4 @@
-integration_test_common_inc = include_directories('.')
-integration_test_common_srcs = files('integration-test-common.c')
+integration_test_common = declare_dependency(
+    dependencies: [test_common],
+    include_directories: include_directories('.'),
+    sources: files('integration-test-common.c'))
