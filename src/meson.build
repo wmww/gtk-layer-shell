@@ -25,8 +25,10 @@ gtk_layer_shell_lib = library('gtk-layer-shell',
 
 pkg_config_name = 'gtk-layer-shell-0'
 
+# GObject introspection file used to interface with other languages
 gir = gnome.generate_gir(
     gtk_layer_shell_lib,
+    dependencies: [gtk],
     sources: srcs + files('../include/gtk-layer-shell.h'),
     namespace: 'GtkLayerShell',
     nsversion: '0.1',
