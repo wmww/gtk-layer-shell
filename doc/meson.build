@@ -14,12 +14,6 @@ gnome.gtkdoc(
         join_paths(meson.build_root(), 'include'),
     ],
     dependencies: [ gtk, wayland_client, wayland_scanner, ],
-    gobject_typesfile: 'gtk-layer-shell.types',
-    #scan_args: [
-    #    '--rebuild-types',
-    #    '--rebuild-sections',
-    #    '--ignore-headers=' + ' '.join(private_headers),
-    #],
     fixxref_args: [
         '--html-dir=@0@'.format(docpath),
         '--extra-dir=@0@'.format(join_paths(glib_docpath, 'glib')),
