@@ -2,7 +2,7 @@
 
 ![GTK Layer Shell demo screenshot](https://i.imgur.com/dIuYcBM.png)
 
-A library to write [GTK](https://www.gtk.org/) applications that use [Layer Shell](https://github.com/swaywm/wlr-protocols/blob/master/unstable/wlr-layer-shell-unstable-v1.xml). Layer Shell is a Wayland protocol for desktop shell components, such as panels, notifications and wallpapers. You can use it to anchor your windows to a corner or edge of the output, or stretch them across the entire output. It supports all Layer Shell features including popups and popovers (GTK popups Just Work™). Please open issues for any bugs you come across.
+A library to write [GTK](https://www.gtk.org/) applications that use [Layer Shell](https://github.com/swaywm/wlr-protocols/blob/master/unstable/wlr-layer-shell-unstable-v1.xml). Layer Shell is a Wayland protocol for desktop shell components, such as panels, notifications and wallpapers. You can use it to anchor your windows to a corner or edge of the output, or stretch them across the entire output. It supports all Layer Shell features including popups and popovers (GTK popups Just Work™). This Library is compatible with C, C++ and any language that supports GObject introspection files (Python, Vala, etc, see using the library below).
 
 ## Supported platforms
 This library only works on Wayland, and only on Wayland compositors that support the Layer Shell protcol. Layer shell __is supported__ on:
@@ -54,10 +54,11 @@ sudo apt install meson libwayland-dev libgtk-3-dev gobject-introspection libgire
 ## Using the library
 * `gtk-layer-demo` is installed if examples are enabled. Its UI exposes all features of the library, and it's useful for testing layer shell support in compositors
 * [gtk-layer-shell.h](include/gtk-layer-shell.h) shows the full API, which can be used directly in C or C++
-* [simple-example](examples/simple-example.c) is a minimal working C app
+* [examples/simple-example.c](examples/simple-example.c) is a minimal working C app
 * [examples/demo/](examples/demo/) contains the code for `gtk-layer-demo` (a more complex app)
 * The easiest way to build C and C++ apps is to use the `gtk-layer-shell-0` pkg-config package. Refer to your build system or the pkg-config docs for further instructions
 * [examples/vala-standalone](examples/vala-standalone) contains a minimal working standalone Vala project, see [the readme](examples/vala-standalone/README.md) for details
+* [examples/simple-example.py](examples/simple-example.py) contains sample Python code
 
 ## Licensing
 GTK Layer Shell is licensed under the GNU Lesser General Public License version 3.0 or any later version.
