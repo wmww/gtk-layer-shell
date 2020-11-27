@@ -45,6 +45,18 @@ gtk_layer_is_supported ()
     return gtk_wayland_get_layer_shell_global () != NULL;
 }
 
+guint
+gtk_layer_get_layer_shell_version ()
+{
+    if (!GDK_IS_WAYLAND_DISPLAY (gdk_display_get_default ()))
+        return 0;
+    gtk_wayland_init_if_needed ();
+    struct zwlr_layer_shell_v1 *layer_shell_global = gtk_wayland_get_layer_shell_global ();
+    if (!layer_shell_global)
+        return 0;
+    return zwlr_layer_shell_v1_get_version (layer_shell_global);
+}
+
 static LayerSurface*
 gtk_window_get_layer_surface (GtkWindow *window)
 {
@@ -211,14 +223,25 @@ gtk_layer_auto_exclusive_zone_is_enabled (GtkWindow *window)
 }
 
 void
-gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interacitvity)
+gtk_layer_set_keyboard_interactivity (GtkWindow *window, GtkLayerShellKeyboardInteractivity interactivity)
 {
     LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
     if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
-    layer_surface_set_keyboard_interactivity (layer_surface, interacitvity);
+    uint32_t version = gtk_layer_get_layer_shell_version ();
+    if (interactivity >= GTK_LAYER_SHELL_KEYBOARD_ENTRY_NUMBER)
+    {
+        g_warning ("Invalid value for keyboard interactivity setting!\n");
+        return;
+    }
+    if (version <= 3 && interactivity == GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND)
+    {
+        g_warning ("Requested keyboard interactivity setting not supported by the compositor!\n");
+        interactivity = GTK_LAYER_SHELL_KEYBOARD_NONE;
+    }
+    layer_surface_set_keyboard_interactivity (layer_surface, interactivity);
 }
 
-gboolean
+GtkLayerShellKeyboardInteractivity
 gtk_layer_get_keyboard_interactivity (GtkWindow *window)
 {
     LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
