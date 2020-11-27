@@ -18,7 +18,8 @@ static gboolean default_anchors[] = {FALSE, FALSE, FALSE, FALSE};
 static int default_margins[] = {0, 0, 0, 0};
 
 static gboolean default_auto_exclusive_zone = FALSE; // always set by command line option
-static gboolean default_keyboard_interactivity = FALSE; // always set by command line option
+static GtkLayerShellKeyboardInteractivity default_keyboard_interactivity =
+    GTK_LAYER_SHELL_KEYBOARD_NONE; // always set by command line option
 static gboolean default_fixed_size = FALSE; // always set by command line option
 static gboolean no_layer_shell = FALSE; // always set by command line option
 static gboolean show_version_and_exit = FALSE; // always set by command line option
@@ -33,6 +34,7 @@ const int fixed_size_height = 500;
 
 gboolean layer_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error);
 gboolean anchor_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error);
+gboolean keyboard_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error);
 gboolean margin_option_callback (const gchar *option_name, const gchar *value, void *data, GError **error);
 
 static const GOptionEntry options[] = {
@@ -84,10 +86,10 @@ static const GOptionEntry options[] = {
     {
         .long_name = "keyboard",
         .short_name = 'k',
-        .flags = G_OPTION_FLAG_NONE,
-        .arg = G_OPTION_ARG_NONE,
-        .arg_data = &default_keyboard_interactivity,
-        .description = "Enable keyboard interactivity",
+        .flags = G_OPTION_FLAG_OPTIONAL_ARG,
+        .arg = G_OPTION_ARG_CALLBACK,
+        .arg_data = (void*)&keyboard_option_callback,
+        .description = "Set keyboard interactivity: either a numeric value (0, 1 or 2) or \"none\", \"exclusive\" or \"on_demand\"",
         .arg_description = NULL,
     },
     {
@@ -167,6 +169,39 @@ anchor_option_callback (const gchar *_option_name, const gchar *value, void *_da
         }
     }
 
+    return TRUE;
+}
+
+gboolean
+keyboard_option_callback (const gchar *_option_name, const gchar *value, void *_data, GError **error)
+{
+    (void)_option_name;
+    (void)_data;
+
+    if (!value) {
+        /* without argument = exclusive (retain old behavior) */
+        default_keyboard_interactivity = GTK_LAYER_SHELL_KEYBOARD_EXCLUSIVE;
+        return TRUE;
+    }
+    if (value[0] == '0' && value[1] == 0) {
+        default_keyboard_interactivity = GTK_LAYER_SHELL_KEYBOARD_NONE;
+    } else if (value[0] == '1' && value[1] == 0) {
+        default_keyboard_interactivity = GTK_LAYER_SHELL_KEYBOARD_EXCLUSIVE;
+    } else if (value[0] == '2' && value[1] == 0) {
+        default_keyboard_interactivity = GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND;
+    } else if (g_strcmp0 (value, "none") == 0 || g_strcmp0 (value, "n") == 0) {
+        default_keyboard_interactivity = GTK_LAYER_SHELL_KEYBOARD_NONE;
+    } else if (g_strcmp0 (value, "exclusive") == 0 || g_strcmp0 (value, "e") == 0) {
+        default_keyboard_interactivity = GTK_LAYER_SHELL_KEYBOARD_EXCLUSIVE;
+    } else if (g_strcmp0 (value, "on_demand") == 0 || g_strcmp0 (value, "o") == 0) {
+        default_keyboard_interactivity = GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND;
+    } else {
+        g_set_error (error,
+                     G_OPTION_ERROR,
+                     G_OPTION_ERROR_FAILED,
+                     "Invalid keyboard interactivity \"%s\"", value);
+        return FALSE;
+    }
     return TRUE;
 }
 
@@ -354,12 +389,14 @@ layer_window_new ()
         {
             GtkWidget *toggles_box = mscl_toggles_new (gtk_window,
                                                        default_auto_exclusive_zone,
-                                                       default_keyboard_interactivity,
                                                        default_fixed_size);
             gtk_box_pack_start (GTK_BOX (data->second_box),
                                 toggles_box,
                                 FALSE, FALSE, 0);
-
+            GtkWidget *kb_box = keyboard_selection_new (gtk_window, default_keyboard_interactivity);
+            gtk_box_pack_start (GTK_BOX (data->second_box),
+                                kb_box,
+                                FALSE, FALSE, 0);
         }
         {
             GtkWidget *margin_and_version_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
