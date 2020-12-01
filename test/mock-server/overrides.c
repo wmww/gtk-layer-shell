@@ -102,6 +102,10 @@ static void wl_surface_commit(struct wl_resource *resource, const struct wl_mess
             (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM));
         int width = data->layer_set_w;
         int height = data->layer_set_h;
+        if (width == 0 && !horiz)
+            FATAL("not horizontally stretched and no width given");
+        if (height == 0 && !vert)
+            FATAL("not horizontally stretched and no width given");
         if (horiz)
             width = DEFAULT_OUTPUT_WIDTH;
         if (vert)
