@@ -11,8 +11,8 @@
 
 #include "integration-test-common.h"
 
-// How long each callback has to run
-#define STEP_TIME 300
+// Time in miliseconds for each callback to run
+static int step_time = 300;
 
 static int return_code = 0;
 static int callback_index = 0;
@@ -20,15 +20,13 @@ static int callback_index = 0;
 static gboolean next_step(gpointer _data)
 {
     (void)_data;
+
     CHECK_EXPECTATIONS();
-    if (test_callbacks[callback_index])
-    {
+    if (test_callbacks[callback_index]) {
         test_callbacks[callback_index]();
         callback_index++;
         return TRUE;
-    }
-    else
-    {
+    } else {
         gtk_main_quit();
         return FALSE;
     }
@@ -46,13 +44,6 @@ GtkWindow* create_default_window()
     gtk_container_add(GTK_CONTAINER(window), label);
     gtk_container_set_border_width(GTK_CONTAINER(window), 12);
     return window;
-}
-
-void wayland_roundtrip()
-{
-    GdkDisplay* gdk_display = gdk_display_get_default();
-    struct wl_display* wl_display = gdk_wayland_display_get_wl_display(GDK_WAYLAND_DISPLAY(gdk_display));
-    wl_display_roundtrip(wl_display);
 }
 
 int main()

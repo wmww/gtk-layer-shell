@@ -33,6 +33,5 @@ extern void (* test_callbacks[])(void);
 #define TEST_CALLBACKS(...) void (* test_callbacks[])(void) = {__VA_ARGS__ NULL};
 
 GtkWindow* create_default_window();
-void wayland_roundtrip();
 
 #endif // TEST_CLIENT_COMMON_H
