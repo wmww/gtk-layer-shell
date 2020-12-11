@@ -178,7 +178,7 @@ class Program:
     def collect_output(self):
         return self.stdout.collect_str(), self.stderr.collect_str()
 
-def run_test(name: str, server_bin: str, client_bin: str, xdg_runtime: str, wayland_display: str) -> str:
+def run_test(name: str, server_args: List[str], client_args: List[str], xdg_runtime: str, wayland_display: str) -> str:
     '''
     Runs two processes: a mock server and the test client
     Does *not* check that client's message assertions pass, this must be done later using the returned output
@@ -188,7 +188,7 @@ def run_test(name: str, server_bin: str, client_bin: str, xdg_runtime: str, wayl
     env['WAYLAND_DISPLAY'] = wayland_display
     env['WAYLAND_DEBUG'] = '1'
 
-    server = Program('server', [server_bin], env)
+    server = Program('server', server_args, env)
 
     try:
         wait_until_appears(path.join(xdg_runtime, wayland_display))
@@ -196,7 +196,7 @@ def run_test(name: str, server_bin: str, client_bin: str, xdg_runtime: str, wayl
         server.kill()
         raise TestError(server.format_output() + '\n\n' + str(e))
 
-    client = Program(name, [client_bin], env)
+    client = Program(name, client_args, env)
     client.finish(timeout=10)
     server.finish(timeout=1)
 
@@ -245,7 +245,7 @@ def main():
     wayland_display = 'wayland-test'
     xdg_runtime = get_xdg_runtime_dir()
 
-    client_stderr = run_test(name, server_bin, client_bin, xdg_runtime, wayland_display)
+    client_stderr = run_test(name, [server_bin], [client_bin, '--auto'], xdg_runtime, wayland_display)
     client_lines = [line.strip() for line in client_stderr.strip().splitlines()]
 
     try:

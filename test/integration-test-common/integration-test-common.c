@@ -72,13 +72,13 @@ int main(int argc, char** argv)
     gtk_init(0, NULL);
 
     if (argc == 1) {
-        // No args except the program itself, run the normal test
-        next_step(NULL);
-        g_timeout_add(step_time, next_step, NULL);
-    } else if (argc == 2 && g_strcmp0(argv[1], "--debug") == 0) {
         // Run with a debug mode window that lets the user advance manually
         create_debug_control_window();
         next_step(NULL);
+    } else if (argc == 2 && g_strcmp0(argv[1], "--auto") == 0) {
+        // Run normally with a timeout
+        next_step(NULL);
+        g_timeout_add(step_time, next_step, NULL);
     } else {
         g_critical("Invalid arguments to integration test");
         return 1;
