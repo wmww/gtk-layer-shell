@@ -169,6 +169,13 @@ gdk_window_move_to_rect_impl_override (GdkWindow *window,
 }
 
 void
+gdk_window_set_priv_mapped (GdkWindow *gdk_window)
+{
+    GdkWindowImplWayland *window_impl = (GdkWindowImplWayland *)gdk_window_priv_get_impl (gdk_window);
+    gdk_window_impl_wayland_priv_set_mapped (window_impl, TRUE);
+}
+
+void
 gtk_priv_access_init (GdkWindow *gdk_window)
 {
     // Don't do anything once this has run successfully once

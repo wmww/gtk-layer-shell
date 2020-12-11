@@ -26,4 +26,5 @@ integration_tests = [
     'test-get-keyboard-interactivity',
     'test-get-monitor',
     'test-set-monitor',
+    'test-create-subsurface',
 ]
