@@ -21,7 +21,7 @@ Most of the potential bugs in GTK Layer Shell arise from interactions between th
 ### Integration test app
 Each integration test is a single unique GTK app that uses GTK Layer Shell. All test clients are located in `integration-tests`. Anything common to multiple tests gets pulled into `integration-test-common` or `test-common`. Tests consist of a sequence of callbacks. At the start of each callback the app can state that specific Wayland messages should be sent during or after the callback is run (see expectations format below). Each meson test runs a single integration test.
 
-Integration tests can be run directly on a normal Wayland compositor (this may be useful for debugging). To make them run slower to give you time to see what's happening, increase `STEP_TIME` in `integration-test-common/integration-test-common.c`
+Integration tests can be run directly on a normal Wayland compositor (this may be useful for debugging). When run without arguments, they open an additional layer shell window with a `Continue ->` button to manually advance the test. Pass `--auto` to run each test callback with a timeout the way they are run when automated.
 
 ### Expectations format
 Integration tests emit protocol expectations by using the `EXPECT_MESSAGE` macro. Each expectation is a white-space-separated sequence of tokens written to a line of stdout. The first element must be `EXPECT:` (this is automatically inserted by `EXPECT_MESSAGE`). For an expectation to match a message, each following token must appear in order in the message line. The list of expected messages must match in the correct order. Messages are matched against the output of the app run with `WAYLAND_DEBUG=1`. Events and requests are not distinguished.
