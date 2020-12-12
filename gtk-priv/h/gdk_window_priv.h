@@ -205,7 +205,7 @@ struct _GdkWindow_v3_22_19
 // Diff from previous version:
 // +   guint synthesized_crossing_event_id;
 // -   guint synthesize_crossing_event_queued : 1;
-// Valid for GTK v3.24.11 - v3.24.24 (unreleased)
+// Valid for GTK v3.24.11 - v3.24.25 (unreleased)
 struct _GdkWindow_v3_24_11
 {
   GObject parent_instance;
@@ -357,6 +357,7 @@ int gdk_window_priv_get_version_id() {
       case 24021:
       case 24022:
       case 24023:
+      case 24024:
         break;
   
       default:

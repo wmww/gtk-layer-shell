@@ -29,7 +29,7 @@
 typedef struct _GdkWaylandTabletData GdkWaylandTabletData;
 
 // Version ID 0
-// Valid for GTK v3.22.0 - v3.24.24 (unreleased)
+// Valid for GTK v3.22.0 - v3.24.25 (unreleased)
 struct _GdkWaylandTabletData_v3_22_0
 {
   struct zwp_tablet_v2 *wp_tablet;
@@ -116,6 +116,7 @@ int gdk_wayland_tablet_data_priv_get_version_id() {
       case 24021:
       case 24022:
       case 24023:
+      case 24024:
         break;
   
       default:

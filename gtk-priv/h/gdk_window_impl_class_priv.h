@@ -29,7 +29,7 @@
 typedef struct _GdkWindowImplClass GdkWindowImplClass;
 
 // Version ID 0
-// Valid for GTK v3.22.0 - v3.24.24 (unreleased)
+// Valid for GTK v3.22.0 - v3.24.25 (unreleased)
 struct _GdkWindowImplClass_v3_22_0
 {
   GObjectClass parent_class;
@@ -193,6 +193,7 @@ int gdk_window_impl_class_priv_get_version_id() {
       case 24021:
       case 24022:
       case 24023:
+      case 24024:
         break;
   
       default:
