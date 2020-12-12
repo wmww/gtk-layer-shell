@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [0.5.2] - 11 Dec 2020
+- Fix: normalize keyboard interactivity boolean to `TRUE` or `FALSE`
+- Fix: Set layer windows to mapped (removes warning on tooltip creation and fixes subsurfaces created as a `GTK_WINDOW_POPUP` window, fixes [#38](https://github.com/wmww/gtk-layer-shell/issues/38))
+- Examples: Rename `gtk-layer-example` -> `simple-example-c`
+- Examples: merge `simple-example-c` and `gtk-layer-demo` into `examples` directory
+- Examples: add Vala example (not built with rest of project, does not add dependency)
+- Examples: add Python example
+- Meson: change GTK dependency `gtk+-wayland-3.0` -> `gtk+-3.0`
+- Meson: drop .types file in docs
+- Tests: change "test client" terminology to "integration test"
+- Tests: colored output
+- Tests: check that all tests are added to meson
+- Compat: bump supported GTK to v3.24.24
+
 ## [0.5.1] - 1 Nov 2020
 - Tests: fix integration test timeout on GTK v3.24.23 (fixes [#91](https://github.com/wmww/gtk-layer-shell/issues/91))
 
