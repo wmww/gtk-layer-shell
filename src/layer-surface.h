@@ -28,7 +28,7 @@ struct _LayerSurface
 
     // Can be set at any time
     gboolean anchors[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER]; // The current anchor
-    int margins[GTK_LAYER_SHELL_LAYER_ENTRY_NUMBER]; // The current margins
+    int margins[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER]; // The current margins
     int exclusive_zone; // The current exclusive zone (set either explicitly or automatically)
     gboolean auto_exclusive_zone; // If to automatically change the exclusive zone to match the window size
     gboolean keyboard_interactivity; // If this surface should get keyboard input
