@@ -31,7 +31,7 @@ struct _LayerSurface
     int margins[GTK_LAYER_SHELL_LAYER_ENTRY_NUMBER]; // The current margins
     int exclusive_zone; // The current exclusive zone (set either explicitly or automatically)
     gboolean auto_exclusive_zone; // If to automatically change the exclusive zone to match the window size
-    uint32_t keyboard_interactivity; // If this surface should get keyboard input
+    GtkLayerShellKeyboardInteractivity keyboard_interactivity; // Type of keyboard interactivity enabled for this surface
     GtkLayerShellLayer layer; // The current layer, needs surface recreation on old layer shell versions
 
     // Need the surface to be recreated to change
