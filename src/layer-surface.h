@@ -60,7 +60,7 @@ void layer_surface_set_anchor (LayerSurface *self, GtkLayerShellEdge edge, gbool
 void layer_surface_set_margin (LayerSurface *self, GtkLayerShellEdge edge, int margin_size);
 void layer_surface_set_exclusive_zone (LayerSurface *self, int exclusive_zone);
 void layer_surface_auto_exclusive_zone_enable (LayerSurface *self);
-void layer_surface_set_keyboard_interactivity (LayerSurface *self, uint32_t interactivity);
+void layer_surface_set_keyboard_interactivity (LayerSurface *self, GtkLayerShellKeyboardInteractivity interactivity);
 
 // Returns the effective namespace (default if unset). Does not return ownership. Never returns NULL. Handles null self.
 const char* layer_surface_get_namespace (LayerSurface *self);
