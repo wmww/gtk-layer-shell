@@ -23,6 +23,7 @@ integration_tests = [
     'test-get-namespace-on-non-layer-window',
     'test-get-namespace-custom-namespace',
     'test-set-keyboard-interactivity',
+    'test-set-keyboard-interactivity-types',
     'test-get-keyboard-interactivity',
     'test-get-keyboard-interactivity-types',
     'test-get-monitor',
