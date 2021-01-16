@@ -328,5 +328,5 @@ void init()
     default_global_create(display, &wl_data_device_manager_interface, 2);
     default_global_create(display, &wl_compositor_interface, 4);
     default_global_create(display, &xdg_wm_base_interface, 2);
-    default_global_create(display, &zwlr_layer_shell_v1_interface, 3);
+    default_global_create(display, &zwlr_layer_shell_v1_interface, 4);
 }
