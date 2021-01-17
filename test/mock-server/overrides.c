@@ -102,6 +102,10 @@ static void wl_surface_commit(struct wl_resource *resource, const struct wl_mess
             (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM));
         int width = data->layer_set_w;
         int height = data->layer_set_h;
+        if (width == 0 && !horiz)
+            FATAL("not horizontally stretched and no width given");
+        if (height == 0 && !vert)
+            FATAL("not horizontally stretched and no width given");
         if (horiz)
             width = DEFAULT_OUTPUT_WIDTH;
         if (vert)
@@ -327,6 +331,7 @@ void init()
     default_global_create(display, &wl_shm_interface, 1);
     default_global_create(display, &wl_data_device_manager_interface, 2);
     default_global_create(display, &wl_compositor_interface, 4);
+    default_global_create(display, &wl_subcompositor_interface, 1);
     default_global_create(display, &xdg_wm_base_interface, 2);
     default_global_create(display, &zwlr_layer_shell_v1_interface, 4);
 }

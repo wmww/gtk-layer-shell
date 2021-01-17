@@ -21,10 +21,13 @@ import shutil
 import time
 import subprocess
 import threading
+from typing import List, Dict, Optional, Any
 
+# All callables (generally lambdas) appended to this list will be called at the end of the program
 cleanup_funcs = []
 
 class Color:
+    '''Unix terminal color escape sequences'''
     normal = '\x1b[0m'
     gray = '\x1b[90m'
     decoration = gray
@@ -32,20 +35,26 @@ class Color:
 class TestError(RuntimeError):
     pass
 
-def get_xdg_runtime_dir():
+def get_xdg_runtime_dir() -> str:
+    '''
+    Creates a directory to use as the XDG_RUNTIME_DIR.
+    It bases the result on the current PID because each test running in parallel needs a unique directory.
+    '''
     tmp_runtime_dir = '/tmp/layer-shell-test-runtime-dir-' + str(os.getpid())
     if (path.exists(tmp_runtime_dir)):
+        # We should wipe the dir on cleanup, but things can go wrong
         wipe_xdg_runtime_dir(tmp_runtime_dir)
     os.mkdir(tmp_runtime_dir)
     cleanup_funcs.append(lambda: wipe_xdg_runtime_dir(tmp_runtime_dir))
     return tmp_runtime_dir
 
-def wipe_xdg_runtime_dir(p):
+def wipe_xdg_runtime_dir(p: str):
     assert p.startswith('/tmp'), 'Sanity check'
     assert 'layer-shell-test-runtime-dir' in p, 'Sanity check'
     shutil.rmtree(p)
 
-def wait_until_appears(p):
+def wait_until_appears(p: str):
+    '''Waits for something to appear at the given path'''
     sleep_time = 0.01
     timeout = 5.0
     for i in range(int(timeout / sleep_time)):
@@ -54,7 +63,11 @@ def wait_until_appears(p):
         time.sleep(0.01)
     raise TestError(p + ' did not appear in ' + str(timeout) + ' seconds')
 
-def format_stream(name, stream):
+def format_stream(name: str, stream: str) -> str:
+    '''
+    After collecting a programs output stream into a string, this function formats it for easy reading.
+    Specifically, it gives it a colored border and a name.
+    '''
     l_pad = 28 - len(name) // 2
     r_pad = l_pad
     if len(name) % 2 == 1:
@@ -70,58 +83,72 @@ def format_stream(name, stream):
         divider + body +
         '\n' + Color.decoration + '╰' + footer + Color.normal)
 
-def format_process_report(name, process, stdout, stderr):
+def format_process_report(name: str, returncode: int, stdout: str, stderr: str) -> str:
+    '''After running a program, this function is used to format it's output for easy reading'''
     result = format_stream(name + ' stderr', stderr) + '\n\n'
     if stdout:
         result += format_stream(name + ' stdout', stdout) + '\n\n'
     else:
         result += 'stdout empty, '
-    result += 'exit code: ' + str(process.returncode)
+    result += 'exit code: ' + str(returncode)
     return result
 
 class Pipe:
-    def __init__(self, name):
+    '''
+    The normal Python subprocess.PIPE freezes the subprocess after it fills up a finite output buffer.
+    This class solves that by opening a pipe and reading from it from another thread whil the subprocess runs.
+    This increases the output limit to the system's available memory
+
+    See: https://github.com/wmww/gtk-layer-shell/issues/91#issuecomment-719082062
+    See: https://thraxil.org/users/anders/posts/2008/03/13/Subprocess-Hanging-PIPE-is-your-enemy/
+    '''
+    def __init__(self, name: str):
+        '''name is only for debugging'''
         readable, writable = os.pipe()
         self.fd = writable
-        self.data = bytes()
-        self.result = None
+        self.data: Any = bytes()
+        self.result: Optional[str] = None
         # Read the data coming out of the pipe on a background thread
         # This keeps the buffer from filling up and blocking
         self.reader_thread = threading.Thread(name=name, target=self.read, args=(readable,))
         self.reader_thread.start()
         cleanup_funcs.append(lambda: self.close())
 
-    def read(self, readable):
+    def read(self, readable: int):
+        '''Reads from the given fd until the other side closes'''
         while True:
             data = os.read(readable, 1000)
             if not data:
                 # We've reached the end of the data
-                break
+                os.close(readable)
+                return
             self.data += data
-        os.close(readable)
 
     def close(self):
+        '''Closes the fd and stops the reader'''
         if self.reader_thread.is_alive():
             os.close(self.fd)
             self.reader_thread.join(timeout=1)
             assert not self.reader_thread.is_alive(), 'Failed to join pipe reader thread'
 
-    def collect_str(self):
+    def collect_str(self) -> str:
+        '''Closes the pipe if needed and returns the read data decoded as UTF-8'''
         if self.result is None:
             self.close()
             self.result = self.data.decode('utf-8')
-            data = None
+            self.data = None
         return self.result
 
 class Program:
-    def __init__(self, name, args, env):
+    '''A program to run as a subprocess'''
+    def __init__(self, name: str, args: List[str], env: Dict[str, str]):
         self.name = name
         self.stdout = Pipe(name + ' stdout')
         self.stderr = Pipe(name + ' stderr')
         self.subprocess = subprocess.Popen(args, stdout=self.stdout.fd, stderr=self.stderr.fd, env=env)
         cleanup_funcs.append(lambda: self.kill())
 
-    def finish(self, timeout=None):
+    def finish(self, timeout: float):
         try:
             self.subprocess.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
@@ -135,7 +162,11 @@ class Program:
 
     def format_output(self):
         assert self.subprocess.returncode is not None, 'Program.format_output() called before process exited'
-        return format_process_report(self.name, self.subprocess, self.stdout.collect_str(), self.stderr.collect_str())
+        return format_process_report(
+            self.name,
+            self.subprocess.returncode,
+            self.stdout.collect_str(),
+            self.stderr.collect_str())
 
     def check_returncode(self):
         assert self.subprocess.returncode is not None, repr(self.name) + '.check_returncode() called before process exited'
@@ -147,13 +178,17 @@ class Program:
     def collect_output(self):
         return self.stdout.collect_str(), self.stderr.collect_str()
 
-def run_test(name, server_bin, client_bin, xdg_runtime, wayland_display):
+def run_test(name: str, server_args: List[str], client_args: List[str], xdg_runtime: str, wayland_display: str) -> str:
+    '''
+    Runs two processes: a mock server and the test client
+    Does *not* check that client's message assertions pass, this must be done later using the returned output
+    '''
     env = os.environ.copy()
     env['XDG_RUNTIME_DIR'] = xdg_runtime
     env['WAYLAND_DISPLAY'] = wayland_display
     env['WAYLAND_DEBUG'] = '1'
 
-    server = Program('server', server_bin, env)
+    server = Program('server', server_args, env)
 
     try:
         wait_until_appears(path.join(xdg_runtime, wayland_display))
@@ -161,7 +196,7 @@ def run_test(name, server_bin, client_bin, xdg_runtime, wayland_display):
         server.kill()
         raise TestError(server.format_output() + '\n\n' + str(e))
 
-    client = Program(name, client_bin, env)
+    client = Program(name, client_args, env)
     client.finish(timeout=10)
     server.finish(timeout=1)
 
@@ -175,7 +210,8 @@ def run_test(name, server_bin, client_bin, xdg_runtime, wayland_display):
 
     return client_stderr
 
-def line_contains(line, tokens):
+def line_contains(line: str, tokens: List[str]) -> bool:
+    '''Returns if the given line contains a list of tokens in the given order (anything can be between tokens)'''
     found = True
     for token in tokens:
         if token in line:
@@ -184,7 +220,8 @@ def line_contains(line, tokens):
             found = False
     return found
 
-def verify_result(lines):
+def verify_result(lines: List[str]):
+    '''Runs through the output of a client and verifies that all expectations pass, see the test README.md details'''
     assertions = []
     section_start = 0
     for i, line in enumerate(lines):
@@ -208,7 +245,7 @@ def main():
     wayland_display = 'wayland-test'
     xdg_runtime = get_xdg_runtime_dir()
 
-    client_stderr = run_test(name, server_bin, client_bin, xdg_runtime, wayland_display)
+    client_stderr = run_test(name, [server_bin], [client_bin, '--auto'], xdg_runtime, wayland_display)
     client_lines = [line.strip() for line in client_stderr.strip().splitlines()]
 
     try:

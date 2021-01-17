@@ -29,7 +29,7 @@
 typedef struct _GdkWaylandPointerFrameData GdkWaylandPointerFrameData;
 
 // Version ID 0
-// Valid for GTK v3.22.0 - v3.24.24 (unreleased)
+// Valid for GTK v3.22.0 - v3.24.25 (unreleased)
 struct _GdkWaylandPointerFrameData_v3_22_0
 {
   GdkEvent *event;
@@ -108,6 +108,7 @@ int gdk_wayland_pointer_frame_data_priv_get_version_id() {
       case 24021:
       case 24022:
       case 24023:
+      case 24024:
         break;
   
       default:
