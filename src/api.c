@@ -225,28 +225,30 @@ gtk_layer_auto_exclusive_zone_is_enabled (GtkWindow *window)
 void
 gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interactivity)
 {
-    gtk_layer_set_keyboard_interactivity_type (window, !!interactivity);
+    gtk_layer_set_keyboard_mode (
+        window,
+        interactivity ? GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE : GTK_LAYER_SHELL_KEYBOARD_MODE_NONE);
 }
 
 gboolean
 gtk_layer_get_keyboard_interactivity (GtkWindow *window)
 {
-    return !!gtk_layer_get_keyboard_interactivity_type (window);
+    return gtk_layer_get_keyboard_mode (window) != GTK_LAYER_SHELL_KEYBOARD_MODE_NONE;
 }
 
 void
-gtk_layer_set_keyboard_interactivity_type (GtkWindow *window, GtkLayerShellKeyboardInteractivity interactivity)
+gtk_layer_set_keyboard_mode (GtkWindow *window, GtkLayerShellKeyboardMode mode)
 {
-    g_return_if_fail(interactivity < GTK_LAYER_SHELL_KEYBOARD_ENTRY_NUMBER);
+    g_return_if_fail(mode < GTK_LAYER_SHELL_KEYBOARD_MODE_ENTRY_NUMBER);
     LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
     if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
-    layer_surface_set_keyboard_interactivity (layer_surface, interactivity);
+    layer_surface_set_keyboard_mode (layer_surface, mode);
 }
 
-GtkLayerShellKeyboardInteractivity
-gtk_layer_get_keyboard_interactivity_type (GtkWindow *window)
+GtkLayerShellKeyboardMode
+gtk_layer_get_keyboard_mode (GtkWindow *window)
 {
     LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return GTK_LAYER_SHELL_KEYBOARD_NONE; // Error message already shown in gtk_window_get_layer_surface
-    return layer_surface->keyboard_interactivity;
+    if (!layer_surface) return GTK_LAYER_SHELL_KEYBOARD_MODE_NONE; // Error message already shown in gtk_window_get_layer_surface
+    return layer_surface->keyboard_mode;
 }

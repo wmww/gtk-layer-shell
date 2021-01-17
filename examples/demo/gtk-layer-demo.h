@@ -60,6 +60,6 @@ GtkWidget *
 menu_bar_new (GtkWindow *layer_window);
 
 GtkWidget *
-keyboard_selection_new (GtkWindow *layer_window, GtkLayerShellKeyboardInteractivity default_kb);
+keyboard_selection_new (GtkWindow *layer_window, GtkLayerShellKeyboardMode default_kb);
 
 #endif // GTK_LAYER_DEMO_H

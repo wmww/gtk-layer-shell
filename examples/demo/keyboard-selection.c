@@ -13,11 +13,11 @@
 
 struct {
     const char *name;
-    GtkLayerShellKeyboardInteractivity value;
+    GtkLayerShellKeyboardMode value;
 } const all_kb_settings[] = {
-    {"None", GTK_LAYER_SHELL_KEYBOARD_NONE},
-    {"Exclusive", GTK_LAYER_SHELL_KEYBOARD_EXCLUSIVE},
-    {"On demand", GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND},
+    {"None", GTK_LAYER_SHELL_KEYBOARD_MODE_NONE},
+    {"Exclusive", GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE},
+    {"On demand", GTK_LAYER_SHELL_KEYBOARD_MODE_ON_DEMAND},
 };
 
 static void
@@ -29,7 +29,7 @@ on_kb_selected (GtkComboBox *widget, GtkWindow *layer_window)
     gboolean kb_was_set = FALSE;
     for (unsigned i = 0; i < sizeof(all_kb_settings) / sizeof(all_kb_settings[0]); i++) {
         if (g_strcmp0 (keyboard, all_kb_settings[i].name) == 0) {
-            gtk_layer_set_keyboard_interactivity (layer_window, all_kb_settings[i].value);
+            gtk_layer_set_keyboard_mode (layer_window, all_kb_settings[i].value);
             kb_was_set = TRUE;
             break;
         }
@@ -39,7 +39,7 @@ on_kb_selected (GtkComboBox *widget, GtkWindow *layer_window)
 }
 
 GtkWidget *
-keyboard_selection_new (GtkWindow *layer_window, GtkLayerShellKeyboardInteractivity default_kb)
+keyboard_selection_new (GtkWindow *layer_window, GtkLayerShellKeyboardMode default_kb)
 {
     GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
     {

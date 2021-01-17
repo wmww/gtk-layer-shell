@@ -18,8 +18,8 @@ static gboolean default_anchors[] = {FALSE, FALSE, FALSE, FALSE};
 static int default_margins[] = {0, 0, 0, 0};
 
 static gboolean default_auto_exclusive_zone = FALSE; // always set by command line option
-static GtkLayerShellKeyboardInteractivity default_keyboard_interactivity =
-    GTK_LAYER_SHELL_KEYBOARD_NONE; // always set by command line option
+static GtkLayerShellKeyboardMode default_keyboard_mode =
+    GTK_LAYER_SHELL_KEYBOARD_MODE_NONE; // always set by command line option
 static gboolean default_fixed_size = FALSE; // always set by command line option
 static gboolean no_layer_shell = FALSE; // always set by command line option
 static gboolean show_version_and_exit = FALSE; // always set by command line option
@@ -182,15 +182,15 @@ keyboard_option_callback (const gchar *_option_name, const gchar *value, void *_
 
     if (!value) {
         // without argument = exclusive (retain old behavior)
-        default_keyboard_interactivity = GTK_LAYER_SHELL_KEYBOARD_EXCLUSIVE;
+        default_keyboard_mode = GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE;
         return TRUE;
     }
     if (g_strcmp0 (value, "none") == 0 || g_strcmp0 (value, "n") == 0) {
-        default_keyboard_interactivity = GTK_LAYER_SHELL_KEYBOARD_NONE;
+        default_keyboard_mode = GTK_LAYER_SHELL_KEYBOARD_MODE_NONE;
     } else if (g_strcmp0 (value, "exclusive") == 0 || g_strcmp0 (value, "e") == 0) {
-        default_keyboard_interactivity = GTK_LAYER_SHELL_KEYBOARD_EXCLUSIVE;
+        default_keyboard_mode = GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE;
     } else if (g_strcmp0 (value, "on-demand") == 0 || g_strcmp0 (value, "o") == 0) {
-        default_keyboard_interactivity = GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND;
+        default_keyboard_mode = GTK_LAYER_SHELL_KEYBOARD_MODE_ON_DEMAND;
     } else {
         g_set_error (error,
                      G_OPTION_ERROR,
@@ -351,7 +351,7 @@ layer_window_new ()
     for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++)
         gtk_layer_set_margin (gtk_window, i, default_margins[i]);
     gtk_layer_set_layer (gtk_window, default_layer);
-    gtk_layer_set_keyboard_interactivity (gtk_window, default_keyboard_interactivity);
+    gtk_layer_set_keyboard_mode (gtk_window, default_keyboard_mode);
     gtk_layer_set_namespace (gtk_window, "demo");
     if (default_auto_exclusive_zone)
         gtk_layer_auto_exclusive_zone_enable (gtk_window);
@@ -391,7 +391,7 @@ layer_window_new ()
             gtk_box_pack_start (GTK_BOX (data->second_box),
                                 toggles_box,
                                 FALSE, FALSE, 0);
-            GtkWidget *kb_box = keyboard_selection_new (gtk_window, default_keyboard_interactivity);
+            GtkWidget *kb_box = keyboard_selection_new (gtk_window, default_keyboard_mode);
             gtk_box_pack_start (GTK_BOX (data->second_box),
                                 kb_box,
                                 FALSE, FALSE, 0);

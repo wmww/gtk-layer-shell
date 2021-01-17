@@ -181,7 +181,7 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
                                                                  name_space);
     g_return_if_fail (self->layer_surface);
 
-    zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, self->keyboard_interactivity);
+    zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, self->keyboard_mode);
     zwlr_layer_surface_v1_set_exclusive_zone (self->layer_surface, self->exclusive_zone);
     layer_surface_send_set_anchor (self);
     layer_surface_send_set_margin (self);
@@ -318,7 +318,7 @@ layer_surface_new (GtkWindow *gtk_window)
     self->name_space = NULL;
     self->exclusive_zone = 0;
     self->auto_exclusive_zone = FALSE;
-    self->keyboard_interactivity = GTK_LAYER_SHELL_KEYBOARD_NONE;
+    self->keyboard_mode = GTK_LAYER_SHELL_KEYBOARD_MODE_NONE;
     self->layer_surface = NULL;
 
     gtk_window_set_decorated (gtk_window, FALSE);
@@ -431,21 +431,21 @@ layer_surface_auto_exclusive_zone_enable (LayerSurface *self)
 }
 
 void
-layer_surface_set_keyboard_interactivity (LayerSurface *self, GtkLayerShellKeyboardInteractivity interactivity)
+layer_surface_set_keyboard_mode (LayerSurface *self, GtkLayerShellKeyboardMode mode)
 {
-    if (interactivity == GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND) {
+    if (mode == GTK_LAYER_SHELL_KEYBOARD_MODE_ON_DEMAND) {
         uint32_t version = gtk_layer_get_protocol_version();
         if (version <= 3) {
             g_warning (
                 "Compositor uses layer shell version %d, which does not support on-demand keyboard interactivity",
                 version);
-            interactivity = GTK_LAYER_SHELL_KEYBOARD_NONE;
+            mode = GTK_LAYER_SHELL_KEYBOARD_MODE_NONE;
         }
     }
-    if (self->keyboard_interactivity != interactivity) {
-        self->keyboard_interactivity = interactivity;
+    if (self->keyboard_mode != mode) {
+        self->keyboard_mode = mode;
         if (self->layer_surface) {
-            zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, self->keyboard_interactivity);
+            zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, self->keyboard_mode);
             custom_shell_surface_needs_commit ((CustomShellSurface *)self);
         }
     }
