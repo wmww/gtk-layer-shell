@@ -71,7 +71,7 @@ typedef enum {
 } GtkLayerShellEdge;
 
 /**
- * GtkLayerShellKeyboardInteractivity:
+ * GtkLayerShellKeyboardMode:
  * GTK_LAYER_SHELL_KEYBOARD_MODE_NONE: This window should not receive keyboard events.
  * GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE: This window should have exclusive focus if it is on the top or overlay layer.
  * GTK_LAYER_SHELL_KEYBOARD_MODE_ON_DEMAND: The user should be able to focus and unfocues this window in an implementation
