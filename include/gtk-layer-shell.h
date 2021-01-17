@@ -43,7 +43,8 @@ G_BEGIN_DECLS
  * @GTK_LAYER_SHELL_LAYER_BOTTOM: The bottom layer.
  * @GTK_LAYER_SHELL_LAYER_TOP: The top layer.
  * @GTK_LAYER_SHELL_LAYER_OVERLAY: The overlay layer.
- * @GTK_LAYER_SHELL_LAYER_ENTRY_NUMBER: Should not be used except to get the number of entries
+ * @GTK_LAYER_SHELL_LAYER_ENTRY_NUMBER: Should not be used except to get the number of entries. (NOTE: may change in
+ * future releases as more entries are added)
  */
 typedef enum {
     GTK_LAYER_SHELL_LAYER_BACKGROUND,
@@ -73,8 +74,10 @@ typedef enum {
  * GtkLayerShellKeyboardInteractivity:
  * @GTK_LAYER_SHELL_KEYBOARD_NONE: This window should not receive keyboard events.
  * @GTK_LAYER_SHELL_KEYBOARD_EXCLUSIVE: This window should have exclusive focus if it is on the top or overlay layer.
- * @GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND: The user should be able to focus and unfocues this window in an implementation-defined way. Not supported for protocol version < 4.
- * @GTK_LAYER_SHELL_KEYBOARD_ENTRY_NUMBER: Should not be used except to get the number of entries.
+ * @GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND: The user should be able to focus and unfocues this window in an implementation
+ * defined way. Not supported for protocol version < 4.
+ * @GTK_LAYER_SHELL_KEYBOARD_ENTRY_NUMBER: Should not be used except to get the number of entries. (NOTE: may change in
+ * future releases as more entries are added)
  */
 typedef enum {
     GTK_LAYER_SHELL_KEYBOARD_NONE = 0,
