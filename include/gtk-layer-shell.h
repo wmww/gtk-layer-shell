@@ -348,6 +348,8 @@ gboolean gtk_layer_auto_exclusive_zone_is_enabled (GtkWindow *window);
  * in @window not receiving keyboard events at all.
  *
  * Default is %FALSE
+ *
+ * Deprecated: 0.6: Use gtk_layer_set_keyboard_interactivity_type() instead.
  */
 void gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interactivity);
 
@@ -362,6 +364,7 @@ void gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interacti
  * or #GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND.
  *
  * Since: 0.5
+ * Deprecated: 0.6: Use gtk_layer_get_keyboard_interactivity_type() instead.
  */
 gboolean gtk_layer_get_keyboard_interactivity (GtkWindow *window);
 
@@ -374,7 +377,7 @@ gboolean gtk_layer_get_keyboard_interactivity (GtkWindow *window);
  *
  * Default is #GTK_LAYER_SHELL_KEYBOARD_NONE
  *
- * Since: 0.5.3 -- TODO: should adding this bump the library version to 0.6?
+ * Since: 0.6
  */
 void gtk_layer_set_keyboard_interactivity_type (GtkWindow *window, GtkLayerShellKeyboardInteractivity interactivity);
 
@@ -384,7 +387,7 @@ void gtk_layer_set_keyboard_interactivity_type (GtkWindow *window, GtkLayerShell
  *
  * Returns: type of keyboard interactivity enabled for this window.
  *
- * Since: 0.5.3
+ * Since: 0.6
  */
 GtkLayerShellKeyboardInteractivity gtk_layer_get_keyboard_interactivity_type (GtkWindow *window);
 
