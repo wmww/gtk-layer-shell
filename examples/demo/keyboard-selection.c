@@ -45,7 +45,7 @@ keyboard_selection_new (GtkWindow *layer_window, GtkLayerShellKeyboardInteractiv
     {
         GtkWidget *label = gtk_label_new ("Keyboard:");
         GtkWidget *combo_box = gtk_combo_box_text_new ();
-        gtk_widget_set_tooltip_text (combo_box, "keyboard");
+        gtk_widget_set_tooltip_text (combo_box, "Keyboard interactivity mode");
         for (unsigned i = 0; i < sizeof(all_kb_settings) / sizeof(all_kb_settings[0]); i++) {
             gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_box), all_kb_settings[i].name);
             if (all_kb_settings[i].value == default_kb)
