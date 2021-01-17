@@ -89,7 +89,7 @@ static const GOptionEntry options[] = {
         .flags = G_OPTION_FLAG_OPTIONAL_ARG,
         .arg = G_OPTION_ARG_CALLBACK,
         .arg_data = (void*)&keyboard_option_callback,
-        .description = "Set keyboard interactivity: either a numeric value (0, 1 or 2) or \"none\", \"exclusive\" or \"on_demand\"",
+        .description = "Set keyboard interactivity: \"none\", \"exclusive\" or \"on_demand\" (or 'n', 'e' or 'o')",
         .arg_description = NULL,
     },
     {
