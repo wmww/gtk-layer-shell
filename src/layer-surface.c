@@ -318,7 +318,7 @@ layer_surface_new (GtkWindow *gtk_window)
     self->name_space = NULL;
     self->exclusive_zone = 0;
     self->auto_exclusive_zone = FALSE;
-    self->keyboard_interactivity = ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_NONE;
+    self->keyboard_interactivity = GTK_LAYER_SHELL_KEYBOARD_NONE;
     self->layer_surface = NULL;
 
     gtk_window_set_decorated (gtk_window, FALSE);
