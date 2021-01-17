@@ -15,7 +15,7 @@
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
-#include <gdk/gdkwayland.h>
+#include <gdk/wayland/gdkwayland.h>
 
 static const char *custom_shell_surface_key = "wayland_custom_shell_surface";
 
@@ -37,11 +37,13 @@ custom_shell_surface_on_window_realize (GtkWidget *widget, CustomShellSurface *s
 {
     g_return_if_fail (GTK_WIDGET (self->private->gtk_window) == widget);
 
-    GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (self->private->gtk_window));
+    GdkWindow *gdk_window = gtk_native_get_surface (GTK_NATIVE (self->private->gtk_window));
     g_return_if_fail (gdk_window);
 
     gtk_priv_access_init (gdk_window);
-    gdk_wayland_window_set_use_custom_surface (gdk_window);
+
+    // TODO
+    // gdk_wayland_window_set_use_custom_surface (gdk_window);
 }
 
 static void
@@ -49,10 +51,10 @@ custom_shell_surface_on_window_map (GtkWidget *widget, CustomShellSurface *self)
 {
     g_return_if_fail (GTK_WIDGET (self->private->gtk_window) == widget);
 
-    GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (self->private->gtk_window));
+    GdkWindow *gdk_window = gtk_native_get_surface (GTK_NATIVE (self->private->gtk_window));
     g_return_if_fail (gdk_window);
 
-    struct wl_surface *wl_surface = gdk_wayland_window_get_wl_surface (gdk_window);
+    struct wl_surface *wl_surface = gdk_wayland_surface_get_wl_surface (gdk_window);
     g_return_if_fail (wl_surface);
 
     // In some cases (observed when a mate panel has an image background) GDK will attach a buffer just after creating

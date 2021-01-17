@@ -20,7 +20,7 @@
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
-#include <gdk/gdkwayland.h>
+#include <gdk/wayland/gdkwayland.h>
 
 static const char *gtk_window_key = "linked-gtk-window";
 static const char *popup_position_key = "custom-popup-position";
@@ -119,7 +119,7 @@ gtk_wayland_override_on_window_realize (GtkWindow *gtk_window, void *_data)
     g_signal_chain_from_overridden (args, NULL);
     g_value_unset (&args[0]);
 
-    GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
+    GdkWindow *gdk_window = gtk_native_get_surface (GTK_NATIVE (gtk_window));
     g_object_set_data (G_OBJECT (gdk_window), gtk_window_key, gtk_window);
 
     XdgPopupPosition *position = g_object_get_data (G_OBJECT (gdk_window), popup_position_key);
@@ -206,11 +206,20 @@ gtk_wayland_setup_window_as_custom_popup (GdkWindow *gdk_window, XdgPopupPositio
 GdkRectangle
 gtk_wayland_get_logical_geom (GtkWindow *gtk_window)
 {
+    // TODO
+    /*
     GdkWindow *window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
     GList *list = gdk_window_get_children (window);
     if (list && !list->next) // If there is exactly one child window
         window = list->data;
     GdkRectangle geom;
     gdk_window_get_geometry (window, &geom.x, &geom.y, &geom.width, &geom.height);
+    */
+    GdkRectangle geom = {
+        .x = 0,
+        .y = 0,
+        .width = gtk_widget_get_width (GTK_WIDGET (gtk_window)),
+        .height = gtk_widget_get_height (GTK_WIDGET (gtk_window)),
+    };
     return geom;
 }

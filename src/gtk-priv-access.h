@@ -15,6 +15,8 @@
 #include <gdk/gdk.h>
 #include <stdint.h>
 
+typedef GdkSurface GdkWindow;
+
 // This only has an effect the first time it's called
 // It enables gtk_window_hack_get_position () working later
 void gtk_priv_access_init (GdkWindow *gdk_window);

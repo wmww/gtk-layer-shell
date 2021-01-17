@@ -29,12 +29,12 @@
 typedef struct _GdkWaylandPointerFrameData GdkWaylandPointerFrameData;
 
 // Version ID 0
-// Valid for GTK v3.22.0 - v3.24.25 (unreleased)
-struct _GdkWaylandPointerFrameData_v3_22_0
+// Valid for GTK master
+struct _GdkWaylandPointerFrameData_v3_0_0
 {
   GdkEvent *event;
-  gdouble delta_x;
-  gdouble delta_y;
+  double delta_x;
+  double delta_y;
   int32_t discrete_x;
   int32_t discrete_y;
   gint8 is_scroll_stop;
@@ -50,65 +50,6 @@ int gdk_wayland_pointer_frame_data_priv_get_version_id() {
     int combo = gtk_get_minor_version() * 1000 + gtk_get_micro_version();
   
     switch (combo) {
-      case 22000:
-      case 22001:
-      case 22002:
-      case 22003:
-      case 22004:
-      case 22005:
-      case 22006:
-      case 22007:
-      case 22008:
-      case 22009:
-      case 22010:
-      case 22011:
-      case 22012:
-      case 22013:
-      case 22014:
-      case 22015:
-      case 22016:
-      case 22017:
-      case 22018:
-      case 22019:
-      case 22020:
-      case 22021:
-      case 22022:
-      case 22023:
-      case 22024:
-      case 22025:
-      case 22026:
-      case 22027:
-      case 22028:
-      case 22029:
-      case 22030:
-      case 23000:
-      case 23001:
-      case 23002:
-      case 23003:
-      case 24000:
-      case 24001:
-      case 24002:
-      case 24003:
-      case 24004:
-      case 24005:
-      case 24006:
-      case 24007:
-      case 24008:
-      case 24009:
-      case 24010:
-      case 24011:
-      case 24012:
-      case 24013:
-      case 24014:
-      case 24015:
-      case 24016:
-      case 24017:
-      case 24018:
-      case 24020:
-      case 24021:
-      case 24022:
-      case 24023:
-      case 24024:
         break;
   
       default:
@@ -127,32 +68,46 @@ int gdk_wayland_pointer_frame_data_priv_get_version_id() {
 
 GdkEvent * gdk_wayland_pointer_frame_data_priv_get_event(GdkWaylandPointerFrameData * self) {
   switch (gdk_wayland_pointer_frame_data_priv_get_version_id()) {
-    case 0: return ((struct _GdkWaylandPointerFrameData_v3_22_0*)self)->event;
+    case 0: return ((struct _GdkWaylandPointerFrameData_v3_0_0*)self)->event;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
 void gdk_wayland_pointer_frame_data_priv_set_event(GdkWaylandPointerFrameData * self, GdkEvent * event) {
   switch (gdk_wayland_pointer_frame_data_priv_get_version_id()) {
-    case 0: ((struct _GdkWaylandPointerFrameData_v3_22_0*)self)->event = event; break;
+    case 0: ((struct _GdkWaylandPointerFrameData_v3_0_0*)self)->event = event; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
 // GdkWaylandPointerFrameData::delta_x
 
-gdouble * gdk_wayland_pointer_frame_data_priv_get_delta_x_ptr(GdkWaylandPointerFrameData * self) {
+double gdk_wayland_pointer_frame_data_priv_get_delta_x(GdkWaylandPointerFrameData * self) {
   switch (gdk_wayland_pointer_frame_data_priv_get_version_id()) {
-    case 0: return (gdouble *)&((struct _GdkWaylandPointerFrameData_v3_22_0*)self)->delta_x;
+    case 0: return ((struct _GdkWaylandPointerFrameData_v3_0_0*)self)->delta_x;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+void gdk_wayland_pointer_frame_data_priv_set_delta_x(GdkWaylandPointerFrameData * self, double delta_x) {
+  switch (gdk_wayland_pointer_frame_data_priv_get_version_id()) {
+    case 0: ((struct _GdkWaylandPointerFrameData_v3_0_0*)self)->delta_x = delta_x; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
 // GdkWaylandPointerFrameData::delta_y
 
-gdouble * gdk_wayland_pointer_frame_data_priv_get_delta_y_ptr(GdkWaylandPointerFrameData * self) {
+double gdk_wayland_pointer_frame_data_priv_get_delta_y(GdkWaylandPointerFrameData * self) {
   switch (gdk_wayland_pointer_frame_data_priv_get_version_id()) {
-    case 0: return (gdouble *)&((struct _GdkWaylandPointerFrameData_v3_22_0*)self)->delta_y;
+    case 0: return ((struct _GdkWaylandPointerFrameData_v3_0_0*)self)->delta_y;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+void gdk_wayland_pointer_frame_data_priv_set_delta_y(GdkWaylandPointerFrameData * self, double delta_y) {
+  switch (gdk_wayland_pointer_frame_data_priv_get_version_id()) {
+    case 0: ((struct _GdkWaylandPointerFrameData_v3_0_0*)self)->delta_y = delta_y; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -161,7 +116,7 @@ gdouble * gdk_wayland_pointer_frame_data_priv_get_delta_y_ptr(GdkWaylandPointerF
 
 int32_t * gdk_wayland_pointer_frame_data_priv_get_discrete_x_ptr(GdkWaylandPointerFrameData * self) {
   switch (gdk_wayland_pointer_frame_data_priv_get_version_id()) {
-    case 0: return (int32_t *)&((struct _GdkWaylandPointerFrameData_v3_22_0*)self)->discrete_x;
+    case 0: return (int32_t *)&((struct _GdkWaylandPointerFrameData_v3_0_0*)self)->discrete_x;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -170,7 +125,7 @@ int32_t * gdk_wayland_pointer_frame_data_priv_get_discrete_x_ptr(GdkWaylandPoint
 
 int32_t * gdk_wayland_pointer_frame_data_priv_get_discrete_y_ptr(GdkWaylandPointerFrameData * self) {
   switch (gdk_wayland_pointer_frame_data_priv_get_version_id()) {
-    case 0: return (int32_t *)&((struct _GdkWaylandPointerFrameData_v3_22_0*)self)->discrete_y;
+    case 0: return (int32_t *)&((struct _GdkWaylandPointerFrameData_v3_0_0*)self)->discrete_y;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -179,7 +134,7 @@ int32_t * gdk_wayland_pointer_frame_data_priv_get_discrete_y_ptr(GdkWaylandPoint
 
 gint8 * gdk_wayland_pointer_frame_data_priv_get_is_scroll_stop_ptr(GdkWaylandPointerFrameData * self) {
   switch (gdk_wayland_pointer_frame_data_priv_get_version_id()) {
-    case 0: return (gint8 *)&((struct _GdkWaylandPointerFrameData_v3_22_0*)self)->is_scroll_stop;
+    case 0: return (gint8 *)&((struct _GdkWaylandPointerFrameData_v3_0_0*)self)->is_scroll_stop;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -188,7 +143,7 @@ gint8 * gdk_wayland_pointer_frame_data_priv_get_is_scroll_stop_ptr(GdkWaylandPoi
 
 enum wl_pointer_axis_source * gdk_wayland_pointer_frame_data_priv_get_source_ptr(GdkWaylandPointerFrameData * self) {
   switch (gdk_wayland_pointer_frame_data_priv_get_version_id()) {
-    case 0: return (enum wl_pointer_axis_source *)&((struct _GdkWaylandPointerFrameData_v3_22_0*)self)->source;
+    case 0: return (enum wl_pointer_axis_source *)&((struct _GdkWaylandPointerFrameData_v3_0_0*)self)->source;
     default: g_error("Invalid version ID"); g_abort();
   }
 }

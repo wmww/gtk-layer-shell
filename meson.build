@@ -11,7 +11,7 @@ add_project_arguments(
     ['-Wno-pedantic', '-Werror=unused-function'],
     language: 'c')
 
-gtk = dependency('gtk+-3.0', version: '>=3.22.0')
+gtk = dependency('gtk4')
 wayland_client = dependency('wayland-client', version: '>=1.10.0')
 
 # only required for the tests

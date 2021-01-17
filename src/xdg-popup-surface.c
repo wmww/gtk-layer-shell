@@ -20,7 +20,7 @@
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
-#include <gdk/gdkwayland.h>
+#include <gdk/wayland/gdkwayland.h>
 
 struct _XdgPopupSurface
 {
@@ -68,7 +68,7 @@ xdg_popup_handle_configure (void *data,
 
     // Technically this should not be applied until we get a xdg_surface.configure
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
-    gtk_window_resize (gtk_window, width, height);
+    //TODO: gtk_window_resize (gtk_window, width, height);
     GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
     g_return_if_fail (gdk_window);
     // calculating the correct values is hard, but we're not required to provide them
@@ -169,7 +169,7 @@ xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
         gdk_anchor_hints_get_xdg_positioner_constraint_adjustment (self->position.anchor_hints);
     xdg_positioner_set_size (positioner, self->geom.width, self->geom.height);
     xdg_positioner_set_anchor_rect (positioner, rect.x, rect.y, rect.width, rect.height);
-    xdg_positioner_set_offset (positioner, self->position.rect_anchor_d.x, self->position.rect_anchor_d.y);
+    xdg_positioner_set_offset (positioner, self->position.dx, self->position.dy);
     xdg_positioner_set_anchor (positioner, anchor);
     xdg_positioner_set_gravity (positioner, gravity);
     xdg_positioner_set_constraint_adjustment (positioner, constraint_adjustment);

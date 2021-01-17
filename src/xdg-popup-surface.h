@@ -24,7 +24,8 @@ typedef struct
     GdkRectangle rect;
     GdkGravity rect_anchor,  window_anchor;
     GdkAnchorHints anchor_hints;
-    GdkPoint rect_anchor_d;
+    int dx;
+    int dy;
 } XdgPopupPosition;
 
 // Copies position, does not take ownership

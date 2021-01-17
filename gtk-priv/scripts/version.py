@@ -42,10 +42,13 @@ class Version:
 
     def is_supported(self):
         '''Returns if the version is one we support'''
+        return self.git_name == 'master'
+        '''
         return (
             self >= min_supported_version and
             self <= max_supported_version and
             self != bad_release_3_24_19)
+        '''
 
     def is_released(self):
         return self.released
@@ -54,10 +57,13 @@ class Version:
         return self.minor * 1000 + self.micro
 
     def __str__(self):
+        return 'master'
+        ''''
         result = 'v3.' + str(self.minor) + '.' + str(self.micro)
         if not self.is_released():
             result += ' (unreleased)'
         return result
+        '''
 
     def c_id(self):
         '''a string suitable for a C identifier'''
@@ -85,6 +91,8 @@ max_supported_version = parse_tag(MAX_SUPPORTED_GTK)
 bad_release_3_24_19 = parse_tag('3.24.19') # this is not a good release
 
 def parse_tags_and_branches(tags, branches):
+    return [Version('master', 0, 0, False)]
+    ''''
     result = []
     for tag in tags:
         version = parse_tag(tag)
@@ -103,3 +111,4 @@ def parse_tags_and_branches(tags, branches):
     result.sort()
     logger.info('Found ' + str(len(result)) + ' supported versions')
     return result
+    '''

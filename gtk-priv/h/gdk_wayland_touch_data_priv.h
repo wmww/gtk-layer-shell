@@ -29,13 +29,13 @@
 typedef struct _GdkWaylandTouchData GdkWaylandTouchData;
 
 // Version ID 0
-// Valid for GTK v3.22.0 - v3.24.25 (unreleased)
-struct _GdkWaylandTouchData_v3_22_0
+// Valid for GTK master
+struct _GdkWaylandTouchData_v3_0_0
 {
   uint32_t id;
-  gdouble x;
-  gdouble y;
-  GdkWindow *window;
+  double x;
+  double y;
+  GdkSurface *surface;
   uint32_t touch_down_serial;
   guint initial_touch : 1;
 };
@@ -49,65 +49,6 @@ int gdk_wayland_touch_data_priv_get_version_id() {
     int combo = gtk_get_minor_version() * 1000 + gtk_get_micro_version();
   
     switch (combo) {
-      case 22000:
-      case 22001:
-      case 22002:
-      case 22003:
-      case 22004:
-      case 22005:
-      case 22006:
-      case 22007:
-      case 22008:
-      case 22009:
-      case 22010:
-      case 22011:
-      case 22012:
-      case 22013:
-      case 22014:
-      case 22015:
-      case 22016:
-      case 22017:
-      case 22018:
-      case 22019:
-      case 22020:
-      case 22021:
-      case 22022:
-      case 22023:
-      case 22024:
-      case 22025:
-      case 22026:
-      case 22027:
-      case 22028:
-      case 22029:
-      case 22030:
-      case 23000:
-      case 23001:
-      case 23002:
-      case 23003:
-      case 24000:
-      case 24001:
-      case 24002:
-      case 24003:
-      case 24004:
-      case 24005:
-      case 24006:
-      case 24007:
-      case 24008:
-      case 24009:
-      case 24010:
-      case 24011:
-      case 24012:
-      case 24013:
-      case 24014:
-      case 24015:
-      case 24016:
-      case 24017:
-      case 24018:
-      case 24020:
-      case 24021:
-      case 24022:
-      case 24023:
-      case 24024:
         break;
   
       default:
@@ -126,48 +67,62 @@ int gdk_wayland_touch_data_priv_get_version_id() {
 
 uint32_t gdk_wayland_touch_data_priv_get_id(GdkWaylandTouchData * self) {
   switch (gdk_wayland_touch_data_priv_get_version_id()) {
-    case 0: return ((struct _GdkWaylandTouchData_v3_22_0*)self)->id;
+    case 0: return ((struct _GdkWaylandTouchData_v3_0_0*)self)->id;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
 void gdk_wayland_touch_data_priv_set_id(GdkWaylandTouchData * self, uint32_t id) {
   switch (gdk_wayland_touch_data_priv_get_version_id()) {
-    case 0: ((struct _GdkWaylandTouchData_v3_22_0*)self)->id = id; break;
+    case 0: ((struct _GdkWaylandTouchData_v3_0_0*)self)->id = id; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
 // GdkWaylandTouchData::x
 
-gdouble * gdk_wayland_touch_data_priv_get_x_ptr(GdkWaylandTouchData * self) {
+double gdk_wayland_touch_data_priv_get_x(GdkWaylandTouchData * self) {
   switch (gdk_wayland_touch_data_priv_get_version_id()) {
-    case 0: return (gdouble *)&((struct _GdkWaylandTouchData_v3_22_0*)self)->x;
+    case 0: return ((struct _GdkWaylandTouchData_v3_0_0*)self)->x;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+void gdk_wayland_touch_data_priv_set_x(GdkWaylandTouchData * self, double x) {
+  switch (gdk_wayland_touch_data_priv_get_version_id()) {
+    case 0: ((struct _GdkWaylandTouchData_v3_0_0*)self)->x = x; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
 // GdkWaylandTouchData::y
 
-gdouble * gdk_wayland_touch_data_priv_get_y_ptr(GdkWaylandTouchData * self) {
+double gdk_wayland_touch_data_priv_get_y(GdkWaylandTouchData * self) {
   switch (gdk_wayland_touch_data_priv_get_version_id()) {
-    case 0: return (gdouble *)&((struct _GdkWaylandTouchData_v3_22_0*)self)->y;
+    case 0: return ((struct _GdkWaylandTouchData_v3_0_0*)self)->y;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-// GdkWaylandTouchData::window
-
-GdkWindow * gdk_wayland_touch_data_priv_get_window(GdkWaylandTouchData * self) {
+void gdk_wayland_touch_data_priv_set_y(GdkWaylandTouchData * self, double y) {
   switch (gdk_wayland_touch_data_priv_get_version_id()) {
-    case 0: return ((struct _GdkWaylandTouchData_v3_22_0*)self)->window;
+    case 0: ((struct _GdkWaylandTouchData_v3_0_0*)self)->y = y; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_wayland_touch_data_priv_set_window(GdkWaylandTouchData * self, GdkWindow * window) {
+// GdkWaylandTouchData::surface
+
+GdkSurface * gdk_wayland_touch_data_priv_get_surface(GdkWaylandTouchData * self) {
   switch (gdk_wayland_touch_data_priv_get_version_id()) {
-    case 0: ((struct _GdkWaylandTouchData_v3_22_0*)self)->window = window; break;
+    case 0: return ((struct _GdkWaylandTouchData_v3_0_0*)self)->surface;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+void gdk_wayland_touch_data_priv_set_surface(GdkWaylandTouchData * self, GdkSurface * surface) {
+  switch (gdk_wayland_touch_data_priv_get_version_id()) {
+    case 0: ((struct _GdkWaylandTouchData_v3_0_0*)self)->surface = surface; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -176,14 +131,14 @@ void gdk_wayland_touch_data_priv_set_window(GdkWaylandTouchData * self, GdkWindo
 
 uint32_t gdk_wayland_touch_data_priv_get_touch_down_serial(GdkWaylandTouchData * self) {
   switch (gdk_wayland_touch_data_priv_get_version_id()) {
-    case 0: return ((struct _GdkWaylandTouchData_v3_22_0*)self)->touch_down_serial;
+    case 0: return ((struct _GdkWaylandTouchData_v3_0_0*)self)->touch_down_serial;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
 void gdk_wayland_touch_data_priv_set_touch_down_serial(GdkWaylandTouchData * self, uint32_t touch_down_serial) {
   switch (gdk_wayland_touch_data_priv_get_version_id()) {
-    case 0: ((struct _GdkWaylandTouchData_v3_22_0*)self)->touch_down_serial = touch_down_serial; break;
+    case 0: ((struct _GdkWaylandTouchData_v3_0_0*)self)->touch_down_serial = touch_down_serial; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -192,14 +147,14 @@ void gdk_wayland_touch_data_priv_set_touch_down_serial(GdkWaylandTouchData * sel
 
 guint gdk_wayland_touch_data_priv_get_initial_touch(GdkWaylandTouchData * self) {
   switch (gdk_wayland_touch_data_priv_get_version_id()) {
-    case 0: return ((struct _GdkWaylandTouchData_v3_22_0*)self)->initial_touch;
+    case 0: return ((struct _GdkWaylandTouchData_v3_0_0*)self)->initial_touch;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
 void gdk_wayland_touch_data_priv_set_initial_touch(GdkWaylandTouchData * self, guint initial_touch) {
   switch (gdk_wayland_touch_data_priv_get_version_id()) {
-    case 0: ((struct _GdkWaylandTouchData_v3_22_0*)self)->initial_touch = initial_touch; break;
+    case 0: ((struct _GdkWaylandTouchData_v3_0_0*)self)->initial_touch = initial_touch; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }

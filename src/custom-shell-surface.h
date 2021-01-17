@@ -19,6 +19,8 @@ struct wl_surface;
 struct xdg_surface;
 struct xdg_positioner;
 
+typedef GdkSurface GdkWindow;
+
 typedef struct _CustomShellSurface CustomShellSurface;
 typedef struct _CustomShellSurfacePrivate CustomShellSurfacePrivate;
 typedef struct _CustomShellSurfaceVirtual CustomShellSurfaceVirtual;

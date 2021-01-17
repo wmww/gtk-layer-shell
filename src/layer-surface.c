@@ -20,7 +20,7 @@
 #include "xdg-shell-client.h"
 
 #include <gtk/gtk.h>
-#include <gdk/gdkwayland.h>
+#include <gdk/wayland/gdkwayland.h>
 
 /*
  * Sends the .set_size request if the current allocation differs from the last size sent
@@ -81,6 +81,7 @@ layer_surface_update_size (LayerSurface *self)
         height = self->last_configure_size.height;
     }
 
+    /*
     GdkGeometry hints;
     hints.min_width = width;
     hints.max_width = width;
@@ -91,6 +92,7 @@ layer_surface_update_size (LayerSurface *self)
                                    NULL,
                                    &hints,
                                    GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE);
+    */
 
     // This will usually get called in a moment by the layer_surface_on_size_allocate () triggered by the above
     // gtk_window_set_geometry_hints (). However in some cases (such as a streatching a window after a size request has

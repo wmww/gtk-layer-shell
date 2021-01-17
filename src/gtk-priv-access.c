@@ -23,10 +23,10 @@ typedef void *EGLSurface;
 typedef void *GdkWaylandWindowExported;
 typedef void *GdkWaylandTabletToolData;
 
-#include "gdk_window_impl_priv.h"
-#include "gdk_window_priv.h"
-#include "gdk_window_impl_wayland_priv.h"
-#include "gdk_window_impl_class_priv.h"
+// #include "gdk_window_impl_priv.h"
+// #include "gdk_window_priv.h"
+#include "gdk_wayland_surface_priv.h"
+#include "gdk_wayland_surface_class_priv.h"
 #include "gdk_wayland_pointer_frame_data_priv.h"
 #include "gdk_wayland_pointer_data_priv.h"
 #include "gdk_wayland_seat_priv.h"
@@ -49,9 +49,9 @@ static MoveToRectFunc gdk_window_move_to_rect_real = NULL;
 static GdkWindow *
 gdk_window_get_priv_transient_for (GdkWindow *gdk_window)
 {
-    GdkWindow *window_transient_for = gdk_window_priv_get_transient_for (gdk_window);
-    GdkWindowImplWayland *window_impl = (GdkWindowImplWayland *)gdk_window_priv_get_impl (gdk_window);
-    GdkWindow *wayland_transient_for = gdk_window_impl_wayland_priv_get_transient_for (window_impl);
+    GdkWindow *window_transient_for = gdk_surface_priv_get_transient_for (gdk_window);
+    GdkWaylandSurface *window_impl = (GdkWaylandSurface *) gdk_window;
+    GdkWindow *wayland_transient_for = gdk_wayland_surface_priv_get_transient_for (window_impl);
     if (wayland_transient_for)
         return wayland_transient_for;
     else
@@ -139,6 +139,7 @@ gdk_window_move_to_rect_impl_override (GdkWindow *window,
                                   rect_anchor_dx,
                                   rect_anchor_dy);
 
+    /*
     GdkWindow *transient_for_gdk_window = gdk_window_get_priv_transient_for (window);
     CustomShellSurface *transient_for_shell_surface = NULL;
     GdkWindow *toplevel_gdk_window = transient_for_gdk_window;
@@ -166,6 +167,7 @@ gdk_window_move_to_rect_impl_override (GdkWindow *window,
         };
         gtk_wayland_setup_window_as_custom_popup (window, &position);
     }
+    */
 }
 
 void

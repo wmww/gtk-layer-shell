@@ -16,7 +16,7 @@
 #include "layer-surface.h"
 #include "xdg-toplevel-surface.h"
 
-#include <gdk/gdkwayland.h>
+#include <gdk/wayland/gdkwayland.h>
 
 guint
 gtk_layer_get_major_version ()
