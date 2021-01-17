@@ -336,39 +336,6 @@ void gtk_layer_auto_exclusive_zone_enable (GtkWindow *window);
 gboolean gtk_layer_auto_exclusive_zone_is_enabled (GtkWindow *window);
 
 /**
- * gtk_layer_set_keyboard_interactivity:
- * @window: A layer surface.
- * @interactivity: Whether the layer surface should receive exclusive keyboard focus.
- *
- * This function is deprecated. Use #gtk_layer_set_keyboard_interactivity_type instead.
- *
- * This function sets whether the @window should receive exclusive keyboard focus
- * from the compositor if it is on the top or ovelay layers (for windows on layers
- * below the desktop, normal focus semantics apply). Setting this to false results
- * in @window not receiving keyboard events at all.
- *
- * Default is %FALSE
- *
- * Deprecated: 0.6: Use gtk_layer_set_keyboard_interactivity_type() instead.
- */
-void gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interactivity);
-
-/**
- * gtk_layer_get_keyboard_interactivity:
- * @window: A layer surface.
- *
- * This function is deprecated. Use #gtk_layer_get_keyboard_interactivity_type instead.
- *
- * Returns: whether @window can receive keyboard events. I.e. this function returns true
- * if #gtk_layer_get_keyboard_interactivity_type would return #GTK_LAYER_SHELL_KEYBOARD_EXCLUSIVE,
- * or #GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND.
- *
- * Since: 0.5
- * Deprecated: 0.6: Use gtk_layer_get_keyboard_interactivity_type() instead.
- */
-gboolean gtk_layer_get_keyboard_interactivity (GtkWindow *window);
-
-/**
  * gtk_layer_set_keyboard_interactivity_type:
  * @window: A layer surface.
  * @interactivity: The type of keyboard interactivity requested.
@@ -390,6 +357,30 @@ void gtk_layer_set_keyboard_interactivity_type (GtkWindow *window, GtkLayerShell
  * Since: 0.6
  */
 GtkLayerShellKeyboardInteractivity gtk_layer_get_keyboard_interactivity_type (GtkWindow *window);
+
+/**
+ * gtk_layer_set_keyboard_interactivity:
+ * @window: A layer surface.
+ * @interacitvity: Whether the layer surface should receive keyboard events.
+ *
+ * Whether the @window should receive keyboard events from the compositor.
+ *
+ * Default is %FALSE
+ *
+ * Deprecated: 0.6: Use gtk_layer_set_keyboard_interactivity_type() instead.
+ */
+void gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interactivity);
+
+/**
+ * gtk_layer_get_keyboard_interactivity:
+ * @window: A layer surface.
+ *
+ * Returns: if keybaord interacitvity is enabled
+ *
+ * Since: 0.5
+ * Deprecated: 0.6: Use gtk_layer_get_keyboard_interactivity_type() instead.
+ */
+gboolean gtk_layer_get_keyboard_interactivity (GtkWindow *window);
 
 G_END_DECLS
 
