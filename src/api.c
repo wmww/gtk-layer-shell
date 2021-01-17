@@ -225,6 +225,12 @@ gtk_layer_auto_exclusive_zone_is_enabled (GtkWindow *window)
 void
 gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interactivity)
 {
+    if (interactivity != TRUE && interactivity != FALSE) {
+        g_warning (
+            "boolean with value %d sent to gtk_layer_set_keyboard_interactivity (), "
+            "perhaps gtk_layer_set_keyboard_mode () was intended?",
+            interactivity);
+    }
     gtk_layer_set_keyboard_mode (
         window,
         interactivity ? GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE : GTK_LAYER_SHELL_KEYBOARD_MODE_NONE);
@@ -233,7 +239,14 @@ gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interactivity)
 gboolean
 gtk_layer_get_keyboard_interactivity (GtkWindow *window)
 {
-    return gtk_layer_get_keyboard_mode (window) != GTK_LAYER_SHELL_KEYBOARD_MODE_NONE;
+    GtkLayerShellKeyboardMode mode = gtk_layer_get_keyboard_mode (window);
+    if (mode != GTK_LAYER_SHELL_KEYBOARD_MODE_NONE && mode != GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE) {
+        g_warning (
+            "gtk_layer_get_keyboard_interactivity () used after keyboard mode set to %d,"
+            "consider using gtk_layer_get_keyboard_mode ().",
+            mode);
+    }
+    return mode != GTK_LAYER_SHELL_KEYBOARD_MODE_NONE;
 }
 
 void
