@@ -53,7 +53,7 @@ static const GOptionEntry options[] = {
         .flags = G_OPTION_FLAG_NONE,
         .arg = G_OPTION_ARG_CALLBACK,
         .arg_data = (void *)&layer_option_callback,
-        .description = "\"overlay\", \"top\", \"bottom\" or background (or \"o\", \"t\", \"b\" or \"g\")",
+        .description = "'overlay', 'top', 'bottom' or 'background' (or 'o', 't', 'b' or 'g')",
         .arg_description = NULL,
     },
     {
@@ -62,7 +62,7 @@ static const GOptionEntry options[] = {
         .flags = G_OPTION_FLAG_OPTIONAL_ARG,
         .arg = G_OPTION_ARG_CALLBACK,
         .arg_data = (void *)&anchor_option_callback,
-        .description = "A sequence of 'l', 'r', 't' and 'b' to anchor to those edges, or \"0\" for no anchor",
+        .description = "A sequence of 'l', 'r', 't' and 'b' to anchor to those edges, or '0' for no anchor",
         .arg_description = NULL,
     },
     {
@@ -89,7 +89,7 @@ static const GOptionEntry options[] = {
         .flags = G_OPTION_FLAG_OPTIONAL_ARG,
         .arg = G_OPTION_ARG_CALLBACK,
         .arg_data = (void*)&keyboard_option_callback,
-        .description = "Set keyboard interactivity: \"none\", \"exclusive\" or \"on-demand\" (or 'n', 'e' or 'o')",
+        .description = "Set keyboard interactivity: 'none', 'exclusive' or 'on-demand' (or 'n', 'e' or 'o')",
         .arg_description = NULL,
     },
     {
@@ -131,7 +131,9 @@ layer_option_callback (const gchar *_option_name, const gchar *value, void *_dat
         g_set_error (error,
                      G_OPTION_ERROR,
                      G_OPTION_ERROR_FAILED,
-                     "Invalid layer \"%s\"", value);
+                     "Invalid layer '%s' "
+                     "(valid layers are 'overlay', 'top', 'bottom', 'background', 'o', 't', 'b' and 'g')",
+                     value);
         return FALSE;
     }
     return TRUE;
@@ -164,7 +166,7 @@ anchor_option_callback (const gchar *_option_name, const gchar *value, void *_da
             g_set_error (error,
                          G_OPTION_ERROR,
                          G_OPTION_ERROR_FAILED,
-                         "Invalid anchor edge '%c'", *c);
+                         "Invalid anchor edge '%c' (valid edges are 'l', 'r', 't' and 'b')", *c);
             return FALSE;
         }
     }
@@ -179,7 +181,7 @@ keyboard_option_callback (const gchar *_option_name, const gchar *value, void *_
     (void)_data;
 
     if (!value) {
-        /* without argument = exclusive (retain old behavior) */
+        // without argument = exclusive (retain old behavior)
         default_keyboard_interactivity = GTK_LAYER_SHELL_KEYBOARD_EXCLUSIVE;
         return TRUE;
     }
@@ -193,7 +195,9 @@ keyboard_option_callback (const gchar *_option_name, const gchar *value, void *_
         g_set_error (error,
                      G_OPTION_ERROR,
                      G_OPTION_ERROR_FAILED,
-                     "Invalid keyboard interactivity \"%s\"", value);
+                     "Invalid keyboard interactivity '%s' "
+                     "(valid values are 'none', 'exclusive', 'on-demand', 'n', 'e' and 'o')",
+                     value);
         return FALSE;
     }
     return TRUE;
