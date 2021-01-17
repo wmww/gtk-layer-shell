@@ -433,12 +433,14 @@ layer_surface_auto_exclusive_zone_enable (LayerSurface *self)
 void
 layer_surface_set_keyboard_interactivity (LayerSurface *self, GtkLayerShellKeyboardInteractivity interactivity)
 {
-    uint32_t version = self->layer_surface ? zwlr_layer_surface_v1_get_version (self->layer_surface)
-		: gtk_layer_get_layer_shell_version();
-    if (version <= 3 && interactivity == GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND)
-    {
-        g_warning ("Requested keyboard interactivity setting not supported by the compositor!");
-        interactivity = GTK_LAYER_SHELL_KEYBOARD_NONE;
+    if (interactivity == GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND) {
+        uint32_t version = gtk_layer_get_protocol_version();
+        if (version <= 3) {
+            g_warning (
+                "Compositor uses layer shell version %d, which does not support on-demand keyboard interactivity",
+                version);
+            interactivity = GTK_LAYER_SHELL_KEYBOARD_NONE;
+        }
     }
     if (self->keyboard_interactivity != interactivity) {
         self->keyboard_interactivity = interactivity;

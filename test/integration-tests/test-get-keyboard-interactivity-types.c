@@ -17,12 +17,11 @@ static void callback_0()
 {
     window = create_default_window();
     gtk_layer_init_for_window(window);
-    guint version = gtk_layer_get_layer_shell_version();
     ASSERT_EQ(gtk_layer_get_keyboard_interactivity_type(window), GTK_LAYER_SHELL_KEYBOARD_NONE, "%d");
     gtk_layer_set_keyboard_interactivity_type(window, GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND);
-    ASSERT_EQ(gtk_layer_get_keyboard_interactivity_type(window), version >= 4 ? GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND : GTK_LAYER_SHELL_KEYBOARD_NONE, "%d");
+    ASSERT_EQ(gtk_layer_get_keyboard_interactivity_type(window), GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND, "%d");
     gtk_widget_show_all(GTK_WIDGET(window));
-    ASSERT_EQ(gtk_layer_get_keyboard_interactivity_type(window), version >= 4 ? GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND : GTK_LAYER_SHELL_KEYBOARD_NONE, "%d");
+    ASSERT_EQ(gtk_layer_get_keyboard_interactivity_type(window), GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND, "%d");
     gtk_layer_set_keyboard_interactivity_type(window, GTK_LAYER_SHELL_KEYBOARD_EXCLUSIVE);
     ASSERT_EQ(gtk_layer_get_keyboard_interactivity_type(window), GTK_LAYER_SHELL_KEYBOARD_EXCLUSIVE, "%d");
 }

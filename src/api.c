@@ -46,7 +46,7 @@ gtk_layer_is_supported ()
 }
 
 guint
-gtk_layer_get_layer_shell_version ()
+gtk_layer_get_protocol_version ()
 {
     if (!GDK_IS_WAYLAND_DISPLAY (gdk_display_get_default ()))
         return 0;

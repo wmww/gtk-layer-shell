@@ -126,16 +126,16 @@ guint gtk_layer_get_micro_version ();
 gboolean gtk_layer_is_supported ();
 
 /**
- * gtk_layer_get_layer_shell_version:
+ * gtk_layer_get_protocol_version:
  *
  * May block for a Wayland roundtrip the first time it's called.
  *
  * Returns: version of the zwlr_layer_shell_v1 protocol supported by the
- * compositor or 0 if it is not supported.
+ * compositor or 0 if the protocol is not supported.
  *
  * Since: 0.6
  */
-guint gtk_layer_get_layer_shell_version ();
+guint gtk_layer_get_protocol_version ();
 
 /**
  * gtk_layer_init_for_window:
