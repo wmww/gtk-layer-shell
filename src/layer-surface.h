@@ -31,7 +31,7 @@ struct _LayerSurface
     int margins[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER]; // The current margins
     int exclusive_zone; // The current exclusive zone (set either explicitly or automatically)
     gboolean auto_exclusive_zone; // If to automatically change the exclusive zone to match the window size
-    gboolean keyboard_interactivity; // If this surface should get keyboard input
+    GtkLayerShellKeyboardMode keyboard_mode; // Type of keyboard interactivity enabled for this surface
     GtkLayerShellLayer layer; // The current layer, needs surface recreation on old layer shell versions
 
     // Need the surface to be recreated to change
@@ -60,7 +60,7 @@ void layer_surface_set_anchor (LayerSurface *self, GtkLayerShellEdge edge, gbool
 void layer_surface_set_margin (LayerSurface *self, GtkLayerShellEdge edge, int margin_size);
 void layer_surface_set_exclusive_zone (LayerSurface *self, int exclusive_zone);
 void layer_surface_auto_exclusive_zone_enable (LayerSurface *self);
-void layer_surface_set_keyboard_interactivity (LayerSurface *self, gboolean interactivity);
+void layer_surface_set_keyboard_mode (LayerSurface *self, GtkLayerShellKeyboardMode mode);
 
 // Returns the effective namespace (default if unset). Does not return ownership. Never returns NULL. Handles null self.
 const char* layer_surface_get_namespace (LayerSurface *self);

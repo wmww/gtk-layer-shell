@@ -43,7 +43,8 @@ G_BEGIN_DECLS
  * @GTK_LAYER_SHELL_LAYER_BOTTOM: The bottom layer.
  * @GTK_LAYER_SHELL_LAYER_TOP: The top layer.
  * @GTK_LAYER_SHELL_LAYER_OVERLAY: The overlay layer.
- * @GTK_LAYER_SHELL_LAYER_ENTRY_NUMBER: Should not be used except to get the number of entries
+ * @GTK_LAYER_SHELL_LAYER_ENTRY_NUMBER: Should not be used except to get the number of entries. (NOTE: may change in
+ * future releases as more entries are added)
  */
 typedef enum {
     GTK_LAYER_SHELL_LAYER_BACKGROUND,
@@ -68,6 +69,22 @@ typedef enum {
     GTK_LAYER_SHELL_EDGE_BOTTOM,
     GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER, // Should not be used except to get the number of entries
 } GtkLayerShellEdge;
+
+/**
+ * GtkLayerShellKeyboardMode:
+ * GTK_LAYER_SHELL_KEYBOARD_MODE_NONE: This window should not receive keyboard events.
+ * GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE: This window should have exclusive focus if it is on the top or overlay layer.
+ * GTK_LAYER_SHELL_KEYBOARD_MODE_ON_DEMAND: The user should be able to focus and unfocues this window in an implementation
+ * defined way. Not supported for protocol version < 4.
+ * GTK_LAYER_SHELL_KEYBOARD_MODE_ENTRY_NUMBER: Should not be used except to get the number of entries. (NOTE: may change in
+ * future releases as more entries are added)
+ */
+typedef enum {
+    GTK_LAYER_SHELL_KEYBOARD_MODE_NONE = 0,
+    GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE = 1,
+    GTK_LAYER_SHELL_KEYBOARD_MODE_ON_DEMAND = 2,
+    GTK_LAYER_SHELL_KEYBOARD_MODE_ENTRY_NUMBER = 3
+} GtkLayerShellKeyboardMode;
 
 /**
  * gtk_layer_get_major_version:
@@ -107,6 +124,18 @@ guint gtk_layer_get_micro_version ();
  * Since: 0.5
  */
 gboolean gtk_layer_is_supported ();
+
+/**
+ * gtk_layer_get_protocol_version:
+ *
+ * May block for a Wayland roundtrip the first time it's called.
+ *
+ * Returns: version of the zwlr_layer_shell_v1 protocol supported by the
+ * compositor or 0 if the protocol is not supported.
+ *
+ * Since: 0.6
+ */
+guint gtk_layer_get_protocol_version ();
 
 /**
  * gtk_layer_init_for_window:
@@ -310,6 +339,30 @@ void gtk_layer_auto_exclusive_zone_enable (GtkWindow *window);
 gboolean gtk_layer_auto_exclusive_zone_is_enabled (GtkWindow *window);
 
 /**
+ * gtk_layer_set_keyboard_mode:
+ * @window: A layer surface.
+ * @mode: The type of keyboard interactivity requested.
+ *
+ * Sets if/when @window should receive keyboard events from the compositor, see
+ * GtkLayerShellKeyboardMode for details.
+ *
+ * Default is #GTK_LAYER_SHELL_KEYBOARD_MODE_NONE
+ *
+ * Since: 0.6
+ */
+void gtk_layer_set_keyboard_mode (GtkWindow *window, GtkLayerShellKeyboardMode mode);
+
+/**
+ * gtk_layer_get_keyboard_mode:
+ * @window: A layer surface.
+ *
+ * Returns: current keyboard interactivity mode for @window.
+ *
+ * Since: 0.6
+ */
+GtkLayerShellKeyboardMode gtk_layer_get_keyboard_mode (GtkWindow *window);
+
+/**
  * gtk_layer_set_keyboard_interactivity:
  * @window: A layer surface.
  * @interacitvity: Whether the layer surface should receive keyboard events.
@@ -317,8 +370,10 @@ gboolean gtk_layer_auto_exclusive_zone_is_enabled (GtkWindow *window);
  * Whether the @window should receive keyboard events from the compositor.
  *
  * Default is %FALSE
+ *
+ * Deprecated: 0.6: Use gtk_layer_set_keyboard_mode () instead.
  */
-void gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interacitvity);
+void gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interactivity);
 
 /**
  * gtk_layer_get_keyboard_interactivity:
@@ -327,6 +382,7 @@ void gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interacit
  * Returns: if keybaord interacitvity is enabled
  *
  * Since: 0.5
+ * Deprecated: 0.6: Use gtk_layer_get_keyboard_mode () instead.
  */
 gboolean gtk_layer_get_keyboard_interactivity (GtkWindow *window);
 

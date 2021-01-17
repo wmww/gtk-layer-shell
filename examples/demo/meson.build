@@ -6,4 +6,5 @@ demo_srcs = files(
     'monitor-selection.c',
     'mscl-toggles.c',
     'version-info.c',
-    'menu-bar.c')
+    'menu-bar.c',
+    'keyboard-selection.c')

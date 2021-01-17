@@ -30,7 +30,7 @@ activate (GtkApplication* app, void *_data)
     gtk_layer_auto_exclusive_zone_enable (gtk_window);
 
     // We don't need to get keybard input
-    // gtk_layer_set_keyboard_interactivity (gtk_window, FALSE); // FALSE is default
+    // gtk_layer_set_keyboard_mode (gtk_window, GTK_LAYER_SHELL_KEYBOARD_MODE_NONE); // NONE is default
 
     // The margins are the gaps around the window's edges
     // Margins and anchors can be set like this...
