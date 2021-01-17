@@ -89,7 +89,7 @@ static const GOptionEntry options[] = {
         .flags = G_OPTION_FLAG_OPTIONAL_ARG,
         .arg = G_OPTION_ARG_CALLBACK,
         .arg_data = (void*)&keyboard_option_callback,
-        .description = "Set keyboard interactivity: \"none\", \"exclusive\" or \"on_demand\" (or 'n', 'e' or 'o')",
+        .description = "Set keyboard interactivity: \"none\", \"exclusive\" or \"on-demand\" (or 'n', 'e' or 'o')",
         .arg_description = NULL,
     },
     {
@@ -187,7 +187,7 @@ keyboard_option_callback (const gchar *_option_name, const gchar *value, void *_
         default_keyboard_interactivity = GTK_LAYER_SHELL_KEYBOARD_NONE;
     } else if (g_strcmp0 (value, "exclusive") == 0 || g_strcmp0 (value, "e") == 0) {
         default_keyboard_interactivity = GTK_LAYER_SHELL_KEYBOARD_EXCLUSIVE;
-    } else if (g_strcmp0 (value, "on_demand") == 0 || g_strcmp0 (value, "o") == 0) {
+    } else if (g_strcmp0 (value, "on-demand") == 0 || g_strcmp0 (value, "o") == 0) {
         default_keyboard_interactivity = GTK_LAYER_SHELL_KEYBOARD_ON_DEMAND;
     } else {
         g_set_error (error,
