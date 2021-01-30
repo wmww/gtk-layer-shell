@@ -25,9 +25,9 @@ class Repo:
                 ['git', 'clone', repo_url, self.repo_dir]
                 ).check_returncode()
         else:
-            logger.info('Fetching')
+            logger.info('Pulling')
             subprocess.run(
-                ['git', 'fetch'],
+                ['git', 'pull'],
                 cwd=self.repo_dir
                 ).check_returncode()
 
