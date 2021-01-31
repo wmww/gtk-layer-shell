@@ -60,8 +60,11 @@ xdg_toplevel_handle_configure (void *data,
 
     // Technically this should not be applied until we get a xdg_surface.configure
     if (width > 0 || height > 0) {
-        GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
-        gtk_window_resize (gtk_window, width, height);
+        (void)self;
+        g_warning("resize not implemented");
+        // TODO
+        // GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
+        // gtk_window_resize (gtk_window, width, height);
     }
     // Ignore the states
 }

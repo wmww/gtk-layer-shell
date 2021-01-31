@@ -4,7 +4,7 @@
  * This file is part of gtk-layer-shell
  *
  * Copyright © 2010 Intel Corporation
- * Copyright © 2020 gtk-priv/scripts/code.py
+ * Copyright © 2021 gtk-priv/scripts/code.py
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,7 @@ typedef struct _GdkWaylandSurfaceClass GdkWaylandSurfaceClass;
 // Valid for GTK master
 struct _GdkWaylandSurfaceClass_v3_0_0
 {
-  GdkSurfaceClass parent_class;
+  struct _GdkSurfaceClass_v3_0_0 parent_class;
 };
 
 // For internal use only

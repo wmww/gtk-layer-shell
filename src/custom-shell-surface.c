@@ -41,6 +41,7 @@ custom_shell_surface_on_window_realize (GtkWidget *widget, CustomShellSurface *s
     g_return_if_fail (gdk_window);
 
     gtk_priv_access_init (gdk_window);
+    gdk_window_set_priv_mapped (gdk_window);
 
     // TODO
     // gdk_wayland_window_set_use_custom_surface (gdk_window);
@@ -68,6 +69,8 @@ custom_shell_surface_on_window_map (GtkWidget *widget, CustomShellSurface *self)
 
     wl_surface_commit (wl_surface);
     wl_display_roundtrip (gdk_wayland_display_get_wl_display (gdk_display_get_default ()));
+
+    gtk_widget_queue_draw (widget);
 }
 
 void
@@ -123,7 +126,7 @@ custom_shell_surface_needs_commit (CustomShellSurface *self)
     if (!self->private->gtk_window)
         return;
 
-    GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (self->private->gtk_window));
+    GdkWindow *gdk_window = gtk_native_get_surface (GTK_NATIVE (self->private->gtk_window));
 
     if (!gdk_window)
         return;
@@ -131,7 +134,10 @@ custom_shell_surface_needs_commit (CustomShellSurface *self)
     // Hopefully this will trigger a commit
     // Don't commit directly, as that screws up GTK's internal state
     // (see https://github.com/wmww/gtk-layer-shell/issues/51)
-    gdk_window_invalidate_rect (gdk_window, NULL, FALSE);
+    // TODO
+    // gdk_window_invalidate_rect (gdk_window, NULL, FALSE);
+
+    gtk_widget_queue_draw (GTK_WIDGET (self->private->gtk_window));
 }
 
 void

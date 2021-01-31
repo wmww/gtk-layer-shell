@@ -69,10 +69,13 @@ xdg_popup_handle_configure (void *data,
     // Technically this should not be applied until we get a xdg_surface.configure
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
     //TODO: gtk_window_resize (gtk_window, width, height);
+    //TODO
+    /*
     GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
     g_return_if_fail (gdk_window);
     // calculating the correct values is hard, but we're not required to provide them
     g_signal_emit_by_name (gdk_window, "moved-to-rect", NULL, NULL, FALSE, FALSE);
+    */
 }
 
 static void
@@ -102,6 +105,8 @@ xdg_popup_surface_get_anchor_rect (XdgPopupSurface *self, GdkRectangle *rect)
     rect->height = MAX (rect->height, 1);
     GdkWindow *parent_window = self->position.transient_for_gdk_window;
     CustomShellSurface *transient_for_shell_surface = self->position.transient_for_shell_surface;
+    // TODO
+    /*
     GtkWidget *transient_for_widget = GTK_WIDGET (custom_shell_surface_get_gtk_window (transient_for_shell_surface));
     GdkWindow *transient_for_window = gtk_widget_get_window (transient_for_widget);
     g_return_if_fail (parent_window);
@@ -119,6 +124,7 @@ xdg_popup_surface_get_anchor_rect (XdgPopupSurface *self, GdkRectangle *rect)
                    (void *)self->position.transient_for_gdk_window,
                    (void *)transient_for_window);
     }
+    */
     // Subtract the transient-for window's logical top-left
     GdkRectangle transient_for_geom =
         transient_for_shell_surface->virtual->get_logical_geom (transient_for_shell_surface);
@@ -155,7 +161,7 @@ xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     g_return_if_fail (!self->xdg_surface);
 
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window (super);
-    GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
+    GdkWindow *gdk_window = gtk_native_get_surface (GTK_NATIVE (gtk_window));
     g_return_if_fail (gdk_window);
     GdkRectangle rect;
     xdg_popup_surface_get_anchor_rect (self, &rect);

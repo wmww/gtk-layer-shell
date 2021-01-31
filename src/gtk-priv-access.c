@@ -28,12 +28,29 @@ typedef enum _PositionMethod
 {
   POSITION_METHOD_ENUM
 } PositionMethod;
+typedef enum _PopupState
+{
+  POPUP_STATE_IDLE,
+  POPUP_STATE_WAITING_FOR_REPOSITIONED,
+  POPUP_STATE_WAITING_FOR_CONFIGURE,
+  POPUP_STATE_WAITING_FOR_FRAME,
+} PopupState;
+typedef enum
+{
+  GDK_HINT_MIN_SIZE    = 1 << 1,
+  GDK_HINT_MAX_SIZE    = 1 << 2,
+} GdkSurfaceHints;
+typedef void (*GdkWaylandToplevelExported) (GdkToplevel *toplevel,
+                                            const char  *handle,
+                                            gpointer     user_data);
 typedef void *EGLSurface;
 typedef void *GdkWaylandWindowExported;
 typedef void *GdkWaylandTabletToolData;
+typedef void *GdkKeymap;
 
-// #include "gdk_window_impl_priv.h"
-// #include "gdk_window_priv.h"
+#include "gdk_geometry_priv.h"
+#include "gdk_surface_class_priv.h"
+#include "gdk_surface_priv.h"
 #include "gdk_wayland_surface_priv.h"
 #include "gdk_wayland_surface_class_priv.h"
 #include "gdk_wayland_pointer_frame_data_priv.h"
@@ -59,11 +76,12 @@ static GdkWindow *
 gdk_window_get_priv_transient_for (GdkWindow *gdk_window)
 {
     GdkWindow *window_transient_for = gdk_surface_priv_get_transient_for (gdk_window);
-    GdkWaylandSurface *window_impl = (GdkWaylandSurface *) gdk_window;
-    GdkWindow *wayland_transient_for = gdk_wayland_surface_priv_get_transient_for (window_impl);
-    if (wayland_transient_for)
-        return wayland_transient_for;
-    else
+    // TODO
+    //GdkWaylandSurface *window_impl = (GdkWaylandSurface *) gdk_window;
+    //GdkWindow *wayland_transient_for = gdk_wayland_surface_priv_get_transient_for (window_impl);
+    //if (wayland_transient_for)
+    //    return wayland_transient_for;
+    //else
         return window_transient_for;
 }
 
@@ -99,8 +117,8 @@ gdk_window_get_priv_grab_seat_for_single_window (GdkWindow *gdk_window)
     if (!gdk_window)
         return NULL;
 
-    GdkWindowImplWayland *window_impl = (GdkWindowImplWayland *)gdk_window_priv_get_impl (gdk_window);
-    return gdk_window_impl_wayland_priv_get_grab_input_seat (window_impl);
+    GdkWaylandSurface *wayland_surface = (GdkWaylandSurface *)gdk_window;
+    return gdk_wayland_surface_priv_get_grab_input_seat (wayland_surface);
 }
 
 GdkSeat *
@@ -130,6 +148,7 @@ gdk_window_get_priv_grab_seat (GdkWindow *gdk_window)
     return NULL;
 }
 
+/*
 static void
 gdk_window_move_to_rect_impl_override (GdkWindow *window,
                                        const GdkRectangle *rect,
@@ -148,7 +167,6 @@ gdk_window_move_to_rect_impl_override (GdkWindow *window,
                                   rect_anchor_dx,
                                   rect_anchor_dy);
 
-    /*
     GdkWindow *transient_for_gdk_window = gdk_window_get_priv_transient_for (window);
     CustomShellSurface *transient_for_shell_surface = NULL;
     GdkWindow *toplevel_gdk_window = transient_for_gdk_window;
@@ -176,19 +194,36 @@ gdk_window_move_to_rect_impl_override (GdkWindow *window,
         };
         gtk_wayland_setup_window_as_custom_popup (window, &position);
     }
-    */
 }
+*/
 
 void
 gdk_window_set_priv_mapped (GdkWindow *gdk_window)
 {
-    GdkWindowImplWayland *window_impl = (GdkWindowImplWayland *)gdk_window_priv_get_impl (gdk_window);
-    gdk_window_impl_wayland_priv_set_mapped (window_impl, TRUE);
+    GdkWaylandSurface *wayland_surface = (GdkWaylandSurface *)gdk_window;
+    gdk_wayland_surface_priv_set_mapped (wayland_surface, TRUE);
+}
+
+void gdk_window_notify_priv_mapped (GdkWindow *gdk_window)
+{
+    // based on gdk_surface_set_is_mapped() in gdksurface.c
+
+    // TODO: clear surface->set_is_mapped_source_id?
+
+    gboolean was_mapped = gdk_surface_priv_get_is_mapped (gdk_window);
+    gdk_surface_priv_set_pending_is_mapped (gdk_window, TRUE);
+    gdk_surface_priv_set_is_mapped (gdk_window, TRUE);
+    if (!was_mapped) {
+        g_object_notify (G_OBJECT (gdk_window), "mapped");
+    }
 }
 
 void
 gtk_priv_access_init (GdkWindow *gdk_window)
 {
+    (void)gdk_window;
+    // TODO
+    /*
     // Don't do anything once this has run successfully once
     if (gdk_window_move_to_rect_real)
         return;
@@ -201,4 +236,5 @@ gtk_priv_access_init (GdkWindow *gdk_window)
         gdk_window_move_to_rect_real = gdk_window_impl_class_priv_get_move_to_rect (window_class);
         gdk_window_impl_class_priv_set_move_to_rect (window_class, gdk_window_move_to_rect_impl_override);
     }
+    */
 }

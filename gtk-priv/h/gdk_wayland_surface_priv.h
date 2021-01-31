@@ -4,7 +4,7 @@
  * This file is part of gtk-layer-shell
  *
  * Copyright © 2010 Intel Corporation
- * Copyright © 2020 gtk-priv/scripts/code.py
+ * Copyright © 2021 gtk-priv/scripts/code.py
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -72,16 +72,16 @@ struct _GdkWaylandSurface_v3_0_0
     char *application_object_path;
     char *unique_bus_name;
   } application;
-  GdkGeometry geometry_hints;
+  struct _GdkGeometry_v3_0_0 geometry_hints;
   GdkSurfaceHints geometry_mask;
   GdkSeat *grab_input_seat;
   gint64 pending_frame_counter;
   guint32 scale;
-  int margin_left;
-  int margin_right;
-  int margin_top;
-  int margin_bottom;
-  gboolean margin_dirty;
+  int shadow_left;
+  int shadow_right;
+  int shadow_top;
+  int shadow_bottom;
+  gboolean shadow_dirty;
   struct wl_output *initial_fullscreen_output;
   cairo_region_t *opaque_region;
   gboolean opaque_region_dirty;
@@ -108,6 +108,7 @@ struct _GdkWaylandSurface_v3_0_0
       int width;
       int height;
       GdkToplevelState state;
+      gboolean is_resizing;
     } toplevel;
     struct {
       int x;
@@ -121,6 +122,23 @@ struct _GdkWaylandSurface_v3_0_0
     uint32_t serial;
     gboolean is_dirty;
   } pending;
+  struct {
+    GdkToplevelState unset_flags;
+    GdkToplevelState set_flags;
+  } initial_state;
+  struct {
+    struct {
+      gboolean should_constrain;
+      gboolean size_is_fixed;
+    } toplevel;
+    struct {
+      int x;
+      int y;
+    } popup;
+    int configured_width;
+    int configured_height;
+    gboolean surface_geometry_dirty;
+  } next_layout;
   uint32_t last_configure_serial;
   int state_freeze_count;
   struct {
@@ -757,82 +775,82 @@ guint32 * gdk_wayland_surface_priv_get_scale_ptr(GdkWaylandSurface * self) {
   }
 }
 
-// GdkWaylandSurface::margin_left
+// GdkWaylandSurface::shadow_left
 
-int gdk_wayland_surface_priv_get_margin_left(GdkWaylandSurface * self) {
+int gdk_wayland_surface_priv_get_shadow_left(GdkWaylandSurface * self) {
   switch (gdk_wayland_surface_priv_get_version_id()) {
-    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->margin_left;
+    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->shadow_left;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_wayland_surface_priv_set_margin_left(GdkWaylandSurface * self, int margin_left) {
+void gdk_wayland_surface_priv_set_shadow_left(GdkWaylandSurface * self, int shadow_left) {
   switch (gdk_wayland_surface_priv_get_version_id()) {
-    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->margin_left = margin_left; break;
+    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->shadow_left = shadow_left; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-// GdkWaylandSurface::margin_right
+// GdkWaylandSurface::shadow_right
 
-int gdk_wayland_surface_priv_get_margin_right(GdkWaylandSurface * self) {
+int gdk_wayland_surface_priv_get_shadow_right(GdkWaylandSurface * self) {
   switch (gdk_wayland_surface_priv_get_version_id()) {
-    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->margin_right;
+    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->shadow_right;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_wayland_surface_priv_set_margin_right(GdkWaylandSurface * self, int margin_right) {
+void gdk_wayland_surface_priv_set_shadow_right(GdkWaylandSurface * self, int shadow_right) {
   switch (gdk_wayland_surface_priv_get_version_id()) {
-    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->margin_right = margin_right; break;
+    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->shadow_right = shadow_right; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-// GdkWaylandSurface::margin_top
+// GdkWaylandSurface::shadow_top
 
-int gdk_wayland_surface_priv_get_margin_top(GdkWaylandSurface * self) {
+int gdk_wayland_surface_priv_get_shadow_top(GdkWaylandSurface * self) {
   switch (gdk_wayland_surface_priv_get_version_id()) {
-    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->margin_top;
+    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->shadow_top;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_wayland_surface_priv_set_margin_top(GdkWaylandSurface * self, int margin_top) {
+void gdk_wayland_surface_priv_set_shadow_top(GdkWaylandSurface * self, int shadow_top) {
   switch (gdk_wayland_surface_priv_get_version_id()) {
-    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->margin_top = margin_top; break;
+    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->shadow_top = shadow_top; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-// GdkWaylandSurface::margin_bottom
+// GdkWaylandSurface::shadow_bottom
 
-int gdk_wayland_surface_priv_get_margin_bottom(GdkWaylandSurface * self) {
+int gdk_wayland_surface_priv_get_shadow_bottom(GdkWaylandSurface * self) {
   switch (gdk_wayland_surface_priv_get_version_id()) {
-    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->margin_bottom;
+    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->shadow_bottom;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_wayland_surface_priv_set_margin_bottom(GdkWaylandSurface * self, int margin_bottom) {
+void gdk_wayland_surface_priv_set_shadow_bottom(GdkWaylandSurface * self, int shadow_bottom) {
   switch (gdk_wayland_surface_priv_get_version_id()) {
-    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->margin_bottom = margin_bottom; break;
+    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->shadow_bottom = shadow_bottom; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-// GdkWaylandSurface::margin_dirty
+// GdkWaylandSurface::shadow_dirty
 
-gboolean gdk_wayland_surface_priv_get_margin_dirty(GdkWaylandSurface * self) {
+gboolean gdk_wayland_surface_priv_get_shadow_dirty(GdkWaylandSurface * self) {
   switch (gdk_wayland_surface_priv_get_version_id()) {
-    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->margin_dirty;
+    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->shadow_dirty;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
 
-void gdk_wayland_surface_priv_set_margin_dirty(GdkWaylandSurface * self, gboolean margin_dirty) {
+void gdk_wayland_surface_priv_set_shadow_dirty(GdkWaylandSurface * self, gboolean shadow_dirty) {
   switch (gdk_wayland_surface_priv_get_version_id()) {
-    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->margin_dirty = margin_dirty; break;
+    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->shadow_dirty = shadow_dirty; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -1136,6 +1154,22 @@ GdkToplevelState * gdk_wayland_surface_priv_get_pending_toplevel_state_ptr(GdkWa
   }
 }
 
+// GdkWaylandSurface::pending.toplevel.is_resizing
+
+gboolean gdk_wayland_surface_priv_get_pending_toplevel_is_resizing(GdkWaylandSurface * self) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->pending.toplevel.is_resizing;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+void gdk_wayland_surface_priv_set_pending_toplevel_is_resizing(GdkWaylandSurface * self, gboolean pending_toplevel_is_resizing) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->pending.toplevel.is_resizing = pending_toplevel_is_resizing; break;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
 // GdkWaylandSurface::pending.popup.x
 
 int gdk_wayland_surface_priv_get_pending_popup_x(GdkWaylandSurface * self) {
@@ -1276,6 +1310,136 @@ gboolean gdk_wayland_surface_priv_get_pending_is_dirty(GdkWaylandSurface * self)
 void gdk_wayland_surface_priv_set_pending_is_dirty(GdkWaylandSurface * self, gboolean pending_is_dirty) {
   switch (gdk_wayland_surface_priv_get_version_id()) {
     case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->pending.is_dirty = pending_is_dirty; break;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+// GdkWaylandSurface::initial_state.unset_flags
+
+GdkToplevelState * gdk_wayland_surface_priv_get_initial_state_unset_flags_ptr(GdkWaylandSurface * self) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: return (GdkToplevelState *)&((struct _GdkWaylandSurface_v3_0_0*)self)->initial_state.unset_flags;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+// GdkWaylandSurface::initial_state.set_flags
+
+GdkToplevelState * gdk_wayland_surface_priv_get_initial_state_set_flags_ptr(GdkWaylandSurface * self) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: return (GdkToplevelState *)&((struct _GdkWaylandSurface_v3_0_0*)self)->initial_state.set_flags;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+// GdkWaylandSurface::next_layout.toplevel.should_constrain
+
+gboolean gdk_wayland_surface_priv_get_next_layout_toplevel_should_constrain(GdkWaylandSurface * self) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->next_layout.toplevel.should_constrain;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+void gdk_wayland_surface_priv_set_next_layout_toplevel_should_constrain(GdkWaylandSurface * self, gboolean next_layout_toplevel_should_constrain) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->next_layout.toplevel.should_constrain = next_layout_toplevel_should_constrain; break;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+// GdkWaylandSurface::next_layout.toplevel.size_is_fixed
+
+gboolean gdk_wayland_surface_priv_get_next_layout_toplevel_size_is_fixed(GdkWaylandSurface * self) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->next_layout.toplevel.size_is_fixed;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+void gdk_wayland_surface_priv_set_next_layout_toplevel_size_is_fixed(GdkWaylandSurface * self, gboolean next_layout_toplevel_size_is_fixed) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->next_layout.toplevel.size_is_fixed = next_layout_toplevel_size_is_fixed; break;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+// GdkWaylandSurface::next_layout.popup.x
+
+int gdk_wayland_surface_priv_get_next_layout_popup_x(GdkWaylandSurface * self) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->next_layout.popup.x;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+void gdk_wayland_surface_priv_set_next_layout_popup_x(GdkWaylandSurface * self, int next_layout_popup_x) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->next_layout.popup.x = next_layout_popup_x; break;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+// GdkWaylandSurface::next_layout.popup.y
+
+int gdk_wayland_surface_priv_get_next_layout_popup_y(GdkWaylandSurface * self) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->next_layout.popup.y;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+void gdk_wayland_surface_priv_set_next_layout_popup_y(GdkWaylandSurface * self, int next_layout_popup_y) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->next_layout.popup.y = next_layout_popup_y; break;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+// GdkWaylandSurface::next_layout.configured_width
+
+int gdk_wayland_surface_priv_get_next_layout_configured_width(GdkWaylandSurface * self) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->next_layout.configured_width;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+void gdk_wayland_surface_priv_set_next_layout_configured_width(GdkWaylandSurface * self, int next_layout_configured_width) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->next_layout.configured_width = next_layout_configured_width; break;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+// GdkWaylandSurface::next_layout.configured_height
+
+int gdk_wayland_surface_priv_get_next_layout_configured_height(GdkWaylandSurface * self) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->next_layout.configured_height;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+void gdk_wayland_surface_priv_set_next_layout_configured_height(GdkWaylandSurface * self, int next_layout_configured_height) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->next_layout.configured_height = next_layout_configured_height; break;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+// GdkWaylandSurface::next_layout.surface_geometry_dirty
+
+gboolean gdk_wayland_surface_priv_get_next_layout_surface_geometry_dirty(GdkWaylandSurface * self) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: return ((struct _GdkWaylandSurface_v3_0_0*)self)->next_layout.surface_geometry_dirty;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+void gdk_wayland_surface_priv_set_next_layout_surface_geometry_dirty(GdkWaylandSurface * self, gboolean next_layout_surface_geometry_dirty) {
+  switch (gdk_wayland_surface_priv_get_version_id()) {
+    case 0: ((struct _GdkWaylandSurface_v3_0_0*)self)->next_layout.surface_geometry_dirty = next_layout_surface_geometry_dirty; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }

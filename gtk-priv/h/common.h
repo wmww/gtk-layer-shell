@@ -13,9 +13,9 @@
 #define GTK_PRIV_COMMON_H
 
 void gtk_priv_assert_gtk_version_valid() {
-    if (gtk_get_major_version() != 3 || gtk_get_minor_version() < 22) {
+    if (gtk_get_major_version() != 4) {
         g_error(
-            "gtk-layer-shell only supports GTK3 >= v3.22.0 (you have v%d.%d.%d)",
+            "gtk4-layer-shell only supports GTK >= v4.0.0 (you have v%d.%d.%d)",
             gtk_get_major_version(),
             gtk_get_minor_version(),
             gtk_get_micro_version());

@@ -32,4 +32,7 @@ GdkSeat *gdk_window_get_priv_grab_seat (GdkWindow *gdk_window);
 // If window is not set to mapped, some subsurfaces fail (see https://github.com/wmww/gtk-layer-shell/issues/38)
 void gdk_window_set_priv_mapped (GdkWindow *gdk_window);
 
+// TODO: document
+void gdk_window_notify_priv_mapped (GdkWindow *gdk_window);
+
 #endif // GDK_WINDOW_HACK_H

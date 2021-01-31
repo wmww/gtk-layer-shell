@@ -15,6 +15,7 @@
 #include "simple-conversions.h"
 #include "custom-shell-surface.h"
 #include "gtk-wayland.h"
+#include "gtk-priv-access.h"
 
 #include "wlr-layer-shell-unstable-v1-client.h"
 #include "xdg-shell-client.h"
@@ -119,6 +120,10 @@ layer_surface_handle_configure (void *data,
     };
 
     layer_surface_update_size (self);
+
+    GtkWindow *gtk_window = custom_shell_surface_get_gtk_window (&self->super);
+    GdkSurface *gdk_surface = gtk_native_get_surface (GTK_NATIVE (gtk_window));
+    gdk_window_notify_priv_mapped (gdk_surface);
 }
 
 static void
@@ -187,11 +192,14 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     zwlr_layer_surface_v1_set_exclusive_zone (self->layer_surface, self->exclusive_zone);
     layer_surface_send_set_anchor (self);
     layer_surface_send_set_margin (self);
+    zwlr_layer_surface_v1_set_size (self->layer_surface, 300, 300);
+    /*
     if (self->cached_layer_size.width >= 0 && self->cached_layer_size.height >= 0) {
         zwlr_layer_surface_v1_set_size (self->layer_surface,
                                         self->cached_layer_size.width,
                                         self->cached_layer_size.height);
     }
+    */
     zwlr_layer_surface_v1_add_listener (self->layer_surface, &layer_surface_listener, self);
 }
 

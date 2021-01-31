@@ -4,7 +4,7 @@
  * This file is part of gtk-layer-shell
  *
  * Copyright (C) 2019 Red Hat, Inc.
- * Copyright © 2020 gtk-priv/scripts/code.py
+ * Copyright © 2021 gtk-priv/scripts/code.py
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -37,15 +37,19 @@ struct _GdkSurface_v3_0_0
   GdkSurface *transient_for;
   GdkSurface *parent;
   GList *children;
+  guint set_is_mapped_source_id;
+  gboolean pending_is_mapped;
+  gboolean is_mapped;
   gpointer widget;
   int x;
   int y;
   GdkGLContext *gl_paint_context;
   cairo_region_t *update_area;
   guint update_freeze_count;
-  gboolean pending_schedule_update;
+  GdkFrameClockPhase pending_phases;
   cairo_region_t *active_update_area;
-  GdkToplevelState old_state;
+  GdkToplevelState pending_set_flags;
+  GdkToplevelState pending_unset_flags;
   GdkToplevelState state;
   guint8 resize_count;
   guint8 alpha;
@@ -57,6 +61,7 @@ struct _GdkSurface_v3_0_0
   guint autohide : 1;
   guint shortcuts_inhibited : 1;
   guint request_motion : 1;
+  guint request_motion_id;
   struct {
     GdkGravity surface_anchor;
     GdkGravity rect_anchor;
@@ -64,10 +69,6 @@ struct _GdkSurface_v3_0_0
   guint update_and_descendants_freeze_count;
   int width;
   int height;
-  int shadow_top;
-  int shadow_left;
-  int shadow_right;
-  int shadow_bottom;
   GdkCursor *cursor;
   GHashTable *device_cursor;
   cairo_region_t *input_region;
@@ -175,6 +176,54 @@ void gdk_surface_priv_set_children(GdkSurface * self, GList * children) {
   }
 }
 
+// GdkSurface::set_is_mapped_source_id
+
+guint gdk_surface_priv_get_set_is_mapped_source_id(GdkSurface * self) {
+  switch (gdk_surface_priv_get_version_id()) {
+    case 0: return ((struct _GdkSurface_v3_0_0*)self)->set_is_mapped_source_id;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+void gdk_surface_priv_set_set_is_mapped_source_id(GdkSurface * self, guint set_is_mapped_source_id) {
+  switch (gdk_surface_priv_get_version_id()) {
+    case 0: ((struct _GdkSurface_v3_0_0*)self)->set_is_mapped_source_id = set_is_mapped_source_id; break;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+// GdkSurface::pending_is_mapped
+
+gboolean gdk_surface_priv_get_pending_is_mapped(GdkSurface * self) {
+  switch (gdk_surface_priv_get_version_id()) {
+    case 0: return ((struct _GdkSurface_v3_0_0*)self)->pending_is_mapped;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+void gdk_surface_priv_set_pending_is_mapped(GdkSurface * self, gboolean pending_is_mapped) {
+  switch (gdk_surface_priv_get_version_id()) {
+    case 0: ((struct _GdkSurface_v3_0_0*)self)->pending_is_mapped = pending_is_mapped; break;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+// GdkSurface::is_mapped
+
+gboolean gdk_surface_priv_get_is_mapped(GdkSurface * self) {
+  switch (gdk_surface_priv_get_version_id()) {
+    case 0: return ((struct _GdkSurface_v3_0_0*)self)->is_mapped;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+void gdk_surface_priv_set_is_mapped(GdkSurface * self, gboolean is_mapped) {
+  switch (gdk_surface_priv_get_version_id()) {
+    case 0: ((struct _GdkSurface_v3_0_0*)self)->is_mapped = is_mapped; break;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
 // GdkSurface::widget
 
 gpointer gdk_surface_priv_get_widget(GdkSurface * self) {
@@ -271,18 +320,11 @@ void gdk_surface_priv_set_update_freeze_count(GdkSurface * self, guint update_fr
   }
 }
 
-// GdkSurface::pending_schedule_update
+// GdkSurface::pending_phases
 
-gboolean gdk_surface_priv_get_pending_schedule_update(GdkSurface * self) {
+GdkFrameClockPhase * gdk_surface_priv_get_pending_phases_ptr(GdkSurface * self) {
   switch (gdk_surface_priv_get_version_id()) {
-    case 0: return ((struct _GdkSurface_v3_0_0*)self)->pending_schedule_update;
-    default: g_error("Invalid version ID"); g_abort();
-  }
-}
-
-void gdk_surface_priv_set_pending_schedule_update(GdkSurface * self, gboolean pending_schedule_update) {
-  switch (gdk_surface_priv_get_version_id()) {
-    case 0: ((struct _GdkSurface_v3_0_0*)self)->pending_schedule_update = pending_schedule_update; break;
+    case 0: return (GdkFrameClockPhase *)&((struct _GdkSurface_v3_0_0*)self)->pending_phases;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -303,11 +345,20 @@ void gdk_surface_priv_set_active_update_area(GdkSurface * self, cairo_region_t *
   }
 }
 
-// GdkSurface::old_state
+// GdkSurface::pending_set_flags
 
-GdkToplevelState * gdk_surface_priv_get_old_state_ptr(GdkSurface * self) {
+GdkToplevelState * gdk_surface_priv_get_pending_set_flags_ptr(GdkSurface * self) {
   switch (gdk_surface_priv_get_version_id()) {
-    case 0: return (GdkToplevelState *)&((struct _GdkSurface_v3_0_0*)self)->old_state;
+    case 0: return (GdkToplevelState *)&((struct _GdkSurface_v3_0_0*)self)->pending_set_flags;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+// GdkSurface::pending_unset_flags
+
+GdkToplevelState * gdk_surface_priv_get_pending_unset_flags_ptr(GdkSurface * self) {
+  switch (gdk_surface_priv_get_version_id()) {
+    case 0: return (GdkToplevelState *)&((struct _GdkSurface_v3_0_0*)self)->pending_unset_flags;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -460,6 +511,22 @@ void gdk_surface_priv_set_request_motion(GdkSurface * self, guint request_motion
   }
 }
 
+// GdkSurface::request_motion_id
+
+guint gdk_surface_priv_get_request_motion_id(GdkSurface * self) {
+  switch (gdk_surface_priv_get_version_id()) {
+    case 0: return ((struct _GdkSurface_v3_0_0*)self)->request_motion_id;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
+void gdk_surface_priv_set_request_motion_id(GdkSurface * self, guint request_motion_id) {
+  switch (gdk_surface_priv_get_version_id()) {
+    case 0: ((struct _GdkSurface_v3_0_0*)self)->request_motion_id = request_motion_id; break;
+    default: g_error("Invalid version ID"); g_abort();
+  }
+}
+
 // GdkSurface::popup.surface_anchor
 
 GdkGravity * gdk_surface_priv_get_popup_surface_anchor_ptr(GdkSurface * self) {
@@ -522,70 +589,6 @@ int gdk_surface_priv_get_height(GdkSurface * self) {
 void gdk_surface_priv_set_height(GdkSurface * self, int height) {
   switch (gdk_surface_priv_get_version_id()) {
     case 0: ((struct _GdkSurface_v3_0_0*)self)->height = height; break;
-    default: g_error("Invalid version ID"); g_abort();
-  }
-}
-
-// GdkSurface::shadow_top
-
-int gdk_surface_priv_get_shadow_top(GdkSurface * self) {
-  switch (gdk_surface_priv_get_version_id()) {
-    case 0: return ((struct _GdkSurface_v3_0_0*)self)->shadow_top;
-    default: g_error("Invalid version ID"); g_abort();
-  }
-}
-
-void gdk_surface_priv_set_shadow_top(GdkSurface * self, int shadow_top) {
-  switch (gdk_surface_priv_get_version_id()) {
-    case 0: ((struct _GdkSurface_v3_0_0*)self)->shadow_top = shadow_top; break;
-    default: g_error("Invalid version ID"); g_abort();
-  }
-}
-
-// GdkSurface::shadow_left
-
-int gdk_surface_priv_get_shadow_left(GdkSurface * self) {
-  switch (gdk_surface_priv_get_version_id()) {
-    case 0: return ((struct _GdkSurface_v3_0_0*)self)->shadow_left;
-    default: g_error("Invalid version ID"); g_abort();
-  }
-}
-
-void gdk_surface_priv_set_shadow_left(GdkSurface * self, int shadow_left) {
-  switch (gdk_surface_priv_get_version_id()) {
-    case 0: ((struct _GdkSurface_v3_0_0*)self)->shadow_left = shadow_left; break;
-    default: g_error("Invalid version ID"); g_abort();
-  }
-}
-
-// GdkSurface::shadow_right
-
-int gdk_surface_priv_get_shadow_right(GdkSurface * self) {
-  switch (gdk_surface_priv_get_version_id()) {
-    case 0: return ((struct _GdkSurface_v3_0_0*)self)->shadow_right;
-    default: g_error("Invalid version ID"); g_abort();
-  }
-}
-
-void gdk_surface_priv_set_shadow_right(GdkSurface * self, int shadow_right) {
-  switch (gdk_surface_priv_get_version_id()) {
-    case 0: ((struct _GdkSurface_v3_0_0*)self)->shadow_right = shadow_right; break;
-    default: g_error("Invalid version ID"); g_abort();
-  }
-}
-
-// GdkSurface::shadow_bottom
-
-int gdk_surface_priv_get_shadow_bottom(GdkSurface * self) {
-  switch (gdk_surface_priv_get_version_id()) {
-    case 0: return ((struct _GdkSurface_v3_0_0*)self)->shadow_bottom;
-    default: g_error("Invalid version ID"); g_abort();
-  }
-}
-
-void gdk_surface_priv_set_shadow_bottom(GdkSurface * self, int shadow_bottom) {
-  switch (gdk_surface_priv_get_version_id()) {
-    case 0: ((struct _GdkSurface_v3_0_0*)self)->shadow_bottom = shadow_bottom; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
