@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.6.0] - 2 Mar 2021
+- Layer Shell: support protocol version 4
+- API: support on-demand keyboard interactivity on protocol version 4
+- API: deprecate `gtk_layer_set_keyboard_interactivity()` in favor of `gtk_layer_set_keyboard_mode()`
+- API: add `gtk_layer_get_protocol_version()`
+- Compat bump supported GTK to v3.24.26
+
 ## [0.5.2] - 11 Dec 2020
 - Fix: normalize keyboard interactivity boolean to `TRUE` or `FALSE`
 - Fix: Set layer windows to mapped (removes warning on tooltip creation and fixes subsurfaces created as a `GTK_WINDOW_POPUP` window, fixes [#38](https://github.com/wmww/gtk-layer-shell/issues/38))
