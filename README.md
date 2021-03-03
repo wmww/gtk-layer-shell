@@ -4,7 +4,7 @@
 
 A library to write [GTK](https://www.gtk.org/) applications that use [Layer Shell](https://github.com/swaywm/wlr-protocols/blob/master/unstable/wlr-layer-shell-unstable-v1.xml). Layer Shell is a Wayland protocol for desktop shell components, such as panels, notifications and wallpapers. You can use it to anchor your windows to a corner or edge of the output, or stretch them across the entire output. It supports all Layer Shell features including popups and popovers (GTK popups Just Work™). This Library is compatible with C, C++ and any language that supports GObject introspection files (Python, Vala, etc, see using the library below).
 
-## Supported platforms
+## Supported desktops
 This library only works on Wayland, and only on Wayland compositors that support the Layer Shell protcol. Layer shell __is supported__ on:
 - wlroots based compositors (such as __Sway__)
 - Mir-based compositors (some may not enable the protocol by default and require `--add-wayland-extension zwlr_layer_shell_v1`)
@@ -13,15 +13,8 @@ Layer shell __is not supported__ on:
 - Gnome-on-Wayland
 - Any X11 desktop
 
-## Installing with your package manager
-GTK Layer Shell is packaged for the following distros. If you've packaged it for a distro not listed, please make a PR or ask for it to be added in an issue.
-- [Debian](https://packages.debian.org/source/sid/gtk-layer-shell) (>=11)
-- [Ubuntu](https://packages.ubuntu.com/source/focal/gtk-layer-shell) (>=20.04)
-- [Fedora](https://src.fedoraproject.org/rpms/gtk-layer-shell) (>=31)
-- [Arch](https://www.archlinux.org/packages/community/x86_64/gtk-layer-shell/)
-- [Gentoo](https://packages.gentoo.org/packages/gui-libs/gtk-layer-shell)
-- [Alpine](https://pkgs.alpinelinux.org/package/edge/community/x86/gtk-layer-shell)
-- [SUSE](https://packagehub.suse.com/packages/gtk-layer-shell/)
+## Distro packages
+[![List of distros GTK Layer Shell is packaged for](https://repology.org/badge/vertical-allrepos/gtk-layer-shell.svg)](https://repology.org/project/gtk-layer-shell/versions)
 
 ## Building from source
 1. Clone this repo
