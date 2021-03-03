@@ -100,6 +100,7 @@ margin_control_new (GtkWindow *layer_window, const int default_margins[GTK_LAYER
     }
 
     GtkWidget *open_button = gtk_button_new_with_label ("Set margin");
+    gtk_widget_set_tooltip_text (open_button, "Space to leave empty around surface");
     GtkWidget *popover = gtk_popover_new (open_button);
     gtk_popover_set_modal (GTK_POPOVER (popover), TRUE);
     gtk_popover_set_constrain_to (GTK_POPOVER (popover), GTK_POPOVER_CONSTRAINT_WINDOW);
