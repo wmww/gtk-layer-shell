@@ -51,7 +51,7 @@ typedef enum {
     GTK_LAYER_SHELL_LAYER_BOTTOM,
     GTK_LAYER_SHELL_LAYER_TOP,
     GTK_LAYER_SHELL_LAYER_OVERLAY,
-    GTK_LAYER_SHELL_LAYER_ENTRY_NUMBER,
+    GTK_LAYER_SHELL_LAYER_ENTRY_NUMBER, // Should not be used except to get the number of entries
 } GtkLayerShellLayer;
 
 /**
@@ -60,7 +60,8 @@ typedef enum {
  * @GTK_LAYER_SHELL_EDGE_RIGHT: The right edge of the screen.
  * @GTK_LAYER_SHELL_EDGE_TOP: The top edge of the screen.
  * @GTK_LAYER_SHELL_EDGE_BOTTOM: The bottom edge of the screen.
- * @GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER: Should not be used except to get the number of entries
+ * @GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER: Should not be used except to get the number of entries. (NOTE: may change in
+ * future releases as more entries are added)
  */
 typedef enum {
     GTK_LAYER_SHELL_EDGE_LEFT = 0,
@@ -83,7 +84,7 @@ typedef enum {
     GTK_LAYER_SHELL_KEYBOARD_MODE_NONE = 0,
     GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE = 1,
     GTK_LAYER_SHELL_KEYBOARD_MODE_ON_DEMAND = 2,
-    GTK_LAYER_SHELL_KEYBOARD_MODE_ENTRY_NUMBER = 3
+    GTK_LAYER_SHELL_KEYBOARD_MODE_ENTRY_NUMBER = 3, // Should not be used except to get the number of entries
 } GtkLayerShellKeyboardMode;
 
 /**
