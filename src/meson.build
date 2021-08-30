@@ -26,18 +26,23 @@ gtk_layer_shell_lib = library('gtk-layer-shell',
 pkg_config_name = 'gtk-layer-shell-0'
 
 # GObject introspection file used to interface with other languages
-gir = gnome.generate_gir(
-    gtk_layer_shell_lib,
-    dependencies: [gtk],
-    sources: srcs + files('../include/gtk-layer-shell.h'),
-    namespace: 'GtkLayerShell',
-    nsversion: '0.1',
-    identifier_prefix: 'GtkLayerShell',
-    symbol_prefix: 'gtk_layer',
-    export_packages: pkg_config_name,
-    includes: [ 'Gtk-3.0' ],
-    header: 'gtk-layer-shell/gtk-layer-shell.h',
-    install: true)
+gir = find_program('g-ir-scanner', required: get_option('introspection'))
+build_gir = gir.found() and get_option('introspection')
+
+if build_gir
+    gir = gnome.generate_gir(
+        gtk_layer_shell_lib,
+        dependencies: [gtk],
+        sources: srcs + files('../include/gtk-layer-shell.h'),
+        namespace: 'GtkLayerShell',
+        nsversion: '0.1',
+        identifier_prefix: 'GtkLayerShell',
+        symbol_prefix: 'gtk_layer',
+        export_packages: pkg_config_name,
+        includes: [ 'Gtk-3.0' ],
+        header: 'gtk-layer-shell/gtk-layer-shell.h',
+        install: true)
+endif
 
 pkg_config.generate(
     name: 'gtk-layer-shell',
