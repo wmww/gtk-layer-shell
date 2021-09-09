@@ -40,6 +40,7 @@ sudo apt install meson libwayland-dev libgtk-3-dev gobject-introspection libgire
 * `-Dexamples` (default `false`): If to build the example C apps; gtk-layer-demo is installed if examples are built; The Vala example is never built with the rest of the project
 * `-Ddocs` (default `false`): If to generate the docs
 * `-Dtests` (default `false`): If to build the tests
+* `-Dintrospection` (default: `true`): If to build GObject Introspection data (used for bindings to langauges other than C/C++)
 
 ### Running the Tests
 * `ninja -C build test`
