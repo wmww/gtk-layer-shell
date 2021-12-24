@@ -73,6 +73,14 @@ custom_shell_surface_init (CustomShellSurface *self, GtkWindow *gtk_window)
 {
     g_assert (self->virtual); // Subclass should have set this up first
 
+    // Workaround for https://github.com/wmww/gtk-layer-shell/issues/114
+    // The window or widget within must have it's size request set for complicated reasons
+    // (read: I figured it out while in GDB once, but promptly forgot).
+    // Anyway, setting the size request from the default window size fixes it.
+    gint width, height;
+    gtk_window_get_default_size(gtk_window, &width, &height);
+    gtk_widget_set_size_request (GTK_WIDGET (gtk_window), width, height);
+
     self->private = g_new0 (CustomShellSurfacePrivate, 1);
     self->private->gtk_window = gtk_window;
 
