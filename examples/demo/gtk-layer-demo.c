@@ -331,6 +331,10 @@ layer_window_new ()
 {
     GtkWindow *gtk_window = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
 
+    // Prevent the window from being larger  than it needs to be (even when orientation is changed)
+    // NOTE: we could get same effect by setting the size request to -1, -1 every time the orientation changes
+    gtk_widget_set_size_request (GTK_WIDGET (gtk_window), 1, 1);
+
     ToplevelData *data = g_new0 (ToplevelData, 1);
     g_object_set_data_full (G_OBJECT (gtk_window), anchor_edges_key, data, g_free);
     for (int i = 0; i < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER; i++)
