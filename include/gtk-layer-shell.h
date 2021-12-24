@@ -29,10 +29,11 @@
  *   // force the window to resize to the new request
  *   gtk_window_resize (layer_gtk_window, 1, 1);
  * ]|
- * If width or height is -1, the default is used for that axis. If the window is
- * anchored to opposite edges of the output (see gtk_layer_set_anchor ()), the 
- * size request is ignored. If you later wish to use the default window size,
- * simply repeat the two calls but with both width and height as -1.
+ * If width or height is -1, the default is used for that axis. if either is 1,
+ * the window is as small as possible. If the window is anchored to opposite
+ * edges of the output (see gtk_layer_set_anchor ()), the size request is ignored.
+ * If you later wish to use the default window size, simply repeat the two calls
+ * but with both width and height as -1.
  */
 
 G_BEGIN_DECLS
