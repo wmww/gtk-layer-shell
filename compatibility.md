@@ -1,5 +1,13 @@
 # GTK compatibility
-__NOTE: just because an app crashes with a warning that links to this page does not mean GTK layer shell is at fault. While I have a hard time keeping up with *explicitly* supporting each new version of GTK, GTK hasn't broken us yet since we started. Only downgrade GTK or open a GTK Layer Shell issue if you've investigated the more probable possibility that the app you're running has some other crash.__
+__NOTE: the warning that linked you to this page is probably a red herring. GTK Layer Shell has a hard time *explicitly* supporting each version of GTK, but new unsupported versions almost always work in practice.__
+
+__Before opening an issue on this repo about an app crashing__
+- assume the app is crashing for some other reason, investigate
+- if you're at wits end, clone GTK Layer Shell
+- check out the tag for the version you were using (ex `git checkout v0.6.0`)
+- build
+- run `./build/examples/gtk-layer-demo`
+- if that also crashes, open an issue
 
 Due to limitations of GTK, GTK Layer Shell depends on unstable GTK internals. Each release works with all versions of GTK >=3.22.0 at the time of release, but future GTK updates may occasionally break them. See [gtk-priv/README.md](gtk-priv/README.md) for more details.
 
