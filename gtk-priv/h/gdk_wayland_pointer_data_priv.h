@@ -4,7 +4,7 @@
  * This file is part of gtk-layer-shell
  *
  * Copyright (C) 2009 Carlos Garnacho <carlosg@gnome.org>
- * Copyright © 2021 gtk-priv/scripts/code.py
+ * Copyright © 2022 gtk-priv/scripts/code.py
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,7 @@
 typedef struct _GdkWaylandPointerData GdkWaylandPointerData;
 
 // Version ID 0
-// Valid for GTK v3.22.0 - v3.24.27 (unreleased)
+// Valid for GTK v3.22.0 - v3.24.32 (unreleased)
 struct _GdkWaylandPointerData_v3_22_0
 {
   GdkWindow *focus;
@@ -121,6 +121,11 @@ int gdk_wayland_pointer_data_priv_get_version_id() {
       case 24024:
       case 24025:
       case 24026:
+      case 24027:
+      case 24028:
+      case 24029:
+      case 24030:
+      case 24031:
         break;
   
       default:

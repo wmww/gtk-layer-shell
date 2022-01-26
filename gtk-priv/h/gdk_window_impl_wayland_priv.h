@@ -4,7 +4,7 @@
  * This file is part of gtk-layer-shell
  *
  * Copyright © 2010 Intel Corporation
- * Copyright © 2021 gtk-priv/scripts/code.py
+ * Copyright © 2022 gtk-priv/scripts/code.py
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -985,7 +985,7 @@ struct _GdkWindowImplWayland_v3_24_22
 // Diff from previous version:
 // +   struct wl_callback *surface_callback;
 // +   GHashTable *frame_callback_surfaces;
-// Valid for GTK v3.24.25 - v3.24.27 (unreleased)
+// Valid for GTK v3.24.25 - v3.24.32 (unreleased)
 struct _GdkWindowImplWayland_v3_24_25
 {
   struct _GdkWindowImpl_v3_22_0 parent_instance;
@@ -1156,6 +1156,11 @@ int gdk_window_impl_wayland_priv_get_version_id() {
       case 24024:
       case 24025:
       case 24026:
+      case 24027:
+      case 24028:
+      case 24029:
+      case 24030:
+      case 24031:
         break;
   
       default:
