@@ -30,10 +30,11 @@ Layer shell __is not supported__ on:
 * [GTK3](https://www.gtk.org/) (>=3.22.0)
 * [GObject introspection](https://gitlab.gnome.org/GNOME/gobject-introspection/)
 * [GTK Doc](https://www.gtk.org/gtk-doc/) (only required if docs are enabled)
+* [Vala](https://wiki.gnome.org/Projects/Vala) (only required if vapi is enabled)
 
 To install these dependencies on Ubuntu 18.04 and later:
 ```
-sudo apt install meson libwayland-dev libgtk-3-dev gobject-introspection libgirepository1.0-dev gtk-doc-tools
+sudo apt install meson libwayland-dev libgtk-3-dev gobject-introspection libgirepository1.0-dev gtk-doc-tools valac
 ```
 
 ### Meson Options
@@ -41,6 +42,7 @@ sudo apt install meson libwayland-dev libgtk-3-dev gobject-introspection libgire
 * `-Ddocs` (default `false`): If to generate the docs
 * `-Dtests` (default `false`): If to build the tests
 * `-Dintrospection` (default: `true`): If to build GObject Introspection data (used for bindings to langauges other than C/C++)
+* `-Dvapi` (default: `false`): If to build VAPI data (allows this library to be used in Vala). Requires `-Dintrospection=true`
 
 ### Running the Tests
 * `ninja -C build test`
