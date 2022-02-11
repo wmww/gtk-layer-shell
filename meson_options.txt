@@ -2,3 +2,4 @@ option('examples', type: 'boolean', value: false, description: 'Build example ap
 option('docs', type: 'boolean', value: false, description: 'Build devhelp API documentation')
 option('tests', type: 'boolean', value: false, description: 'Build tests')
 option('introspection', type: 'boolean', value: true, description: 'Build gobject-introspection data')
+option('vapi', type: 'boolean', value: true, description: 'Generate vapi data (needs vapigen & introspection option)')

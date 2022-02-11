@@ -39,6 +39,14 @@ if get_option('introspection')
         includes: [ 'Gtk-3.0' ],
         header: 'gtk-layer-shell/gtk-layer-shell.h',
         install: true)
+
+    if get_option('vapi')
+        gnome.generate_vapi(
+            pkg_config_name,
+            sources: gir[0],
+            packages: 'gtk+-3.0',
+            install: true)
+    endif
 endif
 
 pkg_config.generate(
