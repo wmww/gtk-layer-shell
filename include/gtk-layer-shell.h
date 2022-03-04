@@ -239,7 +239,7 @@ void gtk_layer_set_monitor (GtkWindow *window, GdkMonitor *monitor);
  * NOTE: To get which monitor the surface is actually on, use
  * gdk_display_get_monitor_at_window().
  *
- * Returns: the monitor this surface will/has requested to be on, can be %NULL.
+ * Returns: (transfer none): the monitor this surface will/has requested to be on, can be %NULL.
  *
  * Since: 0.5
  */
