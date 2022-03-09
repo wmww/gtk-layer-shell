@@ -239,7 +239,7 @@ void gtk_layer_set_monitor (GtkWindow *window, GdkMonitor *monitor);
  * NOTE: To get which monitor the surface is actually on, use
  * gdk_display_get_monitor_at_window().
  *
- * Returns: the monitor this surface will/has requested to be on, can be %NULL.
+ * Returns: (transfer none): the monitor this surface will/has requested to be on, can be %NULL.
  *
  * Since: 0.5
  */
@@ -366,7 +366,7 @@ GtkLayerShellKeyboardMode gtk_layer_get_keyboard_mode (GtkWindow *window);
 /**
  * gtk_layer_set_keyboard_interactivity:
  * @window: A layer surface.
- * @interacitvity: Whether the layer surface should receive keyboard events.
+ * @interactivity: Whether the layer surface should receive keyboard events.
  *
  * Whether the @window should receive keyboard events from the compositor.
  *
@@ -380,7 +380,7 @@ void gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interacti
  * gtk_layer_get_keyboard_interactivity:
  * @window: A layer surface.
  *
- * Returns: if keybaord interacitvity is enabled
+ * Returns: if keybaord interactivity is enabled
  *
  * Since: 0.5
  * Deprecated: 0.6: Use gtk_layer_get_keyboard_mode () instead.
