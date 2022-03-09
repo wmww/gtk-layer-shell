@@ -42,7 +42,7 @@ sudo apt install meson libwayland-dev libgtk-3-dev gobject-introspection libgire
 * `-Ddocs` (default `false`): If to generate the docs
 * `-Dtests` (default `false`): If to build the tests
 * `-Dintrospection` (default: `true`): If to build GObject Introspection data (used for bindings to langauges other than C/C++)
-* `-Dvapi` (default: `false`): If to build VAPI data (allows this library to be used in Vala). Requires `-Dintrospection=true`
+* `-Dvapi` (default: `true`): If to build VAPI data (allows this library to be used in Vala). Requires `-Dintrospection=true`
 
 ### Running the Tests
 * `ninja -C build test`
