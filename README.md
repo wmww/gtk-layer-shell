@@ -13,6 +13,22 @@ Layer shell __is not supported__ on:
 - Gnome-on-Wayland
 - Any X11 desktop
 
+## Using the Library
+### Demo
+`gtk-layer-demo` is built if examples are enabled. Its UI exposes all features of the library, and it's useful for testing layer shell support in compositors. Its code can be found in [examples/demo/](examples/demo/).
+
+### C/C++
+The easiest way to build against GTK Layer Shell is to use the `gtk-layer-shell-0` pkg-config package. Refer to your build system or the pkg-config docs for further instructions. [gtk-layer-shell.h](include/gtk-layer-shell.h) shows the full API, which can be used directly in C or C++. [examples/simple-example.c](examples/simple-example.c) is a minimal complete app written in C.
+
+### Python
+[examples/simple-example.py](examples/simple-example.py) contains sample Python code.
+
+### Vala
+[examples/vala-standalone](examples/vala-standalone) contains a minimal working standalone Vala project, see [the readme](examples/vala-standalone/README.md) for details.
+
+### Rust
+[@pentamassiv](https://github.com/pentamassiv) maintains [safe Rust bindings](https://github.com/pentamassiv/gtk-layer-shell-gir) and the [crates.io crate](https://crates.io/crates/gtk-layer-shell/). Rust examples can be found [here](https://github.com/pentamassiv/gtk-layer-shell-gir/tree/main/gtk-layer-shell/examples).
+
 ## Distro Packages
 [![List of distros GTK Layer Shell is packaged for](https://repology.org/badge/vertical-allrepos/gtk-layer-shell.svg)](https://repology.org/project/gtk-layer-shell/versions)
 
@@ -46,15 +62,6 @@ sudo apt install meson libwayland-dev libgtk-3-dev gobject-introspection libgire
 
 ### Running the Tests
 * `ninja -C build test`
-
-## Using the Library
-* `gtk-layer-demo` is installed if examples are enabled. Its UI exposes all features of the library, and it's useful for testing layer shell support in compositors
-* [gtk-layer-shell.h](include/gtk-layer-shell.h) shows the full API, which can be used directly in C or C++
-* [examples/simple-example.c](examples/simple-example.c) is a minimal working C app
-* [examples/demo/](examples/demo/) contains the code for `gtk-layer-demo` (a more complex app)
-* The easiest way to build C and C++ apps is to use the `gtk-layer-shell-0` pkg-config package. Refer to your build system or the pkg-config docs for further instructions
-* [examples/vala-standalone](examples/vala-standalone) contains a minimal working standalone Vala project, see [the readme](examples/vala-standalone/README.md) for details
-* [examples/simple-example.py](examples/simple-example.py) contains sample Python code
 
 ## Licensing
 GTK Layer Shell is licensed under the GNU Lesser General Public License version 3.0 or any later version.
