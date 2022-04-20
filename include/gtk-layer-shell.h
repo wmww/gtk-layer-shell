@@ -206,7 +206,7 @@ const char *gtk_layer_get_namespace (GtkWindow *window);
  * be changed on-the-fly in the current version of the layer shell protocol, but on compositors that only support an
  * older version the @window is remapped so the change can take effect.
  *
- * Default is #GTK_LAYER_SHELL_LAYER_TOP
+ * Default is %GTK_LAYER_SHELL_LAYER_TOP
  */
 void gtk_layer_set_layer (GtkWindow *window, GtkLayerShellLayer layer);
 
@@ -347,7 +347,7 @@ gboolean gtk_layer_auto_exclusive_zone_is_enabled (GtkWindow *window);
  * Sets if/when @window should receive keyboard events from the compositor, see
  * GtkLayerShellKeyboardMode for details.
  *
- * Default is #GTK_LAYER_SHELL_KEYBOARD_MODE_NONE
+ * Default is %GTK_LAYER_SHELL_KEYBOARD_MODE_NONE
  *
  * Since: 0.6
  */
