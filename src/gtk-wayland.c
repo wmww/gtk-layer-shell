@@ -210,6 +210,7 @@ gtk_wayland_get_logical_geom (GtkWindow *gtk_window)
     GList *list = gdk_window_get_children (window);
     if (list && !list->next) // If there is exactly one child window
         window = list->data;
+    g_list_free(list);
     GdkRectangle geom;
     gdk_window_get_geometry (window, &geom.x, &geom.y, &geom.width, &geom.height);
     return geom;
