@@ -26,12 +26,6 @@ from typing import List, Dict, Optional, Any
 # All callables (generally lambdas) appended to this list will be called at the end of the program
 cleanup_funcs = []
 
-class Color:
-    '''Unix terminal color escape sequences'''
-    normal = '\x1b[0m'
-    gray = '\x1b[90m'
-    decoration = gray
-
 class TestError(RuntimeError):
     pass
 
@@ -74,14 +68,11 @@ def format_stream(name: str, stream: str) -> str:
         r_pad -= 1
     l_pad = max(l_pad, 1)
     r_pad = max(r_pad, 1)
-    header = '─' * l_pad + '┤ ' + Color.normal + name + Color.decoration + ' ├' + '─' * r_pad + '┈'
-    divider = '\n' + Color.decoration + '│' + Color.normal
+    header = '─' * l_pad + '┤ ' + name + ' ├' + '─' * r_pad + '┈'
+    divider = '\n│'
     body = divider.join(' ' + line for line in stream.strip().splitlines())
     footer = '─' * 60 + '┈'
-    return (
-        Color.decoration + '╭' + header + Color.normal +
-        divider + body +
-        '\n' + Color.decoration + '╰' + footer + Color.normal)
+    return '╭' + header + divider + body + '\n╰' + footer
 
 def format_process_report(name: str, returncode: int, stdout: str, stderr: str) -> str:
     '''After running a program, this function is used to format it's output for easy reading'''
