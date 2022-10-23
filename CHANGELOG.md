@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.8.0] - 23 Oct 2022
+- Vala: support generating vapi files
+- Fix: memory leak, [#128](https://github.com/wmww/gtk-layer-shell/issues/128)
+- Compat: stop warning when GTK version is not explicitly supported
+- Compat: bump supported GTK to 3.24.34
+
 ## [0.7.0] - 25 Jan 2022
 - Meson: allow disabling building with gobject-introspection
 - Compat: bump supported GTK to v3.24.31
