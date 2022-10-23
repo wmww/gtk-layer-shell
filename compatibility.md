@@ -1,6 +1,8 @@
 # GTK compatibility
 __NOTE: the warning that linked you to this page is probably a red herring. GTK Layer Shell has a hard time *explicitly* supporting each version of GTK, but new unsupported versions almost always work in practice.__
 
+__NOTE: in versions of GTK Layer Shell >= 0.8.0 this warning has been turned off by default. It can be re-enabled by setting `GTK_LAYER_SHELL_UNSUPPORTED_GTK_WARNING=1`__
+
 __Before opening an issue on this repo about an app crashing__
 - assume the app is crashing for some other reason, investigate
 - if you're at wits end, clone GTK Layer Shell

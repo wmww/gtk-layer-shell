@@ -27,16 +27,18 @@ void gtk_priv_warn_gtk_version_may_be_unsupported() {
     static gboolean shown = FALSE;
     if (shown)
         return;
-    g_warning(
-        "gtk-layer-shell v%d.%d.%d may not work on GTK v%d.%d.%d. "
-        "If you experience crashes, check "
-        "https://github.com/wmww/gtk-layer-shell/blob/master/compatibility.md",
-        GTK_LAYER_SHELL_MAJOR,
-        GTK_LAYER_SHELL_MINOR,
-        GTK_LAYER_SHELL_MICRO,
-        gtk_get_major_version(),
-        gtk_get_minor_version(),
-        gtk_get_micro_version());
+    if (getenv("GTK_LAYER_SHELL_UNSUPPORTED_GTK_WARNING")) {
+        g_warning(
+            "gtk-layer-shell v%d.%d.%d may not work on GTK v%d.%d.%d. "
+            "If you experience crashes, check "
+            "https://github.com/wmww/gtk-layer-shell/blob/master/compatibility.md",
+            GTK_LAYER_SHELL_MAJOR,
+            GTK_LAYER_SHELL_MINOR,
+            GTK_LAYER_SHELL_MICRO,
+            gtk_get_major_version(),
+            gtk_get_minor_version(),
+            gtk_get_micro_version());
+    }
     shown = TRUE;
 }
 
