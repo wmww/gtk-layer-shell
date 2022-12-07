@@ -255,6 +255,13 @@ gtk_layer_set_keyboard_mode (GtkWindow *window, GtkLayerShellKeyboardMode mode)
     g_return_if_fail(mode < GTK_LAYER_SHELL_KEYBOARD_MODE_ENTRY_NUMBER);
     LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
     if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
+    if (mode != GTK_LAYER_SHELL_KEYBOARD_MODE_NONE && mode != GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE) {
+        if (gtk_layer_get_protocol_version () < 4) {
+            g_warning (
+                "Compositor does not support requested keyboard interactivity mode, using exclusive mode.");
+            mode = GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE;
+        }
+    }
     layer_surface_set_keyboard_mode (layer_surface, mode);
 }
 
