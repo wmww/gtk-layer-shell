@@ -43,7 +43,7 @@ static struct wl_resource* pointer_global = NULL;
 static struct wl_resource* output_global = NULL;
 static uint32_t click_serial = 0;
 
-// Needs to be called before any role objects are asigned
+// Needs to be called before any role objects are assigned
 static void surface_data_set_role(SurfaceData* data, SurfaceRole role)
 {
     ASSERT_EQ(data->role, SURFACE_ROLE_NONE, "%u");

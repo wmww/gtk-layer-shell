@@ -11,7 +11,7 @@
 
 #include "integration-test-common.h"
 
-// Time in miliseconds for each callback to run
+// Time in milliseconds for each callback to run
 static int step_time = 300;
 
 static int return_code = 0;
