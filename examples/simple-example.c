@@ -29,7 +29,7 @@ activate (GtkApplication* app, void *_data)
     // Push other windows out of the way
     gtk_layer_auto_exclusive_zone_enable (gtk_window);
 
-    // We don't need to get keybard input
+    // We don't need to get keyboard input
     // gtk_layer_set_keyboard_mode (gtk_window, GTK_LAYER_SHELL_KEYBOARD_MODE_NONE); // NONE is default
 
     // The margins are the gaps around the window's edges

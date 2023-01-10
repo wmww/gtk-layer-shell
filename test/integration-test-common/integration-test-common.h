@@ -21,11 +21,11 @@
 
 // Tell the test script that a request containing the given space-separated components is expected
 #define EXPECT_MESSAGE(message) fprintf(stderr, "EXPECT: %s\n", #message)
-// Tell the test script that all expected messages should now be fufilled
+// Tell the test script that all expected messages should now be fulfilled
 // (called automatically before each callback and at the end of the test)
 #define CHECK_EXPECTATIONS() fprintf(stderr, "CHECK EXPECTATIONS COMPLETED\n")
 
-// NULL-terminated list of callbacks that will be called before quiting
+// NULL-terminated list of callbacks that will be called before quitting
 // Should be defined in the test file using TEST_CALLBACKS()
 extern void (* test_callbacks[])(void);
 

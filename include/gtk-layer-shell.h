@@ -175,7 +175,7 @@ struct zwlr_layer_surface_v1 *gtk_layer_get_zwlr_layer_surface_v1 (GtkWindow *wi
  * Set the "namespace" of the surface.
  *
  * No one is quite sure what this is for, but it probably should be something generic
- * ("panel", "osk", etc). The @name_space string is copied, and caller maintians
+ * ("panel", "osk", etc). The @name_space string is copied, and caller maintains
  * ownership of original. If the window is currently mapped, it will get remapped so
  * the change can take effect.
  *
@@ -248,7 +248,7 @@ GdkMonitor *gtk_layer_get_monitor (GtkWindow *window);
 /**
  * gtk_layer_set_anchor:
  * @window: A layer surface.
- * @edge: A #GtkLayerShellEdge this layer suface may be anchored to.
+ * @edge: A #GtkLayerShellEdge this layer surface may be anchored to.
  * @anchor_to_edge: Whether or not to anchor this layer surface to @edge.
  *
  * Set whether @window should be anchored to @edge.
@@ -380,7 +380,7 @@ void gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interacti
  * gtk_layer_get_keyboard_interactivity:
  * @window: A layer surface.
  *
- * Returns: if keybaord interactivity is enabled
+ * Returns: if keyboard interactivity is enabled
  *
  * Since: 0.5
  * Deprecated: 0.6: Use gtk_layer_get_keyboard_mode () instead.

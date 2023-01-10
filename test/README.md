@@ -9,7 +9,7 @@ This directory is home to the gtk-layer-shell test suite.
 2. Implement your test as a series of one or more callbacks
 3. Add its name to the list in `test/integration-tests/meson.build`
 
-## Scrpts
+## Scripts
 - `check-licenses.py` makes sure all files have licenses at the top
 - `tests-not-enabled.py` is only run if tests are disabled, and explains to the user how to enable them
 - `run-integration-test.py` runs a single integration test

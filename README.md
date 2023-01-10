@@ -5,7 +5,7 @@
 A library to write [GTK](https://www.gtk.org/) applications that use [Layer Shell](https://github.com/swaywm/wlr-protocols/blob/master/unstable/wlr-layer-shell-unstable-v1.xml). Layer Shell is a Wayland protocol for desktop shell components, such as panels, notifications and wallpapers. You can use it to anchor your windows to a corner or edge of the output, or stretch them across the entire output. It supports all Layer Shell features including popups and popovers (GTK popups Just Work™). This Library is compatible with C, C++ and any language that supports GObject introspection files (Python, Vala, etc, see using the library below).
 
 ## Supported Desktops
-This library only works on Wayland, and only on Wayland compositors that support the Layer Shell protcol. Layer shell __is supported__ on:
+This library only works on Wayland, and only on Wayland compositors that support the Layer Shell protocol. Layer shell __is supported__ on:
 - wlroots based compositors (such as __Sway__)
 - Mir-based compositors (some may not enable the protocol by default and require `--add-wayland-extension zwlr_layer_shell_v1`)
 
@@ -57,7 +57,7 @@ sudo apt install meson libwayland-dev libgtk-3-dev gobject-introspection libgire
 * `-Dexamples` (default `false`): If to build the example C apps; gtk-layer-demo is installed if examples are built; The Vala example is never built with the rest of the project
 * `-Ddocs` (default `false`): If to generate the docs
 * `-Dtests` (default `false`): If to build the tests
-* `-Dintrospection` (default: `true`): If to build GObject Introspection data (used for bindings to langauges other than C/C++)
+* `-Dintrospection` (default: `true`): If to build GObject Introspection data (used for bindings to languages other than C/C++)
 * `-Dvapi` (default: `true`): If to build VAPI data (allows this library to be used in Vala). Requires `-Dintrospection=true`
 
 ### Running the Tests
