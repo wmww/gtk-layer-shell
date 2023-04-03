@@ -4,6 +4,7 @@
 #include <wayland-client-core.h>
 #include "gtk-wayland.h"
 #include "wlr-layer-shell-unstable-v1-client.h"
+#include "xdg-shell-client.h"
 
 struct wl_proxy * (*real_wl_proxy_marshal_array_flags) (
     struct wl_proxy *proxy,
@@ -132,6 +133,9 @@ wl_argument_from_va_list(const char *signature, union wl_argument *args,
 	}
 }
 
+struct xdg_surface *current_xdg_surface = NULL;
+struct xdg_surface *current_xdg_toplevel = NULL;
+
 struct wl_proxy *wl_proxy_marshal_array_flags (
     struct wl_proxy *proxy,
     uint32_t opcode,
@@ -163,6 +167,11 @@ struct wl_proxy *wl_proxy_marshal_array_flags (
         created->refcount = 1;
         created->dispatcher = NULL;
         created->version = version;
+        if (!strcmp(request, "get_xdg_surface")) {
+            current_xdg_surface = created;
+        } else if (!strcmp(request, "get_toplevel")) {
+            current_xdg_toplevel = created;
+        }
         g_message ("%s.%s (intercepted)", type, request);
         return created;
     } else if (!strcmp(type, "xdg_surface") || !strcmp(type, "xdg_toplevel")) {
@@ -171,6 +180,39 @@ struct wl_proxy *wl_proxy_marshal_array_flags (
     } else {
         //g_message ("%s.%s (actually running)", type, request);
         return real_wl_proxy_marshal_array_flags(proxy, opcode, interface, version, flags, args);
+    }
+}
+
+void send_configure_to_xdg(uint32_t serial)
+{
+    if (!current_xdg_surface || !current_xdg_toplevel) {
+        g_warning("no XDG surface to configure");
+        return;
+    }
+
+    if (((struct wl_proxy*)current_xdg_surface)->dispatcher || ((struct wl_proxy*)current_xdg_toplevel)->dispatcher) {
+        g_error("dispatchers not implemented");
+        return;
+    }
+
+    if (((struct wl_proxy*)current_xdg_toplevel)->object.implementation)
+    {
+        struct xdg_toplevel_listener *toplevel = ((struct wl_proxy*)current_xdg_toplevel)->object.implementation;
+        struct wl_array states;
+        wl_array_init(&states);
+        toplevel->configure(
+            ((struct wl_proxy*)current_xdg_toplevel)->user_data,
+            current_xdg_toplevel,
+            0, 0,
+            &states
+        );
+        wl_array_release(&states);
+    }
+
+    if (((struct wl_proxy*)current_xdg_surface)->object.implementation)
+    {
+        struct xdg_surface_listener *surface = ((struct wl_proxy*)current_xdg_surface)->object.implementation;
+        surface->configure(((struct wl_proxy*)current_xdg_surface)->user_data, current_xdg_surface, serial);
     }
 }
 

@@ -23,6 +23,8 @@
 #include <gtk/gtk.h>
 #include <gdk/wayland/gdkwayland.h>
 
+void send_configure_to_xdg(uint32_t serial);
+
 /*
  * Sends the .set_size request if the current allocation differs from the last size sent
  * Needs to be called whenever current_allocation or anchors are changed
@@ -111,6 +113,8 @@ layer_surface_handle_configure (void *data,
                                 uint32_t h)
 {
     LayerSurface *self = data;
+
+    send_configure_to_xdg(serial);
 
     zwlr_layer_surface_v1_ack_configure (surface, serial);
 
