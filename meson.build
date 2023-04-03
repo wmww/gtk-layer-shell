@@ -33,7 +33,6 @@ gnome = import('gnome')
 
 subdir('include')
 subdir('protocol')
-subdir('gtk-priv')
 subdir('src')
 
 gtk_layer_shell = declare_dependency(

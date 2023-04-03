@@ -16,7 +16,7 @@ gtk_layer_shell_lib = library('gtk-layer-shell',
     srcs, client_protocol_srcs,
     c_args: version_args,
     include_directories: [gtk_layer_shell_inc],
-    dependencies: [gtk, wayland_client, gtk_priv],
+    dependencies: [gtk, wayland_client],
     version: meson.project_version(),
     soversion: lib_so_version,
     install: true)
