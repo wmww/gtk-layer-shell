@@ -8,7 +8,12 @@ project('gtk-layer-shell',
 lib_so_version = '0'
 
 add_project_arguments(
-    ['-Wno-pedantic', '-Werror=unused-function'],
+    [
+        '-Wno-pedantic',
+        '-Werror=unused-function',
+        '-Werror=implicit-function-declaration',
+        '-Werror=return-type',
+    ],
     language: 'c')
 
 gtk = dependency('gtk4')
