@@ -15,23 +15,17 @@ static GtkWindow* window;
 
 static void callback_0()
 {
-    EXPECT_MESSAGE(zwlr_layer_shell_v1 .get_layer_surface wl_output@);
     window = create_default_window();
     gtk_layer_init_for_window(window);
-    ASSERT_EQ(gdk_display_get_n_monitors(gdk_display_get_default()), 1, "%d");
-    GdkMonitor *monitor = gdk_display_get_monitor(gdk_display_get_default(), 0);
-    ASSERT(GDK_IS_MONITOR(monitor));
-    gtk_layer_set_monitor(window, monitor);
+    ASSERT_EQ(gtk_layer_get_keyboard_mode(window), GTK_LAYER_SHELL_KEYBOARD_MODE_NONE, "%d");
+    gtk_layer_set_keyboard_mode(window, GTK_LAYER_SHELL_KEYBOARD_MODE_ON_DEMAND);
+    ASSERT_EQ(gtk_layer_get_keyboard_mode(window), GTK_LAYER_SHELL_KEYBOARD_MODE_ON_DEMAND, "%d");
     gtk_widget_show_all(GTK_WIDGET(window));
-}
-
-static void callback_1()
-{
-    EXPECT_MESSAGE(zwlr_layer_shell_v1 .get_layer_surface nil);
-    gtk_layer_set_monitor(window, NULL);
+    ASSERT_EQ(gtk_layer_get_keyboard_mode(window), GTK_LAYER_SHELL_KEYBOARD_MODE_ON_DEMAND, "%d");
+    gtk_layer_set_keyboard_mode(window, GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE);
+    ASSERT_EQ(gtk_layer_get_keyboard_mode(window), GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE, "%d");
 }
 
 TEST_CALLBACKS(
     callback_0,
-    callback_1,
 )

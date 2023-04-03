@@ -1,6 +1,6 @@
 /* This entire file is licensed under MIT
  *
- * Copyright 2020 William Wold
+ * Copyright 2020 Sophie Winter
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
  *
@@ -43,7 +43,7 @@ static struct wl_resource* pointer_global = NULL;
 static struct wl_resource* output_global = NULL;
 static uint32_t click_serial = 0;
 
-// Needs to be called before any role objects are asigned
+// Needs to be called before any role objects are assigned
 static void surface_data_set_role(SurfaceData* data, SurfaceRole role)
 {
     ASSERT_EQ(data->role, SURFACE_ROLE_NONE, "%u");
@@ -333,5 +333,5 @@ void init()
     default_global_create(display, &wl_compositor_interface, 4);
     default_global_create(display, &wl_subcompositor_interface, 1);
     default_global_create(display, &xdg_wm_base_interface, 2);
-    default_global_create(display, &zwlr_layer_shell_v1_interface, 3);
+    default_global_create(display, &zwlr_layer_shell_v1_interface, 4);
 }

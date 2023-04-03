@@ -1,6 +1,6 @@
 /* This entire file is licensed under MIT
  *
- * Copyright 2020 William Wold
+ * Copyright 2020 Sophie Winter
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
  *
@@ -29,8 +29,8 @@ activate (GtkApplication* app, void *_data)
     // Push other windows out of the way
     gtk_layer_auto_exclusive_zone_enable (gtk_window);
 
-    // We don't need to get keybard input
-    // gtk_layer_set_keyboard_interactivity (gtk_window, FALSE); // FALSE is default
+    // We don't need to get keyboard input
+    // gtk_layer_set_keyboard_mode (gtk_window, GTK_LAYER_SHELL_KEYBOARD_MODE_NONE); // NONE is default
 
     // The margins are the gaps around the window's edges
     // Margins and anchors can be set like this...

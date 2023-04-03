@@ -4,7 +4,7 @@
 1. Pull GTK and update gtk-priv: `./gtk-priv/scripts/build.py` (see [gtk-priv/README.md](gtk-priv/README.md) for details)
 1. Commit any changes to gtk-priv the script may have made
 1. Make sure the tests pass: `ninja -C build test`
-1. Compile and play around with gtk-layer-demo: `./build/demo/gtk-layer-demo` (catch anything the automatic tests missed)
+1. Compile and play around with gtk-layer-demo: `./build/examples/gtk-layer-demo` (catch anything the automatic tests missed)
 1. Bump version in [meson.build](meson.build)
 1. Update [compatibility.md](compatibility.md)
 1. Update [CHANGELOG.md](CHANGELOG.md) ([GitHub compare](https://github.com/wmww/gtk-layer-shell/compare/) is useful here)

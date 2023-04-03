@@ -1,6 +1,6 @@
 /* This entire file is licensed under MIT
  *
- * Copyright 2020 William Wold
+ * Copyright 2020 Sophie Winter
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
  *
@@ -43,6 +43,18 @@ gtk_layer_is_supported ()
         return FALSE;
     gtk_wayland_init_if_needed ();
     return gtk_wayland_get_layer_shell_global () != NULL;
+}
+
+guint
+gtk_layer_get_protocol_version ()
+{
+    if (!GDK_IS_WAYLAND_DISPLAY (gdk_display_get_default ()))
+        return 0;
+    gtk_wayland_init_if_needed ();
+    struct zwlr_layer_shell_v1 *layer_shell_global = gtk_wayland_get_layer_shell_global ();
+    if (!layer_shell_global)
+        return 0;
+    return zwlr_layer_shell_v1_get_version (layer_shell_global);
 }
 
 static LayerSurface*
@@ -211,17 +223,52 @@ gtk_layer_auto_exclusive_zone_is_enabled (GtkWindow *window)
 }
 
 void
-gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interacitvity)
+gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interactivity)
 {
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
-    layer_surface_set_keyboard_interactivity (layer_surface, interacitvity);
+    if (interactivity != TRUE && interactivity != FALSE) {
+        g_warning (
+            "boolean with value %d sent to gtk_layer_set_keyboard_interactivity (), "
+            "perhaps gtk_layer_set_keyboard_mode () was intended?",
+            interactivity);
+    }
+    gtk_layer_set_keyboard_mode (
+        window,
+        interactivity ? GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE : GTK_LAYER_SHELL_KEYBOARD_MODE_NONE);
 }
 
 gboolean
 gtk_layer_get_keyboard_interactivity (GtkWindow *window)
 {
+    GtkLayerShellKeyboardMode mode = gtk_layer_get_keyboard_mode (window);
+    if (mode != GTK_LAYER_SHELL_KEYBOARD_MODE_NONE && mode != GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE) {
+        g_warning (
+            "gtk_layer_get_keyboard_interactivity () used after keyboard mode set to %d,"
+            "consider using gtk_layer_get_keyboard_mode ().",
+            mode);
+    }
+    return mode != GTK_LAYER_SHELL_KEYBOARD_MODE_NONE;
+}
+
+void
+gtk_layer_set_keyboard_mode (GtkWindow *window, GtkLayerShellKeyboardMode mode)
+{
+    g_return_if_fail(mode < GTK_LAYER_SHELL_KEYBOARD_MODE_ENTRY_NUMBER);
     LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return FALSE; // Error message already shown in gtk_window_get_layer_surface
-    return layer_surface->keyboard_interactivity;
+    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
+    if (mode != GTK_LAYER_SHELL_KEYBOARD_MODE_NONE && mode != GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE) {
+        if (gtk_layer_get_protocol_version () < 4) {
+            g_warning (
+                "Compositor does not support requested keyboard interactivity mode, using exclusive mode.");
+            mode = GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE;
+        }
+    }
+    layer_surface_set_keyboard_mode (layer_surface, mode);
+}
+
+GtkLayerShellKeyboardMode
+gtk_layer_get_keyboard_mode (GtkWindow *window)
+{
+    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
+    if (!layer_surface) return GTK_LAYER_SHELL_KEYBOARD_MODE_NONE; // Error message already shown in gtk_window_get_layer_surface
+    return layer_surface->keyboard_mode;
 }

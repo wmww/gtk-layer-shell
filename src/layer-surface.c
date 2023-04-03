@@ -1,6 +1,6 @@
 /* This entire file is licensed under MIT
  *
- * Copyright 2020 William Wold
+ * Copyright 2020 Sophie Winter
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
  *
@@ -61,7 +61,7 @@ layer_surface_send_set_size (LayerSurface *self)
  * Sets the window's geometry hints (used to force the window to be a specific size)
  * Needs to be called whenever last_configure_size or anchors are changed
  * Lets windows decide their own size along any axis the surface is not stretched along
- * Forces window (by setting the max and min hints) to be of configured size along axises they are stretched along
+ * Forces window (by setting the max and min hints) to be of configured size along axes they are stretched along
  */
 static void
 layer_surface_update_size (LayerSurface *self)
@@ -188,7 +188,7 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
                                                                  name_space);
     g_return_if_fail (self->layer_surface);
 
-    zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, self->keyboard_interactivity);
+    zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, self->keyboard_mode);
     zwlr_layer_surface_v1_set_exclusive_zone (self->layer_surface, self->exclusive_zone);
     layer_surface_send_set_anchor (self);
     layer_surface_send_set_margin (self);
@@ -328,7 +328,7 @@ layer_surface_new (GtkWindow *gtk_window)
     self->name_space = NULL;
     self->exclusive_zone = 0;
     self->auto_exclusive_zone = FALSE;
-    self->keyboard_interactivity = FALSE;
+    self->keyboard_mode = GTK_LAYER_SHELL_KEYBOARD_MODE_NONE;
     self->layer_surface = NULL;
 
     gtk_window_set_decorated (gtk_window, FALSE);
@@ -441,13 +441,21 @@ layer_surface_auto_exclusive_zone_enable (LayerSurface *self)
 }
 
 void
-layer_surface_set_keyboard_interactivity (LayerSurface *self, gboolean interactivity)
+layer_surface_set_keyboard_mode (LayerSurface *self, GtkLayerShellKeyboardMode mode)
 {
-    interactivity = (interactivity != FALSE);
-    if (self->keyboard_interactivity != interactivity) {
-        self->keyboard_interactivity = interactivity;
+    if (mode == GTK_LAYER_SHELL_KEYBOARD_MODE_ON_DEMAND) {
+        uint32_t version = gtk_layer_get_protocol_version();
+        if (version <= 3) {
+            g_warning (
+                "Compositor uses layer shell version %d, which does not support on-demand keyboard interactivity",
+                version);
+            mode = GTK_LAYER_SHELL_KEYBOARD_MODE_NONE;
+        }
+    }
+    if (self->keyboard_mode != mode) {
+        self->keyboard_mode = mode;
         if (self->layer_surface) {
-            zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, self->keyboard_interactivity);
+            zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, self->keyboard_mode);
             custom_shell_surface_needs_commit ((CustomShellSurface *)self);
         }
     }

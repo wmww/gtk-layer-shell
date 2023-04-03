@@ -1,6 +1,6 @@
 /* This entire file is licensed under MIT
  *
- * Copyright 2020 William Wold
+ * Copyright 2020 Sophie Winter
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
  *
@@ -60,7 +60,7 @@ wl_registry_handle_global (void *_data,
 
     // pull out needed globals
     if (strcmp (interface, zwlr_layer_shell_v1_interface.name) == 0) {
-        g_warn_if_fail (zwlr_layer_shell_v1_interface.version == 3);
+        g_warn_if_fail (zwlr_layer_shell_v1_interface.version >= 3);
         layer_shell_global = wl_registry_bind (registry,
                                                id,
                                                &zwlr_layer_shell_v1_interface,
@@ -212,6 +212,7 @@ gtk_wayland_get_logical_geom (GtkWindow *gtk_window)
     GList *list = gdk_window_get_children (window);
     if (list && !list->next) // If there is exactly one child window
         window = list->data;
+    g_list_free(list);
     GdkRectangle geom;
     gdk_window_get_geometry (window, &geom.x, &geom.y, &geom.width, &geom.height);
     */

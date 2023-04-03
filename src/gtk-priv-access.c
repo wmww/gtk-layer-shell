@@ -1,6 +1,6 @@
 /* This entire file is licensed under LGPL v3
  *
- * Copyright 2021 William Wold
+ * Copyright 2020 Sophie Winter
  *
  * This file is part of GTK Layer Shell.
  *

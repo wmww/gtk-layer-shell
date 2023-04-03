@@ -1,6 +1,6 @@
 /* This entire file is licensed under MIT
  *
- * Copyright 2020 William Wold
+ * Copyright 2020 Sophie Winter
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
  *
@@ -25,15 +25,6 @@ on_exclusive_zone_state_set (GtkToggleButton *_toggle_button, gboolean state, Gt
 }
 
 gboolean
-on_keyboard_interactivity_state_set (GtkToggleButton *_toggle_button, gboolean state, GtkWindow *layer_window)
-{
-    (void)_toggle_button;
-
-    gtk_layer_set_keyboard_interactivity (layer_window, state);
-    return FALSE;
-}
-
-gboolean
 on_fixed_size_set (GtkToggleButton *_toggle_button, gboolean state, GtkWindow *layer_window)
 {
     (void)_toggle_button;
@@ -53,14 +44,12 @@ struct {
     gboolean (*callback) (GtkToggleButton *toggle_button, gboolean state, GtkWindow *layer_window);
 } const mscl_toggles[] = {
     {"Exclusive", "Create an exclusive zone when anchored", on_exclusive_zone_state_set},
-    {"Keyboard", "Get keyboard events", on_keyboard_interactivity_state_set},
     {"Fixed size", "Set a fixed window size (ignored depending on anchors)", on_fixed_size_set},
 };
 
 GtkWidget *
 mscl_toggles_new (GtkWindow *layer_window,
                   gboolean default_auto_exclusive_zone,
-                  gboolean default_keyboard_interactivity,
                   gboolean default_fixed_size)
 {
     GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
@@ -76,8 +65,6 @@ mscl_toggles_new (GtkWindow *layer_window,
             gboolean default_value;
             if (mscl_toggles[i].callback == on_exclusive_zone_state_set)
                 default_value = default_auto_exclusive_zone;
-            else if (mscl_toggles[i].callback == on_keyboard_interactivity_state_set)
-                default_value = default_keyboard_interactivity;
             else if (mscl_toggles[i].callback == on_fixed_size_set)
                 default_value = default_fixed_size;
             else

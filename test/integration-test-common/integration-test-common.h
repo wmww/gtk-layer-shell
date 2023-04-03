@@ -1,6 +1,6 @@
 /* This entire file is licensed under MIT
  *
- * Copyright 2020 William Wold
+ * Copyright 2020 Sophie Winter
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
  *
@@ -21,11 +21,11 @@
 
 // Tell the test script that a request containing the given space-separated components is expected
 #define EXPECT_MESSAGE(message) fprintf(stderr, "EXPECT: %s\n", #message)
-// Tell the test script that all expected messages should now be fufilled
+// Tell the test script that all expected messages should now be fulfilled
 // (called automatically before each callback and at the end of the test)
 #define CHECK_EXPECTATIONS() fprintf(stderr, "CHECK EXPECTATIONS COMPLETED\n")
 
-// NULL-terminated list of callbacks that will be called before quiting
+// NULL-terminated list of callbacks that will be called before quitting
 // Should be defined in the test file using TEST_CALLBACKS()
 extern void (* test_callbacks[])(void);
 
