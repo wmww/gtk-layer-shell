@@ -15,7 +15,6 @@
 #include "simple-conversions.h"
 #include "custom-shell-surface.h"
 #include "gtk-wayland.h"
-#include "gtk-priv-access.h"
 
 #include "wlr-layer-shell-unstable-v1-client.h"
 #include "xdg-shell-client.h"
@@ -127,7 +126,6 @@ layer_surface_handle_configure (void *data,
 
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window (&self->super);
     GdkSurface *gdk_surface = gtk_native_get_surface (GTK_NATIVE (gtk_window));
-    gdk_window_notify_priv_mapped (gdk_surface);
 }
 
 static void

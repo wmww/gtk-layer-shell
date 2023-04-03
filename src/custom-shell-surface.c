@@ -11,7 +11,6 @@
 
 #include "custom-shell-surface.h"
 #include "gtk-wayland.h"
-#include "gtk-priv-access.h"
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -40,9 +39,6 @@ custom_shell_surface_on_window_realize (GtkWidget *widget, CustomShellSurface *s
     GdkWindow *gdk_window = gtk_native_get_surface (GTK_NATIVE (self->private->gtk_window));
     g_return_if_fail (gdk_window);
 
-    gtk_priv_access_init (gdk_window);
-    gdk_window_set_priv_mapped (gdk_window);
-
     // TODO
     // gdk_wayland_window_set_use_custom_surface (gdk_window);
 }
@@ -65,7 +61,6 @@ custom_shell_surface_on_window_map (GtkWidget *widget, CustomShellSurface *self)
     wl_surface_attach (wl_surface, NULL, 0, 0);
 
     self->virtual->map (self, wl_surface);
-    gdk_window_set_priv_mapped (gdk_window);
 
     wl_surface_commit (wl_surface);
     wl_display_roundtrip (gdk_wayland_display_get_wl_display (gdk_display_get_default ()));

@@ -4,9 +4,6 @@ srcs = files(
     'libwayland-wrappers.c',
     'custom-shell-surface.c',
     'layer-surface.c',
-    'xdg-popup-surface.c',
-    'xdg-toplevel-surface.c',
-    'gtk-priv-access.c',
     'simple-conversions.c')
 
 version_args = [

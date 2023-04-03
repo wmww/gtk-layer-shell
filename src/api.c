@@ -14,7 +14,6 @@
 #include "custom-shell-surface.h"
 #include "simple-conversions.h"
 #include "layer-surface.h"
-#include "xdg-toplevel-surface.h"
 
 #include <gdk/wayland/gdkwayland.h>
 
@@ -80,12 +79,7 @@ gtk_layer_init_for_window (GtkWindow *window)
     gtk_wayland_init_if_needed ();
     LayerSurface* layer_surface = layer_surface_new (window);
     if (!layer_surface) {
-        g_warning ("Falling back to XDG shell instead of Layer Shell (surface should appear but layer features will not work)");
-        XdgToplevelSurface* toplevel_surface = xdg_toplevel_surface_new (window);
-        if (!toplevel_surface)
-        {
-            g_warning ("Shell does not support XDG shell stable. Falling back to default GTK behavior");
-        }
+        g_warning ("Shell does not support Layer Shell. Falling back to default GTK behavior");
     }
 }
 
