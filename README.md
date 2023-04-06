@@ -1,3 +1,24 @@
+# GTK4 version of GTK Layer Shell -- WIP
+It works, but it's still rough around the edges. See the end of https://github.com/wmww/gtk-layer-shell/issues/37 for details.
+
+TODO before release:
+- remove traces of GPL (all GPL code should be gone now)
+- drop all copyright headers
+- change license in meson
+- change lib name in meson
+- change version in meson
+- change so name in meson
+- update release process document
+- get tests passing
+- fix widget layout of demo
+- make the fixed size toggle work
+- investigate the size-allocate warning
+- investigate extracting info from more XDG shell calls
+- fix all compiler warnings
+- detect if library got properly loaded and warn otherwise
+- update readme on this repo
+- update readme on GTK3 repo
+
 # GTK Layer Shell
 
 ![GTK Layer Shell demo screenshot](https://i.imgur.com/dIuYcBM.png)
