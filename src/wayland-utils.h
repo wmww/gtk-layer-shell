@@ -18,8 +18,6 @@
 #include <gdk/gdk.h>
 #include <gdk/gdk.h>
 
-#define MESSAGE_PREFIX "GTK4 Layer Shell: "
-
 void gtk_wayland_init_if_needed (void);
 struct zwlr_layer_shell_v1 *gtk_wayland_get_layer_shell_global (void);
 

@@ -27,12 +27,11 @@ libwayland_wrappers_init ()
 
     void *handle = dlopen("libwayland-client.so", RTLD_LAZY);
     if (handle == NULL) {
-        g_error(MESSAGE_PREFIX "failed to dlopen libwayland");
-        abort();
+        g_error ("failed to dlopen libwayland");
     }
 
 #define INIT_SYM(name) if (!(real_##name = dlsym(handle, #name))) {\
-    g_error (MESSAGE_PREFIX "dlsym failed to load %s", #name); abort (); }
+    g_error ("dlsym failed to load %s", #name); }
 
     INIT_SYM(wl_proxy_marshal_array_flags);
     INIT_SYM(wl_proxy_destroy);
@@ -316,7 +315,7 @@ wl_proxy_add_dispatcher(struct wl_proxy *proxy,
 {
     libwayland_wrappers_init ();
     if (proxy->object.id == client_facing_proxy_id) {
-        g_warning(MESSAGE_PREFIX "wl_proxy_add_dispatcher() not supported for client-facing proxies");
+        g_critical ("wl_proxy_add_dispatcher () not supported for client-facing proxies");
     }
     return real_wl_proxy_add_dispatcher(proxy, dispatcher_func, dispatcher_data, data);
 }

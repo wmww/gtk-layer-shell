@@ -180,7 +180,7 @@ layer_surface_handle_configure (void *data,
             self->client_facing_xdg_surface,
             serial);
     } else {
-        g_warning(MESSAGE_PREFIX "no XDG surface to configure");
+        g_warning ("no XDG surface to configure");
     }
 
     zwlr_layer_surface_v1_ack_configure (surface, serial);
@@ -561,7 +561,7 @@ stubbed_xdg_surface_handle_request (
         self->client_facing_xdg_toplevel = (struct xdg_toplevel *)toplevel;
         return toplevel;
     } else if (opcode == XDG_SURFACE_GET_POPUP) {
-        g_error(MESSAGE_PREFIX "internal error: XDG surface intercepted, but is now being used as popup");
+        g_critical ("XDG surface intercepted, but is now being used as popup");
         return create_client_facing_proxy (proxy, &xdg_popup_interface, version, NULL, NULL, NULL);
     } else {
         return NULL;
@@ -612,7 +612,7 @@ layer_surface_handle_request (
                     zwlr_layer_surface_v1_get_popup (self->layer_surface, xdg_popup);
                     return (struct wl_proxy *)xdg_popup;
                 } else {
-                    g_error (MESSAGE_PREFIX "tried to create popup before layer shell surface");
+                    g_critical ("tried to create popup before layer shell surface");
                     return create_client_facing_proxy (proxy, &xdg_popup_interface, version, NULL, NULL, NULL);
                 }
             }

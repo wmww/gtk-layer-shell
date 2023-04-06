@@ -60,7 +60,7 @@ gtk_window_get_layer_surface_or_warn (GtkWindow *window)
     g_return_val_if_fail (window, NULL);
     LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
     if (!layer_surface) {
-        g_error (MESSAGE_PREFIX "GtkWindow is not a layer surface. Make sure you called gtk_layer_init_for_window ()");
+        g_warning ("GtkWindow is not a layer surface. Make sure you called gtk_layer_init_for_window ()");
         return NULL;
     }
     return layer_surface;

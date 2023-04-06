@@ -77,7 +77,7 @@ gtk_wayland_init_if_needed ()
     wl_display_roundtrip (wl_display);
 
     if (!layer_shell_global)
-        g_warning (MESSAGE_PREFIX "It appears your Wayland compositor does not support the Layer Shell protocol");
+        g_warning ("it appears your Wayland compositor does not support the Layer Shell protocol");
 
     has_initialized = TRUE;
 }
