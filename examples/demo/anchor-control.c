@@ -35,7 +35,7 @@ anchor_edge_button_new (GtkWindow *layer_window,
                         const char *tooltip)
 {
     GtkWidget *button = gtk_toggle_button_new ();
-    gtk_button_set_image (GTK_BUTTON (button), gtk_image_new_from_icon_name (icon_name, GTK_ICON_SIZE_BUTTON));
+    gtk_button_set_icon_name (GTK_BUTTON (button), icon_name);
     gtk_widget_set_tooltip_text (button, tooltip);
     AnchorButtonData *data = g_new0 (AnchorButtonData, 1);
     *data = (AnchorButtonData) {
@@ -53,33 +53,33 @@ anchor_control_new (GtkWindow *layer_window, const gboolean default_anchors[GTK_
 {
     GtkWidget *outside_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
     GtkWidget *outside_hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_box_pack_start (GTK_BOX (outside_vbox), outside_hbox, TRUE, FALSE, 0);
+    gtk_box_append (GTK_BOX (outside_vbox), outside_hbox);
     {
         GtkWidget *hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 4);
-        gtk_box_pack_start (GTK_BOX (outside_hbox), hbox, TRUE, FALSE, 0);
+        gtk_box_append (GTK_BOX (outside_hbox), hbox);
         {
             GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-            gtk_container_add (GTK_CONTAINER (hbox), vbox);
+            gtk_box_append (GTK_BOX (hbox), vbox);
             {
                 GtkWidget *button = anchor_edge_button_new (layer_window, GTK_LAYER_SHELL_EDGE_LEFT, default_anchors, "go-first", "Anchor left");
-                gtk_box_pack_start (GTK_BOX (vbox), button, TRUE, FALSE, 0);
+                gtk_box_append (GTK_BOX (vbox), button);
             }
         }{
             GtkWidget *center_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 40);
-            gtk_container_add (GTK_CONTAINER (hbox), center_vbox);
+            gtk_box_append (GTK_BOX (hbox), center_vbox);
             {
                 GtkWidget *button = anchor_edge_button_new (layer_window, GTK_LAYER_SHELL_EDGE_TOP, default_anchors, "go-top", "Anchor top");
-                gtk_box_pack_start (GTK_BOX (center_vbox), button, FALSE, FALSE, 0);
+                gtk_box_append (GTK_BOX (center_vbox), button);
             }{
                 GtkWidget *button = anchor_edge_button_new (layer_window, GTK_LAYER_SHELL_EDGE_BOTTOM, default_anchors, "go-bottom", "Anchor bottom");
-                gtk_box_pack_end (GTK_BOX (center_vbox), button, FALSE, FALSE, 0);
+                gtk_box_append (GTK_BOX (center_vbox), button);
             }
         }{
             GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-            gtk_container_add (GTK_CONTAINER (hbox), vbox);
+            gtk_box_append (GTK_BOX (hbox), vbox);
             {
                 GtkWidget *button = anchor_edge_button_new (layer_window, GTK_LAYER_SHELL_EDGE_RIGHT, default_anchors, "go-last", "Anchor right");
-                gtk_box_pack_start (GTK_BOX (vbox), button, TRUE, FALSE, 0);
+                gtk_box_append (GTK_BOX (vbox), button);
             }
         }
     }

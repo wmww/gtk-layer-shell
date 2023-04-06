@@ -56,8 +56,8 @@ mscl_toggles_new (GtkWindow *layer_window,
                   gboolean default_auto_exclusive_zone,
                   gboolean default_fixed_size);
 
-GtkWidget *
-menu_bar_new (GtkWindow *layer_window);
+void
+set_up_menubar (GtkWindow *layer_window);
 
 GtkWidget *
 keyboard_selection_new (GtkWindow *layer_window, GtkLayerShellKeyboardMode default_kb);

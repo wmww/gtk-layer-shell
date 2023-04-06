@@ -12,61 +12,27 @@
 #include "gtk-layer-demo.h"
 
 static void
-on_close_clicked (GtkMenuItem *_item, GtkWindow *layer_window)
-{
-    (void)_item;
-
-    gtk_window_close (layer_window);
+quit_activated(GSimpleAction *action, GVariant *parameter, GApplication *application) {
+    g_application_quit (application);
 }
 
-GtkWidget *
-menu_bar_new (GtkWindow *layer_window)
+void
+set_up_menubar (GtkWindow *layer_window)
 {
-    GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-    {
-        GtkWidget *menu_bar = gtk_menu_bar_new ();
-        gtk_box_pack_start (GTK_BOX (vbox), menu_bar, FALSE, FALSE, 0);
-        {
-            GtkWidget *menu_item = gtk_menu_item_new_with_label ("Popup menu");
-            gtk_container_add (GTK_CONTAINER (menu_bar), menu_item);
-            {
-                GtkWidget *submenu = gtk_menu_new ();
-                gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), submenu);
-                {
-                    GtkWidget *nested_menu_item = gtk_menu_item_new_with_label ("Nested popup");
-                    gtk_menu_shell_append (GTK_MENU_SHELL (submenu), nested_menu_item);
-                    {
-                        GtkWidget *nested_menu = gtk_menu_new ();
-                        gtk_menu_item_set_submenu (GTK_MENU_ITEM (nested_menu_item), nested_menu);
-                        for (int i = 0; i < 3; i++)
-                        {
-                            GString *label = g_string_new ("");
-                            g_string_printf (label, "Menu item %d", i);
-                            GtkWidget *submenu_item = gtk_menu_item_new_with_label (label->str);
-                            g_string_free (label, TRUE);
-                            gtk_menu_shell_append (GTK_MENU_SHELL (nested_menu), submenu_item);
-                        }
-                        {
-                            GtkWidget *submenu_item = gtk_menu_item_new_with_label ("Nested again");
-                            gtk_menu_shell_append (GTK_MENU_SHELL (nested_menu), submenu_item);
-                            {
-                                GtkWidget *nested_menu = gtk_menu_new ();
-                                gtk_menu_item_set_submenu (GTK_MENU_ITEM (submenu_item), nested_menu);
-                                {
-                                    GtkWidget *submenu_item = gtk_menu_item_new_with_label ("Final item");
-                                    gtk_menu_shell_append (GTK_MENU_SHELL (nested_menu), submenu_item);
-                                }
-                            }
-                        }
-                    }
-                }
-                {
-                    GtkWidget *close_item = gtk_menu_item_new_with_label ("Close");
-                    g_signal_connect (close_item, "activate", G_CALLBACK (on_close_clicked), layer_window);
-                    gtk_menu_shell_append (GTK_MENU_SHELL (submenu), close_item);
-                }
-            }
-        }
-    }
-    return vbox;
+    GSimpleAction *act_quit = g_simple_action_new ("quit", NULL);
+    g_action_map_add_action (G_ACTION_MAP (gtk_window_get_application (layer_window)), G_ACTION (act_quit));
+    g_signal_connect (act_quit, "activate", G_CALLBACK (quit_activated), gtk_window_get_application (layer_window));
+
+    GMenu *menubar = g_menu_new ();
+    gtk_application_set_menubar (GTK_APPLICATION (gtk_window_get_application (layer_window)), G_MENU_MODEL (menubar));
+    gtk_application_window_set_show_menubar (GTK_APPLICATION_WINDOW (layer_window), TRUE);
+    GMenuItem *menu_item = g_menu_item_new ("Menu", NULL);
+    g_menu_append_item (menubar, menu_item);
+    GMenu *menu = g_menu_new ();
+    GMenuItem *menu_item_quit = g_menu_item_new ("Quit", "app.quit");
+    g_menu_append_item (menu, menu_item_quit);
+    g_menu_item_set_submenu (menu_item, G_MENU_MODEL (menu));
+    g_menu_append_item (menubar, menu_item);
+    g_object_unref (menu_item_quit);
+    g_object_unref (menu_item);
 }

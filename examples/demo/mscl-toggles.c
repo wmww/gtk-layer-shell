@@ -34,7 +34,6 @@ on_fixed_size_set (GtkToggleButton *_toggle_button, gboolean state, GtkWindow *l
     } else {
         gtk_widget_set_size_request (GTK_WIDGET (layer_window), -1, -1);
     }
-    gtk_window_resize (layer_window, 1, 1);
     return FALSE;
 }
 
@@ -55,10 +54,10 @@ mscl_toggles_new (GtkWindow *layer_window,
     GtkWidget *vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
     for (unsigned i = 0; i < sizeof (mscl_toggles) / sizeof (mscl_toggles[0]); i++) {
         GtkWidget *hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-        gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+        gtk_box_append (GTK_BOX (vbox), hbox);
         {
             GtkWidget *label = gtk_label_new (mscl_toggles[i].name);
-            gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
+            gtk_box_append (GTK_BOX (hbox), label);
         }{
             GtkWidget *toggle = gtk_switch_new ();
             gtk_widget_set_tooltip_text (toggle, mscl_toggles[i].tooltip);
@@ -71,7 +70,7 @@ mscl_toggles_new (GtkWindow *layer_window,
                 g_assert_not_reached ();
             gtk_switch_set_active (GTK_SWITCH (toggle), default_value);
             g_signal_connect (toggle, "state-set", G_CALLBACK (mscl_toggles[i].callback), layer_window);
-            gtk_box_pack_end (GTK_BOX (hbox), toggle, FALSE, FALSE, 0);
+            gtk_box_append (GTK_BOX (hbox), toggle);
         }
     }
     return vbox;

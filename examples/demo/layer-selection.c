@@ -52,7 +52,7 @@ layer_selection_new (GtkWindow *layer_window, GtkLayerShellLayer default_layer)
                 gtk_combo_box_set_active (GTK_COMBO_BOX (combo_box), i);
         }
         g_signal_connect (combo_box, "changed", G_CALLBACK (on_layer_selected), layer_window);
-        gtk_box_pack_start (GTK_BOX (vbox), combo_box, FALSE, FALSE, 0);
+        gtk_box_append (GTK_BOX (vbox), combo_box);
     }
 
     return vbox;

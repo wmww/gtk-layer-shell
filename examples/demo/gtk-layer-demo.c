@@ -245,7 +245,7 @@ static void
 process_args (int *argc, char ***argv)
 {
     GOptionContext *context = g_option_context_new ("");
-    g_option_context_add_group (context, gtk_get_option_group (TRUE));
+    //g_option_context_add_group (context, gtk_get_option_group (TRUE));
     g_option_context_set_summary (context, prog_summary);
     g_option_context_set_description (context, prog_details);
     g_option_context_add_main_entries (context, options, NULL);
@@ -314,22 +314,20 @@ on_orientation_changed (GtkWindow *window, WindowOrientation orientation, Toplev
     gtk_orientable_set_orientation (GTK_ORIENTABLE (data->toplevel_box), orient_toplevel);
     gtk_orientable_set_orientation (GTK_ORIENTABLE (data->first_box), orient_sub);
     gtk_orientable_set_orientation (GTK_ORIENTABLE (data->second_box), orient_sub);
-    gtk_window_resize (window, 1, 1); // force the window to shrink to the smallest size it can
+    //gtk_window_resize (window, 1, 1); // force the window to shrink to the smallest size it can
 }
 
 static void
-on_window_destroy(GtkWindow *_window, void *_data)
+on_window_destroy(GtkWindow *window, GApplication *_data)
 {
-    (void)_window;
     (void)_data;
-
-    gtk_main_quit ();
+    g_application_quit (gtk_window_get_application (window));
 }
 
-static GtkWidget *
-layer_window_new ()
+static void
+activate (GtkApplication* app, void *_data)
 {
-    GtkWindow *gtk_window = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
+    GtkWindow *gtk_window = GTK_WINDOW (gtk_application_window_new (app));
 
     ToplevelData *data = g_new0 (ToplevelData, 1);
     g_object_set_data_full (G_OBJECT (gtk_window), anchor_edges_key, data, g_free);
@@ -356,57 +354,47 @@ layer_window_new ()
     if (default_auto_exclusive_zone)
         gtk_layer_auto_exclusive_zone_enable (gtk_window);
 
+    set_up_menubar (gtk_window);
     GtkWidget *centered_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-    gtk_container_add (GTK_CONTAINER (gtk_window), centered_vbox);
+    gtk_window_set_child (gtk_window, centered_vbox);
     GtkWidget *centered_hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_box_pack_start (GTK_BOX (centered_vbox), centered_hbox, TRUE, FALSE, 0);
+    gtk_box_append (GTK_BOX (centered_vbox), centered_hbox);
     data->toplevel_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-    gtk_container_set_border_width (GTK_CONTAINER (data->toplevel_box), 16);
-    gtk_box_pack_start (GTK_BOX (centered_hbox), data->toplevel_box, TRUE, FALSE, 0);
+    //gtk_container_set_border_width (GTK_CONTAINER (data->toplevel_box), 16);
+    gtk_box_append (GTK_BOX (centered_hbox), data->toplevel_box);
     {
         data->first_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-        gtk_box_pack_start (GTK_BOX (data->toplevel_box), data->first_box, FALSE, FALSE, 0);
+        gtk_box_append (GTK_BOX (data->toplevel_box), data->first_box);
         {
             GtkWidget *selections_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
-            gtk_box_pack_start (GTK_BOX (selections_box), menu_bar_new (gtk_window), FALSE, FALSE, 0);
-            gtk_box_pack_start (GTK_BOX (data->first_box), selections_box, FALSE, FALSE, 0);
-            gtk_box_pack_start (GTK_BOX (selections_box),
-                                monitor_selection_new (gtk_window),
-                                FALSE, FALSE, 0);
-            gtk_box_pack_start (GTK_BOX (selections_box),
-                                layer_selection_new (gtk_window, default_layer),
-                                FALSE, FALSE, 0);
+            gtk_box_append (GTK_BOX (data->first_box), selections_box);
+            gtk_box_append (GTK_BOX (selections_box),
+                            monitor_selection_new (gtk_window));
+            gtk_box_append (GTK_BOX (selections_box),
+                            layer_selection_new (gtk_window, default_layer));
         }{
-            gtk_box_pack_start (GTK_BOX (data->first_box),
-                                anchor_control_new (gtk_window, default_anchors),
-                                FALSE, FALSE, 0);
+            gtk_box_append (GTK_BOX (data->first_box),
+                            anchor_control_new (gtk_window, default_anchors));
         }
     }{
         data->second_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-        gtk_box_pack_start (GTK_BOX (data->toplevel_box), data->second_box, TRUE, TRUE, 0);
+        gtk_box_append (GTK_BOX (data->toplevel_box), data->second_box);
         {
             GtkWidget *toggles_box = mscl_toggles_new (gtk_window,
                                                        default_auto_exclusive_zone,
                                                        default_fixed_size);
-            gtk_box_pack_start (GTK_BOX (data->second_box),
-                                toggles_box,
-                                FALSE, FALSE, 0);
+            gtk_box_append (GTK_BOX (data->second_box), toggles_box);
             GtkWidget *kb_box = keyboard_selection_new (gtk_window, default_keyboard_mode);
-            gtk_box_pack_start (GTK_BOX (data->second_box),
-                                kb_box,
-                                FALSE, FALSE, 0);
+            gtk_box_append (GTK_BOX (data->second_box), kb_box);
         }
         {
             GtkWidget *margin_and_version_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-            gtk_box_pack_start (GTK_BOX (margin_and_version_box),
-                                margin_control_new (gtk_window, default_margins),
-                                TRUE, FALSE, 0);
-            gtk_box_pack_start (GTK_BOX (margin_and_version_box),
-                                version_info_new (),
-                                TRUE, TRUE, 0);
-            gtk_box_pack_start (GTK_BOX (data->second_box),
-                                margin_and_version_box,
-                                TRUE, TRUE, 0);
+            gtk_box_append (GTK_BOX (margin_and_version_box),
+                            margin_control_new (gtk_window, default_margins));
+            gtk_box_append (GTK_BOX (margin_and_version_box),
+                            version_info_new ());
+            gtk_box_append (GTK_BOX (data->second_box),
+                            margin_and_version_box);
         }
     }
 
@@ -414,14 +402,14 @@ layer_window_new ()
     data->orientation = -1; // invalid value will force anchor_edges_update_orientation to update
     layer_window_update_orientation (gtk_window);
 
-    return GTK_WIDGET (gtk_window);
+    g_signal_connect (gtk_window, "destroy", G_CALLBACK (on_window_destroy), NULL);
+    gtk_window_present (gtk_window);
 }
 
 int
 main (int argc, char **argv)
 {
     g_set_prgname (prog_name);
-    gtk_init (&argc, &argv);
     process_args (&argc, &argv);
 
     // The int arg is an enum of type WindowOrientation
@@ -433,9 +421,9 @@ main (int argc, char **argv)
                   g_cclosure_marshal_VOID__INT,
                   G_TYPE_NONE, 1, G_TYPE_INT);
 
-    GtkWidget *initial_window = layer_window_new ();
-    g_signal_connect (initial_window, "destroy", G_CALLBACK (on_window_destroy), NULL);
-    gtk_widget_show_all (GTK_WIDGET (initial_window));
-
-    gtk_main ();
+    GtkApplication * app = gtk_application_new ("sh.wmww.gtk-layer-example", G_APPLICATION_FLAGS_NONE);
+    g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
+    int status = g_application_run (G_APPLICATION (app), argc, argv);
+    g_object_unref (app);
+    return status;
 }
