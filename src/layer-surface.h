@@ -14,19 +14,24 @@
 
 #define MESSAGE_PREFIX "GTK4 Layer Shell: "
 
-#include "custom-shell-surface.h"
 #include "wlr-layer-shell-unstable-v1-client.h"
 #include "gtk-layer-shell.h"
 #include <gtk/gtk.h>
 
-// A LayerSurface * can be safely cast to a CustomShellSurface *
+struct wl_surface;
+struct xdg_surface;
+struct xdg_positioner;
+
+typedef GdkSurface GdkWindow;
+
 typedef struct _LayerSurface LayerSurface;
 
 // Functions that mutate this structure should all be in layer-surface.c to make the logic easier to understand
 // Struct is declared in this header to prevent the need for excess getters
 struct _LayerSurface
 {
-    CustomShellSurface super;
+    GtkWindow *gtk_window;
+    struct wl_surface *wl_surface;
 
     // Can be set at any time
     gboolean anchors[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER]; // The current anchor
@@ -46,15 +51,13 @@ struct _LayerSurface
     GtkRequisition cached_layer_size; // Last size sent to zwlr_layer_surface_v1_set_size (starts as 0, 0)
     GtkRequisition last_configure_size; // Last size received from a configure event
 
-    struct wl_surface *wl_surface;
     struct xdg_surface *client_facing_xdg_surface;
     struct xdg_toplevel *client_facing_xdg_toplevel;
 };
 
 LayerSurface *layer_surface_new (GtkWindow *gtk_window);
 
-// Safe cast, returns NULL if wrong type sent
-LayerSurface *custom_shell_surface_get_layer_surface (CustomShellSurface *shell_surface);
+LayerSurface *gtk_window_get_layer_surface (GtkWindow *gtk_window);
 
 // Surface is remapped in order to set
 void layer_surface_set_monitor (LayerSurface *self, GdkMonitor *monitor); // Can be null for default
@@ -71,6 +74,7 @@ void layer_surface_set_keyboard_mode (LayerSurface *self, GtkLayerShellKeyboardM
 // Returns the effective namespace (default if unset). Does not return ownership. Never returns NULL. Handles null self.
 const char* layer_surface_get_namespace (LayerSurface *self);
 
+// Used by libwayland wrappers
 struct wl_proxy *layer_surface_handle_request (
     struct wl_proxy *proxy,
     uint32_t opcode,

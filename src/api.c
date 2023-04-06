@@ -11,7 +11,6 @@
 
 #include "gtk-layer-shell.h"
 #include "gtk-wayland.h"
-#include "custom-shell-surface.h"
 #include "simple-conversions.h"
 #include "layer-surface.h"
 
@@ -57,17 +56,12 @@ gtk_layer_get_protocol_version ()
 }
 
 static LayerSurface*
-gtk_window_get_layer_surface (GtkWindow *window)
+gtk_window_get_layer_surface_or_warn (GtkWindow *window)
 {
     g_return_val_if_fail (window, NULL);
-    CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (window);
-    if (!shell_surface) {
-        g_critical ("GtkWindow is not a layer surface. Make sure you called gtk_layer_init_for_window ()");
-        return NULL;
-    }
-    LayerSurface *layer_surface = custom_shell_surface_get_layer_surface (shell_surface);
+    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
     if (!layer_surface) {
-        g_critical ("Custom wayland shell surface is not a layer surface, your Wayland compositor may not support Layer Shell");
+        g_error (MESSAGE_PREFIX "GtkWindow is not a layer surface. Make sure you called gtk_layer_init_for_window ()");
         return NULL;
     }
     return layer_surface;
@@ -86,83 +80,77 @@ gtk_layer_init_for_window (GtkWindow *window)
 gboolean
 gtk_layer_is_layer_window (GtkWindow *window)
 {
-    g_return_val_if_fail (window, FALSE);
-    CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (window);
-    if (!shell_surface)
-        return FALSE;
-    LayerSurface *layer_surface = custom_shell_surface_get_layer_surface (shell_surface);
-    return layer_surface != NULL;
+    return gtk_window_get_layer_surface (window) != NULL;
 }
 
 struct zwlr_layer_surface_v1 *
 gtk_layer_get_zwlr_layer_surface_v1 (GtkWindow *window)
 {
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return NULL; // Error message already shown in gtk_window_get_layer_surface
+    LayerSurface *layer_surface = gtk_window_get_layer_surface_or_warn (window);
+    if (!layer_surface) return NULL;
     return layer_surface->layer_surface;
 }
 
 void
 gtk_layer_set_namespace (GtkWindow *window, char const* name_space)
 {
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
+    LayerSurface *layer_surface = gtk_window_get_layer_surface_or_warn (window);
+    if (!layer_surface) return;
     layer_surface_set_name_space (layer_surface, name_space);
 }
 
 const char *
 gtk_layer_get_namespace (GtkWindow *window)
 {
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    // If layer_surface is NULL, error message already shown in gtk_window_get_layer_surface
+    LayerSurface *layer_surface = gtk_window_get_layer_surface_or_warn (window);
     return layer_surface_get_namespace (layer_surface); // NULL-safe
 }
 
 void
 gtk_layer_set_layer (GtkWindow *window, GtkLayerShellLayer layer)
 {
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
+    LayerSurface *layer_surface = gtk_window_get_layer_surface_or_warn (window);
+    if (!layer_surface) return;
     layer_surface_set_layer (layer_surface, layer);
 }
 
 GtkLayerShellLayer
 gtk_layer_get_layer (GtkWindow *window)
 {
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return GTK_LAYER_SHELL_LAYER_TOP; // Error message already shown in gtk_window_get_layer_surface
+    LayerSurface *layer_surface = gtk_window_get_layer_surface_or_warn (window);
+    if (!layer_surface) return GTK_LAYER_SHELL_LAYER_TOP;
     return layer_surface->layer;
 }
 
 void
 gtk_layer_set_monitor (GtkWindow *window, GdkMonitor *monitor)
 {
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
+    LayerSurface *layer_surface = gtk_window_get_layer_surface_or_warn (window);
+    if (!layer_surface) return;
     layer_surface_set_monitor (layer_surface, monitor);
 }
 
 GdkMonitor *
 gtk_layer_get_monitor (GtkWindow *window)
 {
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return NULL; // Error message already shown in gtk_window_get_layer_surface
+    LayerSurface *layer_surface = gtk_window_get_layer_surface_or_warn (window);
+    if (!layer_surface) return NULL;
     return layer_surface->monitor;
 }
 
 void
 gtk_layer_set_anchor (GtkWindow *window, GtkLayerShellEdge edge, gboolean anchor_to_edge)
 {
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
+    LayerSurface *layer_surface = gtk_window_get_layer_surface_or_warn (window);
+    if (!layer_surface) return;
     layer_surface_set_anchor (layer_surface, edge, anchor_to_edge);
 }
 
 gboolean
 gtk_layer_get_anchor (GtkWindow *window, GtkLayerShellEdge edge)
 {
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return FALSE; // Error message already shown in gtk_window_get_layer_surface
+    LayerSurface *layer_surface = gtk_window_get_layer_surface_or_warn (window);
+    if (!layer_surface) return FALSE;
     g_return_val_if_fail(edge >= 0 && edge < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER, FALSE);
     return layer_surface->anchors[edge];
 }
@@ -170,16 +158,16 @@ gtk_layer_get_anchor (GtkWindow *window, GtkLayerShellEdge edge)
 void
 gtk_layer_set_margin (GtkWindow *window, GtkLayerShellEdge edge, int margin_size)
 {
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
+    LayerSurface *layer_surface = gtk_window_get_layer_surface_or_warn (window);
+    if (!layer_surface) return;
     layer_surface_set_margin (layer_surface, edge, margin_size);
 }
 
 int
 gtk_layer_get_margin (GtkWindow *window, GtkLayerShellEdge edge)
 {
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return 0; // Error message already shown in gtk_window_get_layer_surface
+    LayerSurface *layer_surface = gtk_window_get_layer_surface_or_warn (window);
+    if (!layer_surface) return 0;
     g_return_val_if_fail(edge >= 0 && edge < GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER, FALSE);
     return layer_surface->margins[edge];
 }
@@ -187,32 +175,32 @@ gtk_layer_get_margin (GtkWindow *window, GtkLayerShellEdge edge)
 void
 gtk_layer_set_exclusive_zone (GtkWindow *window, int exclusive_zone)
 {
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
+    LayerSurface *layer_surface = gtk_window_get_layer_surface_or_warn (window);
+    if (!layer_surface) return;
     layer_surface_set_exclusive_zone (layer_surface, exclusive_zone);
 }
 
 int
 gtk_layer_get_exclusive_zone (GtkWindow *window)
 {
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return 0; // Error message already shown in gtk_window_get_layer_surface
+    LayerSurface *layer_surface = gtk_window_get_layer_surface_or_warn (window);
+    if (!layer_surface) return 0;
     return layer_surface->exclusive_zone;
 }
 
 void
 gtk_layer_auto_exclusive_zone_enable (GtkWindow *window)
 {
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
+    LayerSurface *layer_surface = gtk_window_get_layer_surface_or_warn (window);
+    if (!layer_surface) return;
     layer_surface_auto_exclusive_zone_enable (layer_surface);
 }
 
 gboolean
 gtk_layer_auto_exclusive_zone_is_enabled (GtkWindow *window)
 {
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return FALSE; // Error message already shown in gtk_window_get_layer_surface
+    LayerSurface *layer_surface = gtk_window_get_layer_surface_or_warn (window);
+    if (!layer_surface) return FALSE;
     return layer_surface->auto_exclusive_zone;
 }
 
@@ -247,8 +235,8 @@ void
 gtk_layer_set_keyboard_mode (GtkWindow *window, GtkLayerShellKeyboardMode mode)
 {
     g_return_if_fail(mode < GTK_LAYER_SHELL_KEYBOARD_MODE_ENTRY_NUMBER);
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
+    LayerSurface *layer_surface = gtk_window_get_layer_surface_or_warn (window);
+    if (!layer_surface) return;
     if (mode != GTK_LAYER_SHELL_KEYBOARD_MODE_NONE && mode != GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE) {
         if (gtk_layer_get_protocol_version () < 4) {
             g_warning (
@@ -262,7 +250,7 @@ gtk_layer_set_keyboard_mode (GtkWindow *window, GtkLayerShellKeyboardMode mode)
 GtkLayerShellKeyboardMode
 gtk_layer_get_keyboard_mode (GtkWindow *window)
 {
-    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
-    if (!layer_surface) return GTK_LAYER_SHELL_KEYBOARD_MODE_NONE; // Error message already shown in gtk_window_get_layer_surface
+    LayerSurface *layer_surface = gtk_window_get_layer_surface_or_warn (window);
+    if (!layer_surface) return GTK_LAYER_SHELL_KEYBOARD_MODE_NONE;
     return layer_surface->keyboard_mode;
 }

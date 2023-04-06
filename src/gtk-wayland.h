@@ -21,6 +21,4 @@ struct zwlr_layer_shell_v1 *gtk_wayland_get_layer_shell_global (void);
 
 void gtk_wayland_init_if_needed (void);
 
-GdkRectangle gtk_wayland_get_logical_geom (GtkWindow *widget);
-
 #endif // WAYLAND_GLOBALS_H

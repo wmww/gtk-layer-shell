@@ -153,6 +153,34 @@ create_client_facing_proxy (
     return &allocation->proxy;
 }
 
+void
+clear_client_facing_proxy_data (struct wl_proxy *proxy)
+{
+    if (!proxy) {
+        return;
+    }
+    g_assert(proxy->object.id == client_facing_proxy_id);
+    struct wrapped_proxy *wrapper = (struct wrapped_proxy *)proxy;
+    wrapper->data = NULL;
+    wrapper->destroy = NULL;
+    wrapper->handler = NULL;
+}
+
+void *
+get_client_facing_proxy_data (struct wl_proxy *proxy, void* expected_handler)
+{
+    if (proxy && proxy->object.id == client_facing_proxy_id) {
+        struct wrapped_proxy *wrapper = (struct wrapped_proxy *)proxy;
+        if (wrapper->handler == expected_handler) {
+            return wrapper->data;
+        } else {
+            return NULL;
+        }
+    } else {
+        return NULL;
+    }
+}
+
 // Overrides the function in wayland-client.c in libwayland
 struct wl_proxy *
 wl_proxy_marshal_array_flags (

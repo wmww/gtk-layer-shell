@@ -13,7 +13,6 @@
 
 #include "gtk-layer-shell.h"
 #include "simple-conversions.h"
-#include "custom-shell-surface.h"
 #include "gtk-wayland.h"
 #include "libwayland-wrappers.h"
 
@@ -24,6 +23,47 @@
 #include <gdk/wayland/gdkwayland.h>
 
 LayerSurface *pending_layer_surface = NULL;
+
+
+static const char *layer_surface_key = "wayland_layer_surface";
+
+LayerSurface *
+gtk_window_get_layer_surface (GtkWindow *gtk_window)
+{
+    if (!gtk_window)
+        return NULL;
+
+    return g_object_get_data (G_OBJECT (gtk_window), layer_surface_key);
+}
+
+void
+layer_surface_needs_commit (LayerSurface *self)
+{
+    if (!self->gtk_window)
+        return;
+
+    GdkWindow *gdk_window = gtk_native_get_surface (GTK_NATIVE (self->gtk_window));
+
+    if (!gdk_window)
+        return;
+
+    // Hopefully this will trigger a commit
+    // Don't commit directly, as that screws up GTK's internal state
+    // (see https://github.com/wmww/gtk-layer-shell/issues/51)
+    // TODO
+    // gdk_window_invalidate_rect (gdk_window, NULL, FALSE);
+
+    gtk_widget_queue_draw (GTK_WIDGET (self->gtk_window));
+}
+
+void
+layer_surface_remap (LayerSurface *self)
+{
+    GtkWidget *window_widget = GTK_WIDGET (self->gtk_window);
+    g_return_if_fail (window_widget);
+    gtk_widget_set_visible (window_widget, FALSE);
+    gtk_widget_set_visible (window_widget, TRUE);
+}
 
 /*
  * Sends the .set_size request if the current allocation differs from the last size sent
@@ -68,8 +108,6 @@ layer_surface_send_set_size (LayerSurface *self)
 static void
 layer_surface_update_size (LayerSurface *self)
 {
-    GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
-
     gint width = -1;
     gint height = -1;
 
@@ -145,9 +183,6 @@ layer_surface_handle_configure (void *data,
     };
 
     layer_surface_update_size (self);
-
-    GtkWindow *gtk_window = custom_shell_surface_get_gtk_window (&self->super);
-    GdkSurface *gdk_surface = gtk_native_get_surface (GTK_NATIVE (gtk_window));
 }
 
 static void
@@ -157,8 +192,7 @@ layer_surface_handle_closed (void *data,
     LayerSurface *self = data;
     (void)_surface;
 
-    GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
-    gtk_window_close (gtk_window);
+    gtk_window_close (self->gtk_window);
 }
 
 static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
@@ -188,14 +222,18 @@ layer_surface_send_set_margin (LayerSurface *self)
 }
 
 static void
-layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
+layer_surface_on_window_realize (GtkWidget *widget, LayerSurface *self)
 {
-    LayerSurface *self = (LayerSurface *)super;
-
+    g_return_if_fail (GTK_WIDGET (self->gtk_window) == widget);
     g_return_if_fail (!self->layer_surface);
 
+    GdkWindow *gdk_window = gtk_native_get_surface (GTK_NATIVE (self->gtk_window));
+    g_return_if_fail (gdk_window);
+
+    self->wl_surface = gdk_wayland_surface_get_wl_surface (gdk_window);
+    g_return_if_fail(self->wl_surface);
+
     pending_layer_surface = self;
-    self->wl_surface = wl_surface;
 }
 
 static void
@@ -237,7 +275,7 @@ layer_surface_create_surface_object (LayerSurface *self)
 }
 
 static void
-layer_surface_unmap (CustomShellSurface *super)
+layer_surface_unmap (LayerSurface *super)
 {
     LayerSurface *self = (LayerSurface *)super;
 
@@ -245,47 +283,19 @@ layer_surface_unmap (CustomShellSurface *super)
         zwlr_layer_surface_v1_destroy (self->layer_surface);
         self->layer_surface = NULL;
     }
+
+    clear_client_facing_proxy_data((struct wl_proxy *)self->client_facing_xdg_surface);
+    clear_client_facing_proxy_data((struct wl_proxy *)self->client_facing_xdg_toplevel);
 }
 
 static void
-layer_surface_finalize (CustomShellSurface *super)
+layer_surface_destroy (LayerSurface *self)
 {
-    LayerSurface *self = (LayerSurface *)super;
-    layer_surface_unmap (super);
+    layer_surface_unmap (self);
     g_free ((gpointer)self->name_space);
+    g_free (self);
+
 }
-
-static struct xdg_popup *
-layer_surface_get_popup (CustomShellSurface *super,
-                         struct xdg_surface *popup_xdg_surface,
-                         struct xdg_positioner *positioner)
-{
-    LayerSurface *self = (LayerSurface *)super;
-
-    if (!self->layer_surface) {
-        g_critical ("layer_surface_get_popup () called when the layer surface wayland object has not yet been created");
-        return NULL;
-    }
-
-    struct xdg_popup *xdg_popup = xdg_surface_get_popup (popup_xdg_surface, NULL, positioner);
-    zwlr_layer_surface_v1_get_popup (self->layer_surface, xdg_popup);
-    return xdg_popup;
-}
-
-static GdkRectangle
-layer_surface_get_logical_geom (CustomShellSurface *super)
-{
-    (void)super;
-    return (GdkRectangle){0, 0, 0, 0};
-}
-
-static const CustomShellSurfaceVirtual layer_surface_virtual = {
-    .map = layer_surface_map,
-    .unmap = layer_surface_unmap,
-    .finalize = layer_surface_finalize,
-    .get_popup = layer_surface_get_popup,
-    .get_logical_geom = layer_surface_get_logical_geom,
-};
 
 static void
 layer_surface_update_auto_exclusive_zone (LayerSurface *self)
@@ -345,10 +355,23 @@ LayerSurface *
 layer_surface_new (GtkWindow *gtk_window)
 {
     g_return_val_if_fail (gtk_wayland_get_layer_shell_global (), NULL);
+    g_return_val_if_fail (gtk_window, NULL);
+    g_return_val_if_fail (!gtk_widget_get_mapped (GTK_WIDGET (gtk_window)), NULL);
 
     LayerSurface *self = g_new0 (LayerSurface, 1);
-    self->super.virtual = &layer_surface_virtual;
-    custom_shell_surface_init ((CustomShellSurface *)self, gtk_window);
+
+    self->gtk_window = gtk_window;
+
+    g_object_set_data_full (G_OBJECT (gtk_window),
+                            layer_surface_key,
+                            self,
+                            (GDestroyNotify) layer_surface_destroy);
+    g_signal_connect (gtk_window, "realize", G_CALLBACK (layer_surface_on_window_realize), self);
+
+    if (gtk_widget_get_realized (GTK_WIDGET (gtk_window))) {
+        // We must be in the process of realizing now
+        layer_surface_on_window_realize (GTK_WIDGET (gtk_window), self);
+    }
 
     self->current_allocation = (GtkRequisition) {
         .width = 0,
@@ -370,15 +393,6 @@ layer_surface_new (GtkWindow *gtk_window)
     return self;
 }
 
-LayerSurface *
-custom_shell_surface_get_layer_surface (CustomShellSurface *shell_surface)
-{
-    if (shell_surface && shell_surface->virtual == &layer_surface_virtual)
-        return (LayerSurface *)shell_surface;
-    else
-        return NULL;
-}
-
 void
 layer_surface_set_monitor (LayerSurface *self, GdkMonitor *monitor)
 {
@@ -386,7 +400,7 @@ layer_surface_set_monitor (LayerSurface *self, GdkMonitor *monitor)
     if (monitor != self->monitor) {
         self->monitor = monitor;
         if (self->layer_surface) {
-            custom_shell_surface_remap ((CustomShellSurface *)self);
+            layer_surface_remap (self);
         }
     }
 }
@@ -398,7 +412,7 @@ layer_surface_set_name_space (LayerSurface *self, char const* name_space)
         g_free ((gpointer)self->name_space);
         self->name_space = g_strdup (name_space);
         if (self->layer_surface) {
-            custom_shell_surface_remap ((CustomShellSurface *)self);
+            layer_surface_remap (self);
         }
     }
 }
@@ -413,9 +427,9 @@ layer_surface_set_layer (LayerSurface *self, GtkLayerShellLayer layer)
             if (version >= ZWLR_LAYER_SURFACE_V1_SET_LAYER_SINCE_VERSION) {
                 enum zwlr_layer_shell_v1_layer wlr_layer = gtk_layer_shell_layer_get_zwlr_layer_shell_v1_layer(layer);
                 zwlr_layer_surface_v1_set_layer (self->layer_surface, wlr_layer);
-                custom_shell_surface_needs_commit ((CustomShellSurface *)self);
+                layer_surface_needs_commit (self);
             } else {
-                custom_shell_surface_remap ((CustomShellSurface *)self);
+                layer_surface_remap (self);
             }
         }
     }
@@ -432,7 +446,7 @@ layer_surface_set_anchor (LayerSurface *self, GtkLayerShellEdge edge, gboolean a
             layer_surface_send_set_anchor (self);
             layer_surface_update_size (self);
             layer_surface_update_auto_exclusive_zone (self);
-            custom_shell_surface_needs_commit ((CustomShellSurface *)self);
+            layer_surface_needs_commit (self);
         }
     }
 }
@@ -445,7 +459,7 @@ layer_surface_set_margin (LayerSurface *self, GtkLayerShellEdge edge, int margin
         self->margins[edge] = margin_size;
         layer_surface_send_set_margin (self);
         layer_surface_update_auto_exclusive_zone (self);
-        custom_shell_surface_needs_commit ((CustomShellSurface *)self);
+        layer_surface_needs_commit (self);
     }
 }
 
@@ -459,7 +473,7 @@ layer_surface_set_exclusive_zone (LayerSurface *self, int exclusive_zone)
         self->exclusive_zone = exclusive_zone;
         if (self->layer_surface) {
             zwlr_layer_surface_v1_set_exclusive_zone (self->layer_surface, self->exclusive_zone);
-            custom_shell_surface_needs_commit ((CustomShellSurface *)self);
+            layer_surface_needs_commit (self);
         }
     }
 }
@@ -489,7 +503,7 @@ layer_surface_set_keyboard_mode (LayerSurface *self, GtkLayerShellKeyboardMode m
         self->keyboard_mode = mode;
         if (self->layer_surface) {
             zwlr_layer_surface_v1_set_keyboard_interactivity (self->layer_surface, self->keyboard_mode);
-            custom_shell_surface_needs_commit ((CustomShellSurface *)self);
+            layer_surface_needs_commit (self);
         }
     }
 }
@@ -539,6 +553,7 @@ stubbed_xdg_surface_handle_request (
         self->client_facing_xdg_toplevel = (struct xdg_toplevel *)toplevel;
         return toplevel;
     } else if (opcode == XDG_SURFACE_GET_POPUP) {
+        g_error(MESSAGE_PREFIX "internal error: XDG surface intercepted, but is now being used as popup");
         return create_client_facing_proxy (proxy, &xdg_popup_interface, version, NULL, NULL, NULL);
     } else {
         return NULL;
@@ -548,7 +563,8 @@ stubbed_xdg_surface_handle_request (
 static void
 stubbed_xdg_surface_handle_destroy (void* data, struct wl_proxy *proxy)
 {
-    // TODO
+    LayerSurface *self = (LayerSurface *)data;
+    layer_surface_unmap(self);
 }
 
 struct wl_proxy *
@@ -574,6 +590,23 @@ layer_surface_handle_request (
                 pending_layer_surface->client_facing_xdg_surface = (struct xdg_surface *)xdg_surface;
                 layer_surface_create_surface_object(pending_layer_surface);
                 return xdg_surface;
+            }
+        }
+    } else if (strcmp(type, xdg_surface_interface.name) == 0) {
+        if (opcode == XDG_SURFACE_GET_POPUP) {
+            LayerSurface *self = get_client_facing_proxy_data ((struct wl_proxy *)args[1].o, stubbed_xdg_surface_handle_request);
+            if (self) {
+                if (!self->layer_surface) {
+                    struct xdg_popup *xdg_popup = xdg_surface_get_popup (
+                        (struct xdg_surface *)proxy,
+                        NULL,
+                        (struct xdg_positioner *)args[2].o);
+                    zwlr_layer_surface_v1_get_popup (self->layer_surface, xdg_popup);
+                    return (struct wl_proxy *)xdg_popup;
+                } else {
+                    g_error (MESSAGE_PREFIX "tried to create popup before layer shell surface");
+                    return create_client_facing_proxy (proxy, &xdg_popup_interface, version, NULL, NULL, NULL);
+                }
             }
         }
     }

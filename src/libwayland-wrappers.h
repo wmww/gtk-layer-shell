@@ -48,6 +48,10 @@ struct wl_proxy *create_client_facing_proxy (
     client_facing_proxy_destroy_func_t destroy,
     void* data);
 
+void clear_client_facing_proxy_data (struct wl_proxy *proxy);
+
+void *get_client_facing_proxy_data (struct wl_proxy *proxy, void* expected_handler);
+
 extern struct wl_proxy * (*real_wl_proxy_marshal_array_flags) (
     struct wl_proxy *proxy,
     uint32_t opcode,

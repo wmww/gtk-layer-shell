@@ -11,8 +11,6 @@
 
 #include "gtk-wayland.h"
 
-#include "custom-shell-surface.h"
-
 #include "xdg-shell-client.h"
 #include "wlr-layer-shell-unstable-v1-client.h"
 
@@ -86,24 +84,6 @@ static const struct wl_registry_listener wl_registry_listener = {
     .global_remove = wl_registry_handle_global_remove,
 };
 
-// This callback must override the default unmap handler, so it can run first
-// The custom surface's unmap method must be called before GtkWidget's unmap, or Wayland objects are destroyed in the wrong order
-static void
-gtk_wayland_override_on_window_unmap (GtkWindow *gtk_window, void *_data)
-{
-    (void)_data;
-
-    CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (gtk_window);
-    if (shell_surface)
-        shell_surface->virtual->unmap (shell_surface);
-
-    // Call the super class's unmap handler
-    GValue args[1] = { G_VALUE_INIT };
-    g_value_init_from_instance (&args[0], gtk_window);
-    g_signal_chain_from_overridden (args, NULL);
-    g_value_unset (&args[0]);
-}
-
 void
 gtk_wayland_init_if_needed ()
 {
@@ -125,33 +105,5 @@ gtk_wayland_init_if_needed ()
     if (!xdg_wm_base_global)
         g_warning ("It appears your Wayland compositor does not support the XDG Shell stable protocol");
 
-    gint unmap_signal_id = g_signal_lookup ("unmap", GTK_TYPE_WINDOW);
-    GClosure *unmap_closure = g_cclosure_new (G_CALLBACK (gtk_wayland_override_on_window_unmap), NULL, NULL);
-    g_signal_override_class_closure (unmap_signal_id, GTK_TYPE_WINDOW, unmap_closure);
-
     has_initialized = TRUE;
-}
-
-// Gets the upper left and size of the portion of the window that is actually used (not shadows and whatnot)
-// It does this by walking down the gdk_window tree, as long as there is exactly one child
-GdkRectangle
-gtk_wayland_get_logical_geom (GtkWindow *gtk_window)
-{
-    // TODO
-    /*
-    GdkWindow *window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
-    GList *list = gdk_window_get_children (window);
-    if (list && !list->next) // If there is exactly one child window
-        window = list->data;
-    g_list_free(list);
-    GdkRectangle geom;
-    gdk_window_get_geometry (window, &geom.x, &geom.y, &geom.width, &geom.height);
-    */
-    GdkRectangle geom = {
-        .x = 0,
-        .y = 0,
-        .width = gtk_widget_get_width (GTK_WIDGET (gtk_window)),
-        .height = gtk_widget_get_height (GTK_WIDGET (gtk_window)),
-    };
-    return geom;
 }

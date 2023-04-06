@@ -2,7 +2,6 @@ srcs = files(
     'api.c',
     'gtk-wayland.c',
     'libwayland-wrappers.c',
-    'custom-shell-surface.c',
     'layer-surface.c',
     'simple-conversions.c')
 
