@@ -155,7 +155,16 @@ layer_surface_handle_configure (void *data,
     if (self->client_facing_xdg_surface && self->client_facing_xdg_toplevel) {
         struct wl_array states;
         wl_array_init(&states);
-        // TODO add maximized
+        {
+            uint32_t *state = wl_array_add(&states, sizeof(uint32_t));
+            g_assert(state);
+            *state = XDG_TOPLEVEL_STATE_ACTIVATED;
+        }
+        {
+            uint32_t *state = wl_array_add(&states, sizeof(uint32_t));
+            g_assert(state);
+            *state = XDG_TOPLEVEL_STATE_MAXIMIZED;
+        }
         DISPATCH_CLIENT_FACING_EVENT(
             xdg_toplevel_listener,
             self->client_facing_xdg_toplevel,
