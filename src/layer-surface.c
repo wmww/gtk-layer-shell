@@ -604,7 +604,7 @@ layer_surface_handle_request (
         if (opcode == XDG_SURFACE_GET_POPUP) {
             LayerSurface *self = get_client_facing_proxy_data ((struct wl_proxy *)args[1].o, stubbed_xdg_surface_handle_request);
             if (self) {
-                if (!self->layer_surface) {
+                if (self->layer_surface) {
                     struct xdg_popup *xdg_popup = xdg_surface_get_popup (
                         (struct xdg_surface *)proxy,
                         NULL,
