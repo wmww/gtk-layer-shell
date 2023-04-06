@@ -1,12 +1,10 @@
 #include <dlfcn.h>
 #include <stdlib.h>
 #include <glib.h>
-#include <wayland-client-core.h>
-#include "gtk-wayland.h"
-#include "wlr-layer-shell-unstable-v1-client.h"
-#include "xdg-shell-client.h"
+#include "libwayland-wrappers.h"
+#include "layer-surface.h"
 
-struct wl_proxy * (*real_wl_proxy_marshal_array_flags) (
+struct wl_proxy *(*real_wl_proxy_marshal_array_flags) (
     struct wl_proxy *proxy,
     uint32_t opcode,
     const struct wl_interface *interface,
@@ -14,58 +12,46 @@ struct wl_proxy * (*real_wl_proxy_marshal_array_flags) (
     uint32_t flags,
     union wl_argument *args) = NULL;
 
-struct wl_proxy * (*real_wl_proxy_create) (struct wl_proxy *factory, const struct wl_interface *interface) = NULL;
-
 void (*real_wl_proxy_destroy) (struct wl_proxy *proxy) = NULL;
 
-static void libwayland_wrappers_init ()
+int (*real_wl_proxy_add_dispatcher)(struct wl_proxy *proxy,
+			wl_dispatcher_func_t dispatcher_func,
+			const void * dispatcher_data, void *data) = NULL;
+
+static void
+libwayland_wrappers_init ()
 {
-    if (real_wl_proxy_marshal_array_flags)
+    if (real_wl_proxy_marshal_array_flags && real_wl_proxy_destroy)
         return;
 
     void *handle = dlopen("libwayland-client.so", RTLD_LAZY);
     if (handle == NULL) {
-        g_error("failed to dlopen libwayland");
+        g_error(MESSAGE_PREFIX "failed to dlopen libwayland");
         abort();
     }
 
 #define INIT_SYM(name) if (!(real_##name = dlsym(handle, #name))) {\
-    g_error ("dlsym failed to load %s", #name); g_abort (); }
+    g_error (MESSAGE_PREFIX "dlsym failed to load %s", #name); abort (); }
 
     INIT_SYM(wl_proxy_marshal_array_flags);
-    INIT_SYM(wl_proxy_create);
     INIT_SYM(wl_proxy_destroy);
+    INIT_SYM(wl_proxy_add_dispatcher);
 
 #undef INIT_SYM
 
     //dlclose(handle);
 }
 
+// From wayland-private.h in libwayland
 #define WL_CLOSURE_MAX_ARGS 20
 
-struct wl_object {
-	const struct wl_interface *interface;
-	const void *implementation;
-	uint32_t id;
-};
-
-struct wl_proxy {
-	struct wl_object object;
-	struct wl_display *display;
-	struct wl_event_queue *queue;
-	uint32_t flags;
-	int refcount;
-	void *user_data;
-	wl_dispatcher_func_t dispatcher;
-	uint32_t version;
-	const char * const *tag;
-};
-
+// From wayland-private.h in libwayland
 struct argument_details {
 	char type;
 	int nullable;
 };
 
+// From connection.c in libwayland
 static const char *
 get_next_argument(const char *signature, struct argument_details *details)
 {
@@ -90,6 +76,7 @@ get_next_argument(const char *signature, struct argument_details *details)
 	return signature;
 }
 
+// From connection.c in libwayland
 static void
 wl_argument_from_va_list(const char *signature, union wl_argument *args,
 			 int count, va_list ap)
@@ -133,10 +120,42 @@ wl_argument_from_va_list(const char *signature, union wl_argument *args,
 	}
 }
 
-struct xdg_surface *current_xdg_surface = NULL;
-struct xdg_surface *current_xdg_toplevel = NULL;
+struct wrapped_proxy {
+    struct wl_proxy proxy;
+    client_facing_proxy_handler_func_t handler;
+    client_facing_proxy_destroy_func_t destroy;
+    void* data;
+};
 
-struct wl_proxy *wl_proxy_marshal_array_flags (
+// The ID for ALL proxies that are created by us and not managed by the real libwayland
+const uint32_t client_facing_proxy_id = 6942069;
+
+struct wl_proxy *
+create_client_facing_proxy (
+    struct wl_proxy *factory,
+    const struct wl_interface *interface,
+    uint32_t version,
+    client_facing_proxy_handler_func_t handler,
+    client_facing_proxy_destroy_func_t destroy,
+    void* data)
+{
+    struct wrapped_proxy* allocation = g_new0 (struct wrapped_proxy, 1);
+    g_assert (allocation);
+    allocation->proxy.object.interface = interface;
+    allocation->proxy.display = factory->display;
+    allocation->proxy.queue = factory->queue;
+    allocation->proxy.refcount = 1;
+    allocation->proxy.version = version;
+    allocation->proxy.object.id = client_facing_proxy_id;
+    allocation->handler = handler;
+    allocation->destroy = destroy;
+    allocation->data = data;
+    return &allocation->proxy;
+}
+
+// Overrides the function in wayland-client.c in libwayland
+struct wl_proxy *
+wl_proxy_marshal_array_flags (
     struct wl_proxy *proxy,
     uint32_t opcode,
     const struct wl_interface *interface,
@@ -144,78 +163,20 @@ struct wl_proxy *wl_proxy_marshal_array_flags (
     uint32_t flags,
     union wl_argument *args)
 {
-    const char* type = proxy->object.interface->name;
-    const char* request = proxy->object.interface->methods[opcode].name;
-    libwayland_wrappers_init();
-    if ((!strcmp(type, "xdg_wm_base") && !strcmp(request, "get_xdg_surface")) ||
-        (!strcmp(type, "xdg_surface") && !strcmp(request, "get_toplevel"))) {
-        /*if (!strcmp(request, "get_xdg_surface")) {
-            struct zwlr_layer_shell_v1 *layer_shell_global = gtk_wayland_get_layer_shell_global ();
-            g_assert (layer_shell_global);
-            struct wl_surface *wl_surface = (struct wl_surface*)args[1].o;
-            zwlr_layer_shell_v1_get_layer_surface (layer_shell_global,
-                                                                 wl_surface,
-                                                                 NULL,
-                                                                 ZWLR_LAYER_SHELL_V1_LAYER_TOP,
-                                                                 "foo");
-        }*/
-
-        struct wl_proxy* created = malloc(sizeof(struct wl_proxy));
-        memcpy(created, proxy, sizeof(struct wl_proxy));
-        created->object.interface = proxy->object.interface->methods[opcode].types[0];
-        created->object.implementation = NULL;
-        created->refcount = 1;
-        created->dispatcher = NULL;
-        created->version = version;
-        if (!strcmp(request, "get_xdg_surface")) {
-            current_xdg_surface = created;
-        } else if (!strcmp(request, "get_toplevel")) {
-            current_xdg_toplevel = created;
+    libwayland_wrappers_init ();
+    if (proxy->object.id == client_facing_proxy_id) {
+        struct wrapped_proxy *wrapper = (struct wrapped_proxy *)proxy;
+        if (wrapper->handler) {
+            return wrapper->handler(wrapper->data, proxy, opcode, interface, version, flags, args);
+        } else {
+            return NULL;
         }
-        g_message ("%s.%s (intercepted)", type, request);
-        return created;
-    } else if (!strcmp(type, "xdg_surface") || !strcmp(type, "xdg_toplevel")) {
-        g_message ("%s.%s (intercepted)", type, request);
-        return NULL;
     } else {
-        //g_message ("%s.%s (actually running)", type, request);
-        return real_wl_proxy_marshal_array_flags(proxy, opcode, interface, version, flags, args);
+        return layer_surface_handle_request (proxy, opcode, interface, version, flags, args);
     }
 }
 
-void send_configure_to_xdg(uint32_t serial)
-{
-    if (!current_xdg_surface || !current_xdg_toplevel) {
-        g_warning("no XDG surface to configure");
-        return;
-    }
-
-    if (((struct wl_proxy*)current_xdg_surface)->dispatcher || ((struct wl_proxy*)current_xdg_toplevel)->dispatcher) {
-        g_error("dispatchers not implemented");
-        return;
-    }
-
-    if (((struct wl_proxy*)current_xdg_toplevel)->object.implementation)
-    {
-        struct xdg_toplevel_listener *toplevel = ((struct wl_proxy*)current_xdg_toplevel)->object.implementation;
-        struct wl_array states;
-        wl_array_init(&states);
-        toplevel->configure(
-            ((struct wl_proxy*)current_xdg_toplevel)->user_data,
-            current_xdg_toplevel,
-            0, 0,
-            &states
-        );
-        wl_array_release(&states);
-    }
-
-    if (((struct wl_proxy*)current_xdg_surface)->object.implementation)
-    {
-        struct xdg_surface_listener *surface = ((struct wl_proxy*)current_xdg_surface)->object.implementation;
-        surface->configure(((struct wl_proxy*)current_xdg_surface)->user_data, current_xdg_surface, serial);
-    }
-}
-
+// Overrides the function in wayland-client.c in libwayland
 struct wl_proxy *
 wl_proxy_marshal_flags(struct wl_proxy *proxy, uint32_t opcode,
 		       const struct wl_interface *interface,
@@ -233,6 +194,7 @@ wl_proxy_marshal_flags(struct wl_proxy *proxy, uint32_t opcode,
 	return wl_proxy_marshal_array_flags(proxy, opcode, interface, version, flags, args);
 }
 
+// Overrides the function in wayland-client.c in libwayland
 void
 wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 {
@@ -247,6 +209,7 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 	wl_proxy_marshal_array_constructor(proxy, opcode, args, NULL);
 }
 
+// Overrides the function in wayland-client.c in libwayland
 void
 wl_proxy_marshal_array(struct wl_proxy *proxy, uint32_t opcode,
 		       union wl_argument *args)
@@ -254,6 +217,7 @@ wl_proxy_marshal_array(struct wl_proxy *proxy, uint32_t opcode,
 	wl_proxy_marshal_array_constructor(proxy, opcode, args, NULL);
 }
 
+// Overrides the function in wayland-client.c in libwayland
 struct wl_proxy *
 wl_proxy_marshal_constructor(struct wl_proxy *proxy,
 			     uint32_t opcode,
@@ -272,6 +236,7 @@ wl_proxy_marshal_constructor(struct wl_proxy *proxy,
 						  args, interface);
 }
 
+// Overrides the function in wayland-client.c in libwayland
 struct wl_proxy *
 wl_proxy_marshal_constructor_versioned(struct wl_proxy *proxy,
 				       uint32_t opcode,
@@ -292,6 +257,7 @@ wl_proxy_marshal_constructor_versioned(struct wl_proxy *proxy,
 							    version);
 }
 
+// Overrides the function in wayland-client.c in libwayland
 struct wl_proxy *
 wl_proxy_marshal_array_constructor(struct wl_proxy *proxy,
 				   uint32_t opcode, union wl_argument *args,
@@ -302,6 +268,7 @@ wl_proxy_marshal_array_constructor(struct wl_proxy *proxy,
 							    proxy->version);
 }
 
+// Overrides the function in wayland-client.c in libwayland
 struct wl_proxy *
 wl_proxy_marshal_array_constructor_versioned(struct wl_proxy *proxy,
 					     uint32_t opcode,
@@ -312,16 +279,33 @@ wl_proxy_marshal_array_constructor_versioned(struct wl_proxy *proxy,
 	return wl_proxy_marshal_array_flags(proxy, opcode, interface, version, 0, args);
 }
 
-struct wl_proxy * wl_proxy_create (struct wl_proxy *factory, const struct wl_interface *interface)
+// Overrides the function in wayland-client.c in libwayland
+int
+wl_proxy_add_dispatcher(struct wl_proxy *proxy,
+			wl_dispatcher_func_t dispatcher_func,
+			const void * dispatcher_data, void *data)
 {
-    g_message ("creating %s", interface ? interface->name : "(nil)");
-    libwayland_wrappers_init();
-    return real_wl_proxy_create(factory, interface);
+    libwayland_wrappers_init ();
+    if (proxy->object.id == client_facing_proxy_id) {
+        g_warning(MESSAGE_PREFIX "wl_proxy_add_dispatcher() not supported for client-facing proxies");
+    }
+    return real_wl_proxy_add_dispatcher(proxy, dispatcher_func, dispatcher_data, data);
 }
 
-void wl_proxy_destroy (struct wl_proxy *proxy)
+// Overrides the function in wayland-client.c in libwayland
+void
+wl_proxy_destroy (struct wl_proxy *proxy)
 {
-    g_message ("destroying %s", (proxy && proxy->object.interface) ? proxy->object.interface->name : "(nil)");
-    libwayland_wrappers_init();
-    real_wl_proxy_destroy(proxy);
+    libwayland_wrappers_init ();
+    if (proxy->object.id == client_facing_proxy_id) {
+        struct wrapped_proxy *wrapper = (struct wrapped_proxy *)proxy;
+        if (wrapper->destroy) {
+            wrapper->destroy(wrapper->data, proxy);
+        }
+        // No need to worry about the refcount since it's only accessibly within libwayland, and it's only used by
+        // functions that never see client facing objects
+        g_free (proxy);
+    } else {
+        real_wl_proxy_destroy (proxy);
+    }
 }

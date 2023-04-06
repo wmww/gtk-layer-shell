@@ -12,6 +12,8 @@
 #ifndef LAYER_SHELL_SURFACE_H
 #define LAYER_SHELL_SURFACE_H
 
+#define MESSAGE_PREFIX "GTK4 Layer Shell: "
+
 #include "custom-shell-surface.h"
 #include "wlr-layer-shell-unstable-v1-client.h"
 #include "gtk-layer-shell.h"
@@ -43,6 +45,10 @@ struct _LayerSurface
     GtkRequisition current_allocation; // Last size allocation, or (0, 0) if there hasn't been one
     GtkRequisition cached_layer_size; // Last size sent to zwlr_layer_surface_v1_set_size (starts as 0, 0)
     GtkRequisition last_configure_size; // Last size received from a configure event
+
+    struct wl_surface *wl_surface;
+    struct xdg_surface *client_facing_xdg_surface;
+    struct xdg_toplevel *client_facing_xdg_toplevel;
 };
 
 LayerSurface *layer_surface_new (GtkWindow *gtk_window);
@@ -64,5 +70,13 @@ void layer_surface_set_keyboard_mode (LayerSurface *self, GtkLayerShellKeyboardM
 
 // Returns the effective namespace (default if unset). Does not return ownership. Never returns NULL. Handles null self.
 const char* layer_surface_get_namespace (LayerSurface *self);
+
+struct wl_proxy *layer_surface_handle_request (
+    struct wl_proxy *proxy,
+    uint32_t opcode,
+    const struct wl_interface *interface,
+    uint32_t version,
+    uint32_t flags,
+    union wl_argument *args);
 
 #endif // LAYER_SHELL_SURFACE_H

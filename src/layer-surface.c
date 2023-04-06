@@ -15,6 +15,7 @@
 #include "simple-conversions.h"
 #include "custom-shell-surface.h"
 #include "gtk-wayland.h"
+#include "libwayland-wrappers.h"
 
 #include "wlr-layer-shell-unstable-v1-client.h"
 #include "xdg-shell-client.h"
@@ -22,7 +23,7 @@
 #include <gtk/gtk.h>
 #include <gdk/wayland/gdkwayland.h>
 
-void send_configure_to_xdg(uint32_t serial);
+LayerSurface *pending_layer_surface = NULL;
 
 /*
  * Sends the .set_size request if the current allocation differs from the last size sent
@@ -113,7 +114,28 @@ layer_surface_handle_configure (void *data,
 {
     LayerSurface *self = data;
 
-    send_configure_to_xdg(serial);
+    if (self->client_facing_xdg_surface && self->client_facing_xdg_toplevel) {
+        struct wl_array states;
+        wl_array_init(&states);
+        // TODO add maximized
+        DISPATCH_CLIENT_FACING_EVENT(
+            xdg_toplevel_listener,
+            self->client_facing_xdg_toplevel,
+            configure,
+            self->client_facing_xdg_toplevel,
+            w, h,
+            &states);
+        wl_array_release(&states);
+
+        DISPATCH_CLIENT_FACING_EVENT(
+            xdg_surface_listener,
+            self->client_facing_xdg_surface,
+            configure,
+            self->client_facing_xdg_surface,
+            serial);
+    } else {
+        g_warning(MESSAGE_PREFIX "no XDG surface to configure");
+    }
 
     zwlr_layer_surface_v1_ack_configure (surface, serial);
 
@@ -172,6 +194,15 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
 
     g_return_if_fail (!self->layer_surface);
 
+    pending_layer_surface = self;
+    self->wl_surface = wl_surface;
+}
+
+static void
+layer_surface_create_surface_object (LayerSurface *self)
+{
+    pending_layer_surface = NULL;
+
     struct zwlr_layer_shell_v1 *layer_shell_global = gtk_wayland_get_layer_shell_global ();
     g_return_if_fail (layer_shell_global);
 
@@ -184,7 +215,7 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
 
     enum zwlr_layer_shell_v1_layer layer = gtk_layer_shell_layer_get_zwlr_layer_shell_v1_layer(self->layer);
     self->layer_surface = zwlr_layer_shell_v1_get_layer_surface (layer_shell_global,
-                                                                 wl_surface,
+                                                                 self->wl_surface,
                                                                  output,
                                                                  layer,
                                                                  name_space);
@@ -470,4 +501,81 @@ layer_surface_get_namespace (LayerSurface *self)
         return self->name_space;
     else
         return "gtk-layer-shell";
+}
+
+static struct wl_proxy *
+stubbed_xdg_toplevel_handle_request (
+    void* data,
+    struct wl_proxy *proxy,
+    uint32_t opcode,
+    const struct wl_interface *interface,
+    uint32_t version,
+    uint32_t flags,
+    union wl_argument *args)
+{
+    // TODO
+    return NULL;
+}
+
+static struct wl_proxy *
+stubbed_xdg_surface_handle_request (
+    void* data,
+    struct wl_proxy *proxy,
+    uint32_t opcode,
+    const struct wl_interface *interface,
+    uint32_t version,
+    uint32_t flags,
+    union wl_argument *args)
+{
+    LayerSurface *self = (LayerSurface *)data;
+    if (opcode == XDG_SURFACE_GET_TOPLEVEL) {
+        struct wl_proxy *toplevel = create_client_facing_proxy (
+            proxy,
+            &xdg_toplevel_interface,
+            version,
+            stubbed_xdg_toplevel_handle_request,
+            NULL,
+            data);
+        self->client_facing_xdg_toplevel = (struct xdg_toplevel *)toplevel;
+        return toplevel;
+    } else if (opcode == XDG_SURFACE_GET_POPUP) {
+        return create_client_facing_proxy (proxy, &xdg_popup_interface, version, NULL, NULL, NULL);
+    } else {
+        return NULL;
+    }
+}
+
+static void
+stubbed_xdg_surface_handle_destroy (void* data, struct wl_proxy *proxy)
+{
+    // TODO
+}
+
+struct wl_proxy *
+layer_surface_handle_request (
+    struct wl_proxy *proxy,
+    uint32_t opcode,
+    const struct wl_interface *interface,
+    uint32_t version,
+    uint32_t flags,
+    union wl_argument *args)
+{
+    const char* type = proxy->object.interface->name;
+    if (strcmp(type, xdg_wm_base_interface.name) == 0) {
+        if (opcode == XDG_WM_BASE_GET_XDG_SURFACE) {
+            if (pending_layer_surface && pending_layer_surface->wl_surface == (struct wl_surface *)args[1].o) {
+                struct wl_proxy *xdg_surface = create_client_facing_proxy (
+                    proxy,
+                    &xdg_surface_interface,
+                    version,
+                    stubbed_xdg_surface_handle_request,
+                    stubbed_xdg_surface_handle_destroy,
+                    pending_layer_surface);
+                pending_layer_surface->client_facing_xdg_surface = (struct xdg_surface *)xdg_surface;
+                layer_surface_create_surface_object(pending_layer_surface);
+                return xdg_surface;
+            }
+        }
+    }
+    return real_wl_proxy_marshal_array_flags (proxy, opcode, interface, version, flags, args);
 }

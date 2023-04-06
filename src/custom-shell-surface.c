@@ -39,33 +39,8 @@ custom_shell_surface_on_window_realize (GtkWidget *widget, CustomShellSurface *s
     GdkWindow *gdk_window = gtk_native_get_surface (GTK_NATIVE (self->private->gtk_window));
     g_return_if_fail (gdk_window);
 
-    // TODO
-    // gdk_wayland_window_set_use_custom_surface (gdk_window);
-}
-
-static void
-custom_shell_surface_on_window_map (GtkWidget *widget, CustomShellSurface *self)
-{
-    g_return_if_fail (GTK_WIDGET (self->private->gtk_window) == widget);
-
-    GdkWindow *gdk_window = gtk_native_get_surface (GTK_NATIVE (self->private->gtk_window));
-    g_return_if_fail (gdk_window);
-
     struct wl_surface *wl_surface = gdk_wayland_surface_get_wl_surface (gdk_window);
-    g_return_if_fail (wl_surface);
-
-    // In some cases (observed when a mate panel has an image background) GDK will attach a buffer just after creating
-    // the surface (see the implementation of gdk_wayland_window_show() for details). Giving the surface a role with a
-    // buffer attached is a protocol violation, so we attach a null buffer. GDK hasn't committed the buffer it may have
-    // attached, so we don't need to commit. If this is removed, test-window-with-initially-attached-buffer should fail.
-    wl_surface_attach (wl_surface, NULL, 0, 0);
-
     self->virtual->map (self, wl_surface);
-
-    wl_surface_commit (wl_surface);
-    wl_display_roundtrip (gdk_wayland_display_get_wl_display (gdk_display_get_default ()));
-
-    gtk_widget_queue_draw (widget);
 }
 
 void
@@ -83,7 +58,6 @@ custom_shell_surface_init (CustomShellSurface *self, GtkWindow *gtk_window)
                             self,
                             (GDestroyNotify) custom_shell_surface_on_window_destroy);
     g_signal_connect (gtk_window, "realize", G_CALLBACK (custom_shell_surface_on_window_realize), self);
-    g_signal_connect (gtk_window, "map", G_CALLBACK (custom_shell_surface_on_window_map), self);
 
     if (gtk_widget_get_realized (GTK_WIDGET (gtk_window))) {
         // We must be in the process of realizing now
@@ -140,6 +114,6 @@ custom_shell_surface_remap (CustomShellSurface *self)
 {
     GtkWidget *window_widget = GTK_WIDGET (self->private->gtk_window);
     g_return_if_fail (window_widget);
-    gtk_widget_hide (window_widget);
-    gtk_widget_show (window_widget);
+    gtk_widget_set_visible (window_widget, FALSE);
+    gtk_widget_set_visible (window_widget, TRUE);
 }
