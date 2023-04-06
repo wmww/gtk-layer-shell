@@ -41,10 +41,10 @@ layer_surface_needs_commit (LayerSurface *self)
     if (!self->gtk_window)
         return;
 
-    GdkWindow *gdk_window = gtk_native_get_surface (GTK_NATIVE (self->gtk_window));
+    // GdkSurface *gdk_surface = gtk_native_get_surface (GTK_NATIVE (self->gtk_window));
 
-    if (!gdk_window)
-        return;
+    // if (!gdk_surface)
+    //    return;
 
     // Hopefully this will trigger a commit
     // Don't commit directly, as that screws up GTK's internal state
@@ -235,10 +235,10 @@ layer_surface_on_window_realize (GtkWidget *widget, LayerSurface *self)
     g_return_if_fail (GTK_WIDGET (self->gtk_window) == widget);
     g_return_if_fail (!self->layer_surface);
 
-    GdkWindow *gdk_window = gtk_native_get_surface (GTK_NATIVE (self->gtk_window));
-    g_return_if_fail (gdk_window);
+    GdkSurface *gdk_surface = gtk_native_get_surface (GTK_NATIVE (self->gtk_window));
+    g_return_if_fail (gdk_surface);
 
-    self->wl_surface = gdk_wayland_surface_get_wl_surface (gdk_window);
+    self->wl_surface = gdk_wayland_surface_get_wl_surface (gdk_surface);
     g_return_if_fail(self->wl_surface);
 
     pending_layer_surface = self;

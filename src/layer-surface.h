@@ -20,8 +20,6 @@ struct wl_surface;
 struct xdg_surface;
 struct xdg_positioner;
 
-typedef GdkSurface GdkWindow;
-
 typedef struct _LayerSurface LayerSurface;
 
 // Functions that mutate this structure should all be in layer-surface.c to make the logic easier to understand
@@ -69,7 +67,7 @@ void layer_surface_set_exclusive_zone (LayerSurface *self, int exclusive_zone);
 void layer_surface_auto_exclusive_zone_enable (LayerSurface *self);
 void layer_surface_set_keyboard_mode (LayerSurface *self, GtkLayerShellKeyboardMode mode);
 
-// Returns the effective namespace (default if unset). Does not return ownership. Never returns NULL. Handles null self.
+// Returns the effective namespace (default if unset). Does not return ownership. Never returns NULL. Handles NULL self.
 const char* layer_surface_get_namespace (LayerSurface *self);
 
 // Used by libwayland wrappers
