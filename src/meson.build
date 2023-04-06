@@ -1,9 +1,8 @@
 srcs = files(
     'api.c',
-    'gtk-wayland.c',
     'libwayland-wrappers.c',
     'layer-surface.c',
-    'simple-conversions.c')
+    'wayland-utils.c')
 
 version_args = [
     '-DGTK_LAYER_SHELL_MAJOR=' + meson.project_version().split('.')[0],

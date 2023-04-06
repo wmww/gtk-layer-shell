@@ -12,8 +12,6 @@
 #ifndef LAYER_SHELL_SURFACE_H
 #define LAYER_SHELL_SURFACE_H
 
-#define MESSAGE_PREFIX "GTK4 Layer Shell: "
-
 #include "wlr-layer-shell-unstable-v1-client.h"
 #include "gtk-layer-shell.h"
 #include <gtk/gtk.h>

@@ -9,16 +9,24 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef WAYLAND_GLOBALS_H
-#define WAYLAND_GLOBALS_H
+#ifndef WAYLAND_UTILS_H
+#define WAYLAND_UTILS_H
 
-#include <gtk/gtk.h>
+#include "xdg-shell-client.h"
+#include "wlr-layer-shell-unstable-v1-client.h"
+#include "gtk-layer-shell.h"
+#include <gdk/gdk.h>
 #include <gdk/gdk.h>
 
-gboolean gtk_wayland_get_has_initialized (void);
-struct xdg_wm_base *gtk_wayland_get_xdg_wm_base_global (void);
-struct zwlr_layer_shell_v1 *gtk_wayland_get_layer_shell_global (void);
+#define MESSAGE_PREFIX "GTK4 Layer Shell: "
 
 void gtk_wayland_init_if_needed (void);
+struct zwlr_layer_shell_v1 *gtk_wayland_get_layer_shell_global (void);
 
-#endif // WAYLAND_GLOBALS_H
+enum zwlr_layer_shell_v1_layer gtk_layer_shell_layer_get_zwlr_layer_shell_v1_layer (GtkLayerShellLayer layer);
+uint32_t gtk_layer_shell_edge_array_get_zwlr_layer_shell_v1_anchor (gboolean edges[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER]);
+enum xdg_positioner_gravity gdk_gravity_get_xdg_positioner_gravity (GdkGravity gravity);
+enum xdg_positioner_anchor gdk_gravity_get_xdg_positioner_anchor (GdkGravity anchor);
+enum xdg_positioner_constraint_adjustment gdk_anchor_hints_get_xdg_positioner_constraint_adjustment (GdkAnchorHints hints);
+
+#endif // WAYLAND_UTILS_H

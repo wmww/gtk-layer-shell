@@ -3,6 +3,7 @@
 #include <glib.h>
 #include "libwayland-wrappers.h"
 #include "layer-surface.h"
+#include "wayland-utils.h"
 
 struct wl_proxy *(*real_wl_proxy_marshal_array_flags) (
     struct wl_proxy *proxy,

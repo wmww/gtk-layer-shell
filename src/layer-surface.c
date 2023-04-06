@@ -12,8 +12,7 @@
 #include "layer-surface.h"
 
 #include "gtk-layer-shell.h"
-#include "simple-conversions.h"
-#include "gtk-wayland.h"
+#include "wayland-utils.h"
 #include "libwayland-wrappers.h"
 
 #include "wlr-layer-shell-unstable-v1-client.h"

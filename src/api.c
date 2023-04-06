@@ -10,8 +10,7 @@
  */
 
 #include "gtk-layer-shell.h"
-#include "gtk-wayland.h"
-#include "simple-conversions.h"
+#include "wayland-utils.h"
 #include "layer-surface.h"
 
 #include <gdk/wayland/gdkwayland.h>
