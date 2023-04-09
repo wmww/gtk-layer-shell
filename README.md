@@ -7,6 +7,7 @@ A library to write [GTK](https://www.gtk.org/) applications that use [Layer Shel
 ## Supported Desktops
 This library only works on Wayland, and only on Wayland compositors that support the Layer Shell protocol. Layer shell __is supported__ on:
 - wlroots based compositors (such as __Sway__)
+- KDE Plasma on wayland
 - Mir-based compositors (some may not enable the protocol by default and require `--add-wayland-extension zwlr_layer_shell_v1`)
 
 Layer shell __is not supported__ on:
