@@ -1,14 +1,18 @@
-# GTK Layer Shell
+# GTK Layer Shell (GTK3 version)
 
 ![GTK Layer Shell demo screenshot](https://i.imgur.com/dIuYcBM.png)
 
 A library to write [GTK](https://www.gtk.org/) applications that use [Layer Shell](https://github.com/swaywm/wlr-protocols/blob/master/unstable/wlr-layer-shell-unstable-v1.xml). Layer Shell is a Wayland protocol for desktop shell components, such as panels, notifications and wallpapers. You can use it to anchor your windows to a corner or edge of the output, or stretch them across the entire output. It supports all Layer Shell features including popups and popovers (GTK popups Just Work™). This Library is compatible with C, C++ and any language that supports GObject introspection files (Python, Vala, etc, see using the library below).
 
+[Documentation](https://wmww.github.io/gtk-layer-shell/)
+
+[GTK4 version](https://github.com/wmww/gtk4-layer-shell)
+
 ## Supported Desktops
 This library only works on Wayland, and only on Wayland compositors that support the Layer Shell protocol. Layer shell __is supported__ on:
 - wlroots based compositors (such as __Sway__)
-- KDE Plasma on wayland
-- Mir-based compositors (some may not enable the protocol by default and require `--add-wayland-extension zwlr_layer_shell_v1`)
+- __KDE Plasma__ on wayland
+- __Mir__-based compositors (some may not enable the protocol by default and require `--add-wayland-extension zwlr_layer_shell_v1`)
 
 Layer shell __is not supported__ on:
 - Gnome-on-Wayland
@@ -19,7 +23,7 @@ Layer shell __is not supported__ on:
 `gtk-layer-demo` is built if examples are enabled. Its UI exposes all features of the library, and it's useful for testing layer shell support in compositors. Its code can be found in [examples/demo/](examples/demo/).
 
 ### C/C++
-The easiest way to build against GTK Layer Shell is to use the `gtk-layer-shell-0` pkg-config package. Refer to your build system or the pkg-config docs for further instructions. [gtk-layer-shell.h](include/gtk-layer-shell.h) shows the full API, which can be used directly in C or C++. [examples/simple-example.c](examples/simple-example.c) is a minimal complete app written in C.
+The easiest way to build against GTK Layer Shell is to use the `gtk-layer-shell-0` pkg-config package. Refer to your build system or the pkg-config docs for further instructions. [examples/simple-example.c](examples/simple-example.c) is a minimal complete app written in C.
 
 ### Python
 [examples/simple-example.py](examples/simple-example.py) contains sample Python code.

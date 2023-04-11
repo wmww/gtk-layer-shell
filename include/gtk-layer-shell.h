@@ -19,7 +19,7 @@
  * @title: Gtk Layer Shell
  * @short_description: A library to write GTK Applications using Layer Shell
  *
- * insert more general verbiage here
+ * There is also a [version of this library compatible with GTK4](https://github.com/wmww/gtk4-layer-shell/)
  *
  * # Forcing Window Size
  * If you wish to force your layer surface window to be a different size than it
