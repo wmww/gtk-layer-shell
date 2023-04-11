@@ -40,7 +40,7 @@ jobs:
     - name: Move files into place
       run: |
         mv $HOME/share/gtk-doc/html/gtk-layer-shell ./_site
-        cp ./_site/gtk-layer-shell-GTK-Layer-Shell.html ./_site/index.html
+        cp ./_site/gtk-layer-shell-Gtk-Layer-Shell.html ./_site/index.html
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v1
 
