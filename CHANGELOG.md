@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## [0.8.1] - 12 Apr 2022
+- __The GTK4 port is complete!__
+  - It lives in a separate repository: [gtk4-layer-shell](github.com/wmww/gtk4-layer-shell)
+  - v1.0.0 has been released, and is available to be packaged for distros
+  - The GTK3 version will continue to be maintained here for the foreseeable future
+- Meson: mark wayland-scanner as a build-time dependency
+- Docs: deploy docs to [GitHub Pages](wmww.github.io/gtk-layer-shell)
+- Compat: bump supported GTK to v3.24.37
+
 ## [0.8.0] - 23 Oct 2022
 - Vala: support generating vapi files
 - Fix: memory leak, [#128](https://github.com/wmww/gtk-layer-shell/issues/128)
