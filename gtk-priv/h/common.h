@@ -12,6 +12,9 @@
 #ifndef GTK_PRIV_COMMON_H
 #define GTK_PRIV_COMMON_H
 
+#define GdkTitlebarGesture int
+#define GdkTitleGesture int
+
 void gtk_priv_assert_gtk_version_valid() {
     if (gtk_get_major_version() != 3 || gtk_get_minor_version() < 22) {
         g_error(

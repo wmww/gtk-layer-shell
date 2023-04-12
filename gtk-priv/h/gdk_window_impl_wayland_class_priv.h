@@ -4,7 +4,7 @@
  * This file is part of gtk-layer-shell
  *
  * Copyright © 2010 Intel Corporation
- * Copyright © 2022 gtk-priv/scripts/code.py
+ * Copyright © 2023 gtk-priv/scripts/code.py
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,10 +29,20 @@
 typedef struct _GdkWindowImplWaylandClass GdkWindowImplWaylandClass;
 
 // Version ID 0
-// Valid for GTK v3.22.0 - v3.24.35 (unreleased)
+// Valid for GTK v3.22.0 - v3.24.34
 struct _GdkWindowImplWaylandClass_v3_22_0
 {
   struct _GdkWindowImplClass_v3_22_0 parent_class;
+};
+
+// Version ID 1
+// Diff from previous version:
+// -   struct _GdkWindowImplClass_v3_22_0 parent_class;
+// +   struct _GdkWindowImplClass_v3_24_35 parent_class;
+// Valid for GTK v3.24.35 - v3.24.38 (unreleased)
+struct _GdkWindowImplWaylandClass_v3_24_35
+{
+  struct _GdkWindowImplClass_v3_24_35 parent_class;
 };
 
 // For internal use only
@@ -113,13 +123,18 @@ int gdk_window_impl_wayland_class_priv_get_version_id() {
       case 24032:
       case 24033:
       case 24034:
+      case 24035:
+      case 24036:
+      case 24037:
         break;
   
       default:
         gtk_priv_warn_gtk_version_may_be_unsupported();
     }
   
-    {
+    if (combo >= 24035) {
+      version_id = 1;
+    } else {
       version_id = 0;
     }
   }
@@ -132,6 +147,7 @@ int gdk_window_impl_wayland_class_priv_get_version_id() {
 GdkWindowImplClass * gdk_window_impl_wayland_class_priv_get_parent_class_ptr(GdkWindowImplWaylandClass * self) {
   switch (gdk_window_impl_wayland_class_priv_get_version_id()) {
     case 0: return (GdkWindowImplClass *)&((struct _GdkWindowImplWaylandClass_v3_22_0*)self)->parent_class;
+    case 1: return (GdkWindowImplClass *)&((struct _GdkWindowImplWaylandClass_v3_24_35*)self)->parent_class;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
