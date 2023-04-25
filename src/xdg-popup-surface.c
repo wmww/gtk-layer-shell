@@ -54,20 +54,19 @@ static const struct xdg_surface_listener xdg_surface_listener = {
 static void
 xdg_popup_handle_configure (void *data,
                             struct xdg_popup *_xdg_popup,
-                            int32_t _x,
-                            int32_t _y,
+                            int32_t x,
+                            int32_t y,
                             int32_t width,
                             int32_t height)
 {
     XdgPopupSurface *self = data;
     (void)_xdg_popup;
-    (void)_x;
-    (void)_y;
 
     g_return_if_fail(width >= 0 && height >= 0); // Protocol error
 
     // Technically this should not be applied until we get a xdg_surface.configure
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
+    gtk_window_move (gtk_window, x, y);
     gtk_window_resize (gtk_window, width, height);
     GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
     g_return_if_fail (gdk_window);
