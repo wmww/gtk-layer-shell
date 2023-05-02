@@ -191,3 +191,20 @@ gtk_priv_access_init (GdkWindow *gdk_window)
         gdk_window_impl_class_priv_set_move_to_rect (window_class, gdk_window_move_to_rect_impl_override);
     }
 }
+
+GdkRectangle
+gtk_window_get_priv_logical_geom (GtkWindow *gtk_window)
+{
+    GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
+    GdkWindowImplWayland *window_impl = (GdkWindowImplWayland *)gdk_window_priv_get_impl (gdk_window);
+    GdkRectangle result;
+    result.x = gdk_window_impl_wayland_priv_get_margin_left (window_impl);
+    result.y = gdk_window_impl_wayland_priv_get_margin_top (window_impl);
+    result.width = gdk_window_get_width (gdk_window) -
+        gdk_window_impl_wayland_priv_get_margin_left (window_impl) -
+        gdk_window_impl_wayland_priv_get_margin_right (window_impl);
+    result.height = gdk_window_get_height (gdk_window) -
+        gdk_window_impl_wayland_priv_get_margin_top (window_impl) -
+        gdk_window_impl_wayland_priv_get_margin_bottom (window_impl);
+    return result;
+}

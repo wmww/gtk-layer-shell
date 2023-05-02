@@ -161,7 +161,7 @@ xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     struct xdg_wm_base *xdg_wm_base_global = gtk_wayland_get_xdg_wm_base_global ();
     g_return_if_fail (xdg_wm_base_global);
     struct xdg_positioner *positioner = xdg_wm_base_create_positioner (xdg_wm_base_global);
-    self->geom = gtk_wayland_get_logical_geom (gtk_window);
+    self->geom = gtk_window_get_priv_logical_geom (gtk_window);
     enum xdg_positioner_anchor anchor = gdk_gravity_get_xdg_positioner_anchor(self->position.rect_anchor);
     enum xdg_positioner_gravity gravity = gdk_gravity_get_xdg_positioner_gravity(self->position.window_anchor);
     enum xdg_positioner_constraint_adjustment constraint_adjustment =
@@ -257,7 +257,7 @@ xdg_popup_surface_on_size_allocate (GtkWidget *_widget,
         self->cached_allocation = *allocation;
         // allocation only used for catching duplicate calls. To get the correct geom we need to check something else
         GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
-        self->geom = gtk_wayland_get_logical_geom (gtk_window);
+        self->geom = gtk_window_get_priv_logical_geom (gtk_window);
         xdg_surface_set_window_geometry (self->xdg_surface,
                                          self->geom.x,
                                          self->geom.y,

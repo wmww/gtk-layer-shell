@@ -14,6 +14,7 @@
 #include "custom-shell-surface.h"
 #include "gtk-wayland.h"
 #include "simple-conversions.h"
+#include "gtk-priv-access.h"
 
 #include "xdg-shell-client.h"
 
@@ -106,7 +107,7 @@ xdg_toplevel_surface_map (CustomShellSurface *super, struct wl_surface *wl_surfa
     xdg_toplevel_set_title (self->xdg_toplevel, name);
 
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window (super);
-    self->geom = gtk_wayland_get_logical_geom (gtk_window);
+    self->geom = gtk_window_get_priv_logical_geom (gtk_window);
     xdg_surface_set_window_geometry (self->xdg_surface,
                                      self->geom.x,
                                      self->geom.y,
@@ -178,7 +179,7 @@ xdg_toplevel_surface_on_size_allocate (GtkWidget *_widget,
         self->cached_allocation = *allocation;
         // allocation only used for catching duplicate calls. To get the correct geom we need to check something else
         GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
-        self->geom = gtk_wayland_get_logical_geom (gtk_window);
+        self->geom = gtk_window_get_priv_logical_geom (gtk_window);
         xdg_surface_set_window_geometry (self->xdg_surface,
                                          self->geom.x,
                                          self->geom.y,
