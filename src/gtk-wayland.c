@@ -200,18 +200,3 @@ gtk_wayland_setup_window_as_custom_popup (GdkWindow *gdk_window, XdgPopupPositio
         g_object_set_data_full (G_OBJECT (gdk_window), popup_position_key, position_owned, g_free);
     }
 }
-
-// Gets the upper left and size of the portion of the window that is actually used (not shadows and whatnot)
-// It does this by walking down the gdk_window tree, as long as there is exactly one child
-GdkRectangle
-gtk_wayland_get_logical_geom (GtkWindow *gtk_window)
-{
-    GdkWindow *window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
-    GList *list = gdk_window_get_children (window);
-    if (list && !list->next) // If there is exactly one child window
-        window = list->data;
-    g_list_free(list);
-    GdkRectangle geom;
-    gdk_window_get_geometry (window, &geom.x, &geom.y, &geom.width, &geom.height);
-    return geom;
-}

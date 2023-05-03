@@ -28,6 +28,4 @@ GtkWindow *gtk_wayland_gdk_to_gtk_window (GdkWindow *gdk_window);
 // Does not take ownership of position
 void gtk_wayland_setup_window_as_custom_popup (GdkWindow *gdk_window, XdgPopupPosition const *position);
 
-GdkRectangle gtk_wayland_get_logical_geom (GtkWindow *widget);
-
 #endif // WAYLAND_GLOBALS_H

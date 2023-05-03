@@ -108,14 +108,6 @@ custom_shell_surface_get_gtk_window (CustomShellSurface *self)
 }
 
 void
-custom_shell_surface_get_window_geom (CustomShellSurface *self, GdkRectangle *geom)
-{
-    g_return_if_fail (self);
-    // TODO: Store the actual window geometry used
-    *geom = gtk_wayland_get_logical_geom (self->private->gtk_window);
-}
-
-void
 custom_shell_surface_needs_commit (CustomShellSurface *self)
 {
     if (!self->private->gtk_window)

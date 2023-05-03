@@ -13,6 +13,7 @@
 #define GDK_WINDOW_HACK_H
 
 #include <gdk/gdk.h>
+#include <gtk/gtk.h>
 #include <stdint.h>
 
 // This only has an effect the first time it's called
@@ -29,5 +30,8 @@ GdkSeat *gdk_window_get_priv_grab_seat (GdkWindow *gdk_window);
 // Sets the window as mapped (mapped is set to false automatically in gdk_wayland_window_hide_surface ())
 // If window is not set to mapped, some subsurfaces fail (see https://github.com/wmww/gtk-layer-shell/issues/38)
 void gdk_window_set_priv_mapped (GdkWindow *gdk_window);
+
+// Gets the window geometry (area inside the window that excludes the shadow)
+GdkRectangle gtk_window_get_priv_logical_geom (GtkWindow *widget);
 
 #endif // GDK_WINDOW_HACK_H
