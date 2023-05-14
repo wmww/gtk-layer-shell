@@ -34,6 +34,9 @@ The easiest way to build against GTK Layer Shell is to use the `gtk-layer-shell-
 ### Rust
 [@pentamassiv](https://github.com/pentamassiv) maintains [safe Rust bindings](https://github.com/pentamassiv/gtk-layer-shell-gir) and the [crates.io crate](https://crates.io/crates/gtk-layer-shell/). Rust examples can be found [here](https://github.com/pentamassiv/gtk-layer-shell-gir/tree/main/gtk-layer-shell/examples).
 
+### Ruby
+[mswiger](https://github.com/mswiger) maintains [Ruby bindings](https://github.com/mswiger/ruby-gtk-layer-shell) which are published to [RubyGems](https://rubygems.org/gems/gtk_layer_shell).
+
 ## Distro Packages
 [![List of distros GTK Layer Shell is packaged for](https://repology.org/badge/vertical-allrepos/gtk-layer-shell.svg)](https://repology.org/project/gtk-layer-shell/versions)
 
