@@ -4,7 +4,7 @@
  * This file is part of gtk-layer-shell
  *
  * Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald
- * Copyright © 2023 gtk-priv/scripts/code.py
+ * Copyright © 2024 gtk-priv/scripts/code.py
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -205,7 +205,7 @@ struct _GdkWindow_v3_22_19
 // Diff from previous version:
 // +   guint synthesized_crossing_event_id;
 // -   guint synthesize_crossing_event_queued : 1;
-// Valid for GTK v3.24.11 - v3.24.38 (unreleased)
+// Valid for GTK v3.24.11 - v3.24.40 (unreleased)
 struct _GdkWindow_v3_24_11
 {
   GObject parent_instance;
@@ -371,6 +371,8 @@ int gdk_window_priv_get_version_id() {
       case 24035:
       case 24036:
       case 24037:
+      case 24038:
+      case 24039:
         break;
   
       default:
