@@ -4,7 +4,7 @@
  * This file is part of gtk-layer-shell
  *
  * Copyright (C) 2009 Carlos Garnacho <carlosg@gnome.org>
- * Copyright © 2023 gtk-priv/scripts/code.py
+ * Copyright © 2024 gtk-priv/scripts/code.py
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -209,7 +209,7 @@ struct _GdkWaylandSeat_v3_22_16
 // -   struct gtk_primary_selection_device *primary_data_device;
 // +   struct gtk_primary_selection_device *gtk_primary_data_device;
 // +   struct zwp_primary_selection_device_v1 *zwp_primary_data_device_v1;
-// Valid for GTK v3.24.24 - v3.24.38 (unreleased)
+// Valid for GTK v3.24.24 - v3.24.40 (unreleased)
 struct _GdkWaylandSeat_v3_24_24
 {
   GdkSeat parent_instance;
@@ -347,6 +347,8 @@ int gdk_wayland_seat_priv_get_version_id() {
       case 24035:
       case 24036:
       case 24037:
+      case 24038:
+      case 24039:
         break;
   
       default:

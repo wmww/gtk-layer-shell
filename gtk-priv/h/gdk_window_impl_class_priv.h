@@ -4,7 +4,7 @@
  * This file is part of gtk-layer-shell
  *
  * Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald
- * Copyright © 2023 gtk-priv/scripts/code.py
+ * Copyright © 2024 gtk-priv/scripts/code.py
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -129,7 +129,7 @@ struct _GdkWindowImplClass_v3_22_0
 // Version ID 1
 // Diff from previous version:
 // +   gboolean (* titlebar_gesture) (GdkWindow *window, GdkTitlebarGesture gesture);
-// Valid for GTK v3.24.35 - v3.24.38 (unreleased)
+// Valid for GTK v3.24.35 - v3.24.40 (unreleased)
 struct _GdkWindowImplClass_v3_24_35
 {
   GObjectClass parent_class;
@@ -308,6 +308,8 @@ int gdk_window_impl_class_priv_get_version_id() {
       case 24035:
       case 24036:
       case 24037:
+      case 24038:
+      case 24039:
         break;
   
       default:

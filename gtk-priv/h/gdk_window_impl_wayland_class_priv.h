@@ -4,7 +4,7 @@
  * This file is part of gtk-layer-shell
  *
  * Copyright © 2010 Intel Corporation
- * Copyright © 2023 gtk-priv/scripts/code.py
+ * Copyright © 2024 gtk-priv/scripts/code.py
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -39,7 +39,7 @@ struct _GdkWindowImplWaylandClass_v3_22_0
 // Diff from previous version:
 // -   struct _GdkWindowImplClass_v3_22_0 parent_class;
 // +   struct _GdkWindowImplClass_v3_24_35 parent_class;
-// Valid for GTK v3.24.35 - v3.24.38 (unreleased)
+// Valid for GTK v3.24.35 - v3.24.40 (unreleased)
 struct _GdkWindowImplWaylandClass_v3_24_35
 {
   struct _GdkWindowImplClass_v3_24_35 parent_class;
@@ -126,6 +126,8 @@ int gdk_window_impl_wayland_class_priv_get_version_id() {
       case 24035:
       case 24036:
       case 24037:
+      case 24038:
+      case 24039:
         break;
   
       default:
