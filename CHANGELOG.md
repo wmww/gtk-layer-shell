@@ -2,7 +2,11 @@
 
 ## [Unreleased]
 
-## [0.8.1] - 12 Apr 2022
+## [0.8.2] - 4 Jan 2024
+- Compat: bump supported GTK to v3.24.39
+- Compat: __NOTE:__ GTK v3.24.40 may break previous version and work with this one, but we won't know for sure until it's released
+
+## [0.8.1] - 12 Apr 2023
 - __The GTK4 port is complete!__
   - It lives in a separate repository: [gtk4-layer-shell](github.com/wmww/gtk4-layer-shell)
   - v1.0.0 has been released, and is available to be packaged for distros
