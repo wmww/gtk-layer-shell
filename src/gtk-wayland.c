@@ -31,6 +31,18 @@ static struct zwlr_layer_shell_v1 *layer_shell_global = NULL;
 
 static gboolean has_initialized = FALSE;
 
+static void 
+xdg_wm_base_handle_ping (void *_data, struct xdg_wm_base *xdg_wm_base, uint32_t serial)
+{
+    (void)_data;
+
+    xdg_wm_base_pong (xdg_wm_base, serial);
+}
+
+static const struct xdg_wm_base_listener xdg_wm_base_listener = {
+    .ping = xdg_wm_base_handle_ping,
+};
+
 gboolean
 gtk_wayland_get_has_initialized (void)
 {
@@ -71,6 +83,7 @@ wl_registry_handle_global (void *_data,
                                                id,
                                                &xdg_wm_base_interface,
                                                MIN((uint32_t)xdg_wm_base_interface.version, version));
+        xdg_wm_base_add_listener (xdg_wm_base_global, &xdg_wm_base_listener, NULL);
     }
 }
 
