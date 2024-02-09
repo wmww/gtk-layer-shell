@@ -9,6 +9,8 @@ integration_tests = [
     'test-set-layer',
     'test-get-layer',
     'test-set-size-request',
+    'test-size-can-shrink',
+    'test-appears-if-size-initially-unspecified',
     'test-adapts-to-screen-size',
     'test-auto-exclusive-zone-no-margin',
     'test-auto-exclusive-zone-with-margin',
