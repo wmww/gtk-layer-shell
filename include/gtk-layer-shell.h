@@ -293,14 +293,25 @@ void gtk_layer_set_margin (GtkWindow *window, GtkLayerShellEdge edge, int margin
 int gtk_layer_get_margin (GtkWindow *window, GtkLayerShellEdge edge);
 
 /**
+ * gtk_layer_set_exclusive_edge:
+ * @window: A layer surface.
+ * @exclusive_edge: The edge for which to set the exclusive zone.
+ *
+ * Set the edge for which the exclusive zone should apply. This is required if
+ * the edge cannot be automatically deduced from the anchor points.
+ */
+void gtk_layer_set_exclusive_edge (GtkWindow *window, int exclusive_edge);
+
+/**
  * gtk_layer_set_exclusive_zone:
  * @window: A layer surface.
  * @exclusive_zone: The size of the exclusive zone.
  *
- * Has no effect unless the surface is anchored to an edge. Requests that the compositor
- * does not place other surfaces within the given exclusive zone of the anchored edge.
- * For example, a panel can request to not be covered by maximized windows. See
- * wlr-layer-shell-unstable-v1.xml for details.
+ * Has no effect unless the surface is anchored to an edge, or has an exclusive
+ * edge set with gtk_layer_set_exclusive_edge(). Requests that the compositor
+ * does not place other surfaces within the given exclusive zone of the
+ * anchored edge. For example, a panel can request to not be covered by
+ * maximized windows. See wlr-layer-shell-unstable-v1.xml for details.
  *
  * Default is 0
  */

@@ -29,6 +29,7 @@ struct _LayerSurface
     // Can be set at any time
     gboolean anchors[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER]; // The current anchor
     int margins[GTK_LAYER_SHELL_EDGE_ENTRY_NUMBER]; // The current margins
+    int exclusive_edge; // The current exclusive edge
     int exclusive_zone; // The current exclusive zone (set either explicitly or automatically)
     gboolean auto_exclusive_zone; // If to automatically change the exclusive zone to match the window size
     GtkLayerShellKeyboardMode keyboard_mode; // Type of keyboard interactivity enabled for this surface
@@ -58,6 +59,7 @@ void layer_surface_set_name_space (LayerSurface *self, char const* name_space); 
 void layer_surface_set_layer (LayerSurface *self, GtkLayerShellLayer layer); // Remaps surface on old layer shell versions
 void layer_surface_set_anchor (LayerSurface *self, GtkLayerShellEdge edge, gboolean anchor_to_edge);
 void layer_surface_set_margin (LayerSurface *self, GtkLayerShellEdge edge, int margin_size);
+void layer_surface_set_exclusive_edge (LayerSurface *self, int exclusive_edge);
 void layer_surface_set_exclusive_zone (LayerSurface *self, int exclusive_zone);
 void layer_surface_auto_exclusive_zone_enable (LayerSurface *self);
 void layer_surface_set_keyboard_mode (LayerSurface *self, GtkLayerShellKeyboardMode mode);

@@ -191,6 +191,33 @@ gtk_layer_get_margin (GtkWindow *window, GtkLayerShellEdge edge)
 }
 
 void
+gtk_layer_set_exclusive_edge (GtkWindow *window, int exclusive_edge)
+{
+    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
+    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
+    int wlr_anchor;
+    switch (exclusive_edge)
+    {
+    case GTK_LAYER_SHELL_EDGE_LEFT:
+        wlr_anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT;
+        break;
+    case GTK_LAYER_SHELL_EDGE_RIGHT:
+        wlr_anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
+        break;
+    case GTK_LAYER_SHELL_EDGE_TOP:
+        wlr_anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP;
+        break;
+    case GTK_LAYER_SHELL_EDGE_BOTTOM:
+        wlr_anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
+        break;
+    default:
+        g_critical ("Invalid exclusive edge %d", exclusive_edge);
+        return;
+    }
+    layer_surface_set_exclusive_edge (layer_surface, wlr_anchor);
+}
+
+void
 gtk_layer_set_exclusive_zone (GtkWindow *window, int exclusive_zone)
 {
     LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
