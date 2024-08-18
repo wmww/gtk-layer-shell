@@ -125,6 +125,25 @@ custom_shell_surface_needs_commit (CustomShellSurface *self)
 }
 
 void
+custom_shell_surface_force_commit (CustomShellSurface *self)
+{
+    if (!self->private->gtk_window)
+        return;
+
+    GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (self->private->gtk_window));
+
+    if (!gdk_window || gdk_window_get_priv_pending_commit (gdk_window))
+        return;
+
+    struct wl_surface *wl_surface = gdk_wayland_window_get_wl_surface (gdk_window);
+
+    if (!wl_surface)
+        return;
+
+    wl_surface_commit (wl_surface);
+}
+
+void
 custom_shell_surface_remap (CustomShellSurface *self)
 {
     GtkWidget *window_widget = GTK_WIDGET (self->private->gtk_window);

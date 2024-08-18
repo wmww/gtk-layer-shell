@@ -59,9 +59,13 @@ CustomShellSurface *gtk_window_get_custom_shell_surface (GtkWindow *gtk_window);
 
 GtkWindow *custom_shell_surface_get_gtk_window (CustomShellSurface *self);
 
-// In theory this could commit once on next event loop, but for now it will just commit every time it is called
+// Schedules commit on the next frame callback
 // Does nothing is the shell surface does not currently have a GdkWindow with a wl_surface
 void custom_shell_surface_needs_commit (CustomShellSurface *self);
+
+// Attempts to commit the surface immediately
+// Does nothing is the shell surface does not currently have a GdkWindow with a wl_surface
+void custom_shell_surface_force_commit (CustomShellSurface *self);
 
 // Unmap and remap a currently mapped shell surface
 void custom_shell_surface_remap (CustomShellSurface *self);

@@ -265,3 +265,12 @@ gtk_layer_get_keyboard_mode (GtkWindow *window)
     if (!layer_surface) return GTK_LAYER_SHELL_KEYBOARD_MODE_NONE; // Error message already shown in gtk_window_get_layer_surface
     return layer_surface->keyboard_mode;
 }
+
+void
+gtk_layer_try_force_commit (GtkWindow *window)
+{
+    CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (window);
+    if (!shell_surface)
+        return;
+    custom_shell_surface_force_commit (shell_surface);
+}

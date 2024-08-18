@@ -387,6 +387,19 @@ void gtk_layer_set_keyboard_interactivity (GtkWindow *window, gboolean interacti
  */
 gboolean gtk_layer_get_keyboard_interactivity (GtkWindow *window);
 
+/**
+ * gtk_layer_try_force_commit:
+ * @window: A layer surface.
+ *
+ * Commits a surface state if there's no pending commit scheduled by the GTK.
+ * You almost never need to call this; the only known case is when the surface is in a state
+ * where it does not receive frame callbacks and the regular deferred commit mechanism
+ * is unavailable.
+ *
+ * Since: 0.9
+ */
+void gtk_layer_try_force_commit (GtkWindow *window);
+
 G_END_DECLS
 
 #endif // GTK_LAYER_SHELL_H
