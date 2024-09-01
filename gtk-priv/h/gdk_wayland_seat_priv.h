@@ -209,7 +209,7 @@ struct _GdkWaylandSeat_v3_22_16
 // -   struct gtk_primary_selection_device *primary_data_device;
 // +   struct gtk_primary_selection_device *gtk_primary_data_device;
 // +   struct zwp_primary_selection_device_v1 *zwp_primary_data_device_v1;
-// Valid for GTK v3.24.24 - v3.24.40 (unreleased)
+// Valid for GTK v3.24.24 - v3.24.44 (unreleased)
 struct _GdkWaylandSeat_v3_24_24
 {
   GdkSeat parent_instance;
@@ -349,6 +349,10 @@ int gdk_wayland_seat_priv_get_version_id() {
       case 24037:
       case 24038:
       case 24039:
+      case 24040:
+      case 24041:
+      case 24042:
+      case 24043:
         break;
   
       default:

@@ -29,7 +29,7 @@
 typedef struct _GdkWaylandPointerData GdkWaylandPointerData;
 
 // Version ID 0
-// Valid for GTK v3.22.0 - v3.24.40 (unreleased)
+// Valid for GTK v3.22.0 - v3.24.44 (unreleased)
 struct _GdkWaylandPointerData_v3_22_0
 {
   GdkWindow *focus;
@@ -134,6 +134,10 @@ int gdk_wayland_pointer_data_priv_get_version_id() {
       case 24037:
       case 24038:
       case 24039:
+      case 24040:
+      case 24041:
+      case 24042:
+      case 24043:
         break;
   
       default:
