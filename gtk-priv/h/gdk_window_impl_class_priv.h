@@ -129,7 +129,7 @@ struct _GdkWindowImplClass_v3_22_0
 // Version ID 1
 // Diff from previous version:
 // +   gboolean (* titlebar_gesture) (GdkWindow *window, GdkTitlebarGesture gesture);
-// Valid for GTK v3.24.35 - v3.24.40 (unreleased)
+// Valid for GTK v3.24.35 - v3.24.44 (unreleased)
 struct _GdkWindowImplClass_v3_24_35
 {
   GObjectClass parent_class;
@@ -310,6 +310,10 @@ int gdk_window_impl_class_priv_get_version_id() {
       case 24037:
       case 24038:
       case 24039:
+      case 24040:
+      case 24041:
+      case 24042:
+      case 24043:
         break;
   
       default:

@@ -97,7 +97,7 @@ def parse_tags_and_branches(tags, branches):
         minor = parse_branch(branch)
         if minor is not None:
             micro = highest_micro.get(minor, -1) + 1
-            version = Version(branch, minor, micro, False)
+            version = Version('origin/' + branch, minor, micro, False)
             if version.is_supported():
                 result.append(version)
     result.sort()

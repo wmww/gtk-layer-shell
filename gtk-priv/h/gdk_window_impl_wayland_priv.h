@@ -1090,7 +1090,7 @@ struct _GdkWindowImplWayland_v3_24_25
 // Diff from previous version:
 // +   unsigned int suspended : 1;
 // +     gboolean suspended;
-// Valid for GTK v3.24.40 (unreleased)
+// Valid for GTK v3.24.40 - v3.24.44 (unreleased)
 struct _GdkWindowImplWayland_v3_24_40
 {
   struct _GdkWindowImpl_v3_22_0 parent_instance;
@@ -1276,6 +1276,10 @@ int gdk_window_impl_wayland_priv_get_version_id() {
       case 24037:
       case 24038:
       case 24039:
+      case 24040:
+      case 24041:
+      case 24042:
+      case 24043:
         break;
   
       default:
