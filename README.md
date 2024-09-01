@@ -1,5 +1,7 @@
 # GTK Layer Shell (GTK3 version)
 
+__This project is complete and in maintenance mode.__ It will continue to receive fixes and updates to new GTK3 versions for the forseeable future, but minimal development beyond that. New fetures will only be merged if they are critical for existing apps and don't threaten stability. New projects are reccomended to use GTK4 instead.
+
 ![GTK Layer Shell demo screenshot](https://i.imgur.com/dIuYcBM.png)
 
 A library to write [GTK](https://www.gtk.org/) applications that use [Layer Shell](https://github.com/swaywm/wlr-protocols/blob/master/unstable/wlr-layer-shell-unstable-v1.xml). Layer Shell is a Wayland protocol for desktop shell components, such as panels, notifications and wallpapers. You can use it to anchor your windows to a corner or edge of the output, or stretch them across the entire output. It supports all Layer Shell features including popups and popovers (GTK popups Just Work™). This Library is compatible with C, C++ and any language that supports GObject introspection files (Python, Vala, etc, see using the library below).
