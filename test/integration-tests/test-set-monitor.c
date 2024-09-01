@@ -15,7 +15,7 @@ static GtkWindow* window;
 
 static void callback_0()
 {
-    EXPECT_MESSAGE(zwlr_layer_shell_v1 .get_layer_surface wl_output@);
+    EXPECT_MESSAGE(zwlr_layer_shell_v1 .get_layer_surface wl_output);
     window = create_default_window();
     gtk_layer_init_for_window(window);
     ASSERT_EQ(gdk_display_get_n_monitors(gdk_display_get_default()), 1, "%d");

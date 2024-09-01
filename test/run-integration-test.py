@@ -218,7 +218,7 @@ def verify_result(lines: List[str]):
     for i, line in enumerate(lines):
         if line.startswith('EXPECT: '):
             assertions.append(line.split()[1:])
-        elif line.startswith('[') and line.endswith(')') and '@' in line:
+        elif line.startswith('[') and line.endswith(')') and ('@' in line or '#' in line):
             if assertions and line_contains(line, assertions[0]):
                 assertions = assertions[1:]
         elif line == 'CHECK EXPECTATIONS COMPLETED' or i == len(lines) - 1:
