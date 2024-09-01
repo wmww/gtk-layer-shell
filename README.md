@@ -1,6 +1,6 @@
 # GTK Layer Shell (GTK3 version)
 
-__This project is complete and in maintenance mode.__ It will continue to receive fixes and updates to new GTK3 versions for the forseeable future, but minimal development beyond that. New fetures will only be merged if they are critical for existing apps and don't threaten stability. New projects are reccomended to use GTK4 instead.
+__This project is complete and in maintenance mode.__ It will continue to receive fixes and updates to new GTK3 versions for the foreseeable future, but minimal development beyond that. New fetures will only be merged if they are critical for existing apps and don't threaten stability. New projects are recommended to use GTK4 instead.
 
 ![GTK Layer Shell demo screenshot](https://i.imgur.com/dIuYcBM.png)
 
