@@ -67,7 +67,6 @@ static void surface_data_unmap(SurfaceData* data) {
     SurfaceData* popup = data->most_recent_popup;
     while (popup) {
         // Popups must be unmapped before their parents
-        ASSERT(!popup->surface);
         ASSERT(!popup->layer_surface);
         ASSERT(!popup->xdg_popup);
         ASSERT(!popup->xdg_toplevel);

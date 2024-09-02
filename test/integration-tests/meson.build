@@ -18,6 +18,7 @@ integration_tests = [
     'test-exclusive-zone-below-negative-1',
     'test-menu-popup',
     'test-nested-popup',
+    'test-nested-popup-unmap-order',
     'test-window-with-initially-attached-buffer',
     'test-close-layer-surface',
     'test-get-namespace-default',
