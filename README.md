@@ -75,6 +75,7 @@ sudo apt install meson libwayland-dev libgtk-3-dev gobject-introspection libgire
 
 ### Running the Tests
 * `ninja -C build test`
+* Or, to run a specific test and print the complete output `meson test <testname> --verbose -C build`
 
 ## Licensing
 GTK Layer Shell is licensed under the GNU Lesser General Public License version 3.0 or any later version.
