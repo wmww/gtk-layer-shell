@@ -178,9 +178,10 @@ xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     xdg_surface_add_listener (self->xdg_surface, &xdg_surface_listener, self);
 
     CustomShellSurface *transient_for_shell_surface = self->position.transient_for_shell_surface;
-    self->xdg_popup = transient_for_shell_surface->virtual->get_popup (transient_for_shell_surface,
-                                                                       self->xdg_surface,
-                                                                       positioner);
+    self->xdg_popup = custom_shell_surface_add_popup (transient_for_shell_surface,
+                                                      super,
+                                                      self->xdg_surface,
+                                                      positioner);
     g_return_if_fail (self->xdg_popup);
     xdg_popup_add_listener (self->xdg_popup, &xdg_popup_listener, self);
 
@@ -213,7 +214,7 @@ xdg_popup_surface_unmap (CustomShellSurface *super)
 static void
 xdg_popup_surface_finalize (CustomShellSurface *super)
 {
-    xdg_popup_surface_unmap (super);
+    custom_shell_surface_unmap (super);
 }
 
 static struct xdg_popup *

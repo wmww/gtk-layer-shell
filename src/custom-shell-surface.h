@@ -66,6 +66,15 @@ void custom_shell_surface_needs_commit (CustomShellSurface *self);
 // Unmap and remap a currently mapped shell surface
 void custom_shell_surface_remap (CustomShellSurface *self);
 
+// Calls virtual->get_popup and adds the surface to the list of popups
+struct xdg_popup* custom_shell_surface_add_popup (CustomShellSurface *self,
+                                                  CustomShellSurface *popup,
+                                                  struct xdg_surface *popup_xdg_surface,
+                                                  struct xdg_positioner *positioner);
+
+// Unamps all popups and then calls virtual->unmap()
+void custom_shell_surface_unmap (CustomShellSurface *self);
+
 // Destruction is taken care of automatically when the associated window is destroyed
 
 #endif // CUSTOM_SHELL_SURFACE_H

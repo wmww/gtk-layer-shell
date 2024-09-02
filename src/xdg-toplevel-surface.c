@@ -135,7 +135,7 @@ xdg_toplevel_surface_unmap (CustomShellSurface *super)
 static void
 xdg_toplevel_surface_finalize (CustomShellSurface *super)
 {
-    xdg_toplevel_surface_unmap (super);
+    custom_shell_surface_unmap (super);
 }
 
 static struct xdg_popup *
