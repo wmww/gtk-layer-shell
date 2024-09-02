@@ -34,4 +34,7 @@ void gdk_window_set_priv_mapped (GdkWindow *gdk_window);
 // Gets the window geometry (area inside the window that excludes the shadow)
 GdkRectangle gtk_window_get_priv_logical_geom (GtkWindow *widget);
 
+// Checks if it is safe to commit wl_surface for the window directly
+gboolean gdk_window_get_priv_pending_commit (GdkWindow *gdk_window);
+
 #endif // GDK_WINDOW_HACK_H

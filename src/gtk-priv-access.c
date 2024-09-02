@@ -208,3 +208,12 @@ gtk_window_get_priv_logical_geom (GtkWindow *gtk_window)
         gdk_window_impl_wayland_priv_get_margin_bottom (window_impl);
     return result;
 }
+
+gboolean
+gdk_window_get_priv_pending_commit (GdkWindow *gdk_window)
+{
+    GdkWindowImplWayland *window_impl = (GdkWindowImplWayland *)gdk_window_priv_get_impl (gdk_window);
+
+    return (gdk_window_impl_wayland_priv_get_pending_commit (window_impl) ||
+        gdk_window_impl_wayland_priv_get_pending_buffer_attached (window_impl));
+}
