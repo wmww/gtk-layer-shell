@@ -20,7 +20,9 @@ typedef enum
     SURFACE_ROLE_LAYER,
 } SurfaceRole;
 
-typedef struct
+typedef struct SurfaceData SurfaceData;
+
+struct SurfaceData
 {
     SurfaceRole role;
     struct wl_resource* surface;
@@ -33,15 +35,19 @@ typedef struct
     char has_committed_buffer; // This surface has a non-null committed buffer
     char initial_commit_for_role; // Set to 1 when a role is created for a surface, and cleared after the first commit
     char layer_send_configure; // If to send a layer surface configure on the next commit
+    char click_on_surface; // If to click on the surface next commit
     int layer_set_w; // The width to configure the layer surface with
     int layer_set_h; // The height to configure the layer surface with
     uint32_t layer_anchor; // The layer surface's anchor
-} SurfaceData;
+    uint32_t click_serial; // The most recent serial that was used to click on this surface
+    SurfaceData* most_recent_popup; // Start of the popup linked list
+    SurfaceData* previous_popup_sibling; // Forms a linked list of popups
+    SurfaceData* popup_parent;
+};
 
 static struct wl_resource* seat_global = NULL;
 static struct wl_resource* pointer_global = NULL;
 static struct wl_resource* output_global = NULL;
-static uint32_t click_serial = 0;
 
 // Needs to be called before any role objects are assigned
 static void surface_data_set_role(SurfaceData* data, SurfaceRole role)
@@ -55,6 +61,25 @@ static void surface_data_set_role(SurfaceData* data, SurfaceRole role)
     ASSERT(!data->has_committed_buffer);
     data->role = role;
     data->initial_commit_for_role = 1;
+}
+
+static void surface_data_unmap(SurfaceData* data) {
+    SurfaceData* popup = data->most_recent_popup;
+    while (popup) {
+        // Popups must be unmapped before their parents
+        ASSERT(!popup->layer_surface);
+        ASSERT(!popup->xdg_popup);
+        ASSERT(!popup->xdg_toplevel);
+        ASSERT(!popup->xdg_surface);
+        popup = popup->previous_popup_sibling;
+    }
+}
+
+static void surface_data_add_pupup(SurfaceData* parent, SurfaceData* popup) {
+    ASSERT(!popup->previous_popup_sibling);
+    popup->previous_popup_sibling = parent->most_recent_popup;
+    parent->most_recent_popup = popup;
+    popup->popup_parent = parent;
 }
 
 static void wl_surface_frame(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
@@ -74,12 +99,14 @@ static void wl_surface_attach(struct wl_resource *resource, const struct wl_mess
     RESOURCE_ARG(wl_buffer, buffer, 0);
     SurfaceData* data = wl_resource_get_user_data(resource);
     data->has_pending_buffer = (buffer != NULL);
+    data->click_on_surface = 1;
 }
 
 static void wl_surface_commit(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
 {
     SurfaceData* data = wl_resource_get_user_data(resource);
     data->has_committed_buffer = data->has_pending_buffer;
+
     // leave the contents of has_pending_buffer alone
     if (data->pending_frame)
     {
@@ -87,11 +114,13 @@ static void wl_surface_commit(struct wl_resource *resource, const struct wl_mess
         wl_resource_destroy(data->pending_frame);
         data->pending_frame = NULL;
     }
+
     if (data->initial_commit_for_role)
     {
         ASSERT(!data->has_committed_buffer);
         data->initial_commit_for_role = 0;
     }
+
     if (data->layer_surface && data->layer_send_configure)
     {
         char horiz = (
@@ -112,7 +141,9 @@ static void wl_surface_commit(struct wl_resource *resource, const struct wl_mess
             height = DEFAULT_OUTPUT_HEIGHT;
         zwlr_layer_surface_v1_send_configure(data->layer_surface, wl_display_next_serial(display), width, height);
         data->layer_send_configure = 0;
+    }
 
+    if (data->click_on_surface) {
         // Move the pointer onto the surface and click
         // This is needed to trigger a tooltip or popup menu to open for the popup tests
         ASSERT(pointer_global);
@@ -120,14 +151,15 @@ static void wl_surface_commit(struct wl_resource *resource, const struct wl_mess
             pointer_global,
             wl_display_next_serial(display),
             data->surface,
-            wl_fixed_from_double(5.0), wl_fixed_from_double(5.0));
+            wl_fixed_from_double(50), wl_fixed_from_double(50));
         wl_pointer_send_frame(pointer_global);
-        click_serial = wl_display_next_serial(display);
+        data->click_serial = wl_display_next_serial(display);
         wl_pointer_send_button(
             pointer_global,
-            click_serial, 0,
+            data->click_serial, 0,
             BTN_LEFT, WL_POINTER_BUTTON_STATE_PRESSED);
         wl_pointer_send_frame(pointer_global);
+        data->click_on_surface = 0;
     }
 }
 
@@ -138,7 +170,9 @@ static void wl_surface_destroy(struct wl_resource* resource, const struct wl_mes
     ASSERT(!data->xdg_toplevel);
     ASSERT(!data->xdg_surface);
     ASSERT(!data->layer_surface);
-    free(data);
+    data->surface = NULL;
+    // Don't free surfaces to guarantee traversing popups is always safe
+    // We're employing the missile memory management pattern here https://x.com/pomeranian99/status/858856994438094848
 }
 
 static void wl_compositor_create_surface(struct wl_resource* resource, const struct wl_message* message, union wl_argument* args)
@@ -231,11 +265,13 @@ static void xdg_toplevel_destroy(struct wl_resource *resource, const struct wl_m
     SurfaceData* data = wl_resource_get_user_data(resource);
     ASSERT(data->xdg_surface);
     data->xdg_toplevel = NULL;
+    surface_data_unmap(data);
 }
 
 static void xdg_surface_get_popup(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
 {
     NEW_ID_ARG(id, 0);
+    RESOURCE_ARG(xdg_surface, parent, 1);
     struct wl_resource* popup = wl_resource_create(
         wl_resource_get_client(resource),
         &xdg_popup_interface,
@@ -248,14 +284,21 @@ static void xdg_surface_get_popup(struct wl_resource *resource, const struct wl_
     surface_data_set_role(data, SURFACE_ROLE_XDG_POPUP);
     wl_resource_set_user_data(popup, data);
     data->xdg_popup = popup;
+    if (parent) {
+        SurfaceData* parent_data = wl_resource_get_user_data(parent);
+        surface_data_add_pupup(parent_data, data);
+    }
 }
 
 static void xdg_popup_grab(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
 {
+    SurfaceData* data = wl_resource_get_user_data(resource);
     RESOURCE_ARG(wl_seat, seat, 0);
     UINT_ARG(serial, 1);
     ASSERT_EQ(seat, seat_global, "%p");
-    ASSERT_EQ(serial, click_serial, "%u");
+    ASSERT(data->popup_parent);
+    ASSERT(data->popup_parent->click_serial);
+    ASSERT_EQ(serial, data->popup_parent->click_serial, "%u");
 }
 
 static void xdg_popup_destroy(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
@@ -263,6 +306,7 @@ static void xdg_popup_destroy(struct wl_resource *resource, const struct wl_mess
     SurfaceData* data = wl_resource_get_user_data(resource);
     ASSERT(data->xdg_surface);
     data->xdg_popup = NULL;
+    surface_data_unmap(data);
 }
 
 static void zwlr_layer_surface_v1_set_anchor(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
@@ -281,6 +325,15 @@ static void zwlr_layer_surface_v1_set_size(struct wl_resource *resource, const s
     data->layer_send_configure = 1;
     data->layer_set_w = width;
     data->layer_set_h = height;
+}
+
+static void zwlr_layer_surface_v1_get_popup(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
+{
+    RESOURCE_ARG(xdg_popup, popup, 0);
+    SurfaceData* data = wl_resource_get_user_data(resource);
+    SurfaceData* popup_data = wl_resource_get_user_data(popup);
+    ASSERT(!popup_data->popup_parent);
+    surface_data_add_pupup(data, popup_data);
 }
 
 static void zwlr_layer_shell_v1_get_layer_surface(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
@@ -304,6 +357,7 @@ static void zwlr_layer_surface_v1_destroy(struct wl_resource *resource, const st
 {
     SurfaceData* data = wl_resource_get_user_data(resource);
     data->layer_surface = NULL;
+    surface_data_unmap(data);
 }
 
 void init()
@@ -324,6 +378,7 @@ void init()
     OVERRIDE_REQUEST(zwlr_layer_shell_v1, get_layer_surface);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, set_anchor);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, set_size);
+    OVERRIDE_REQUEST(zwlr_layer_surface_v1, get_popup);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, destroy);
 
     wl_global_create(display, &wl_seat_interface, 6, NULL, wl_seat_bind);

@@ -54,6 +54,7 @@ menu_bar_new (GtkWindow *layer_window)
                                 gtk_menu_item_set_submenu (GTK_MENU_ITEM (submenu_item), nested_menu);
                                 {
                                     GtkWidget *submenu_item = gtk_menu_item_new_with_label ("Final item");
+                                    gtk_widget_set_tooltip_text (submenu_item, "Final item tooltip");
                                     gtk_menu_shell_append (GTK_MENU_SHELL (nested_menu), submenu_item);
                                 }
                             }
@@ -62,6 +63,7 @@ menu_bar_new (GtkWindow *layer_window)
                 }
                 {
                     GtkWidget *close_item = gtk_menu_item_new_with_label ("Close");
+                    gtk_widget_set_tooltip_text (close_item, "Stop the demo");
                     g_signal_connect (close_item, "activate", G_CALLBACK (on_close_clicked), layer_window);
                     gtk_menu_shell_append (GTK_MENU_SHELL (submenu), close_item);
                 }

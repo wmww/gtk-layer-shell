@@ -208,7 +208,7 @@ static void
 layer_surface_finalize (CustomShellSurface *super)
 {
     LayerSurface *self = (LayerSurface *)super;
-    layer_surface_unmap (super);
+    custom_shell_surface_unmap (super);
     g_free ((gpointer)self->name_space);
 }
 

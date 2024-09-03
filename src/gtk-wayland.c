@@ -152,7 +152,7 @@ gtk_wayland_override_on_window_unmap (GtkWindow *gtk_window, void *_data)
 
     CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (gtk_window);
     if (shell_surface)
-        shell_surface->virtual->unmap (shell_surface);
+        custom_shell_surface_unmap (shell_surface);
 
     // Call the super class's unmap handler
     GValue args[1] = { G_VALUE_INIT };

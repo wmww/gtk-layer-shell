@@ -22,12 +22,29 @@ static const char *custom_shell_surface_key = "wayland_custom_shell_surface";
 struct _CustomShellSurfacePrivate
 {
     GtkWindow *gtk_window;
+    CustomShellSurface *popup_parent;
+    GList *popup_children;
 };
 
 static void
 custom_shell_surface_on_window_destroy (CustomShellSurface *self)
 {
     self->virtual->finalize (self);
+
+    if (self->private->popup_parent) {
+        g_warning ("Shell surface has popup parent on finalize (should have been cleared by unmap)");
+        struct _CustomShellSurfacePrivate *parent_private = self->private->popup_parent->private;
+        parent_private->popup_children = g_list_remove(parent_private->popup_children, self);
+    }
+
+    while (self->private->popup_children) {
+        g_warning ("Shell surface has popup children on finalize (should have been cleared by unmap)");
+        CustomShellSurface *child_private = self->private->popup_children->data;
+        child_private->private->popup_parent = NULL;
+        self->private->popup_children = g_list_remove_link (self->private->popup_children,
+                                                            self->private->popup_children);
+    }
+
     g_free (self->private);
     g_free (self);
 }
@@ -150,4 +167,39 @@ custom_shell_surface_remap (CustomShellSurface *self)
     g_return_if_fail (window_widget);
     gtk_widget_hide (window_widget);
     gtk_widget_show (window_widget);
+}
+
+// Calls virtual->get_popup and adds the surface to the list of popups
+struct xdg_popup* custom_shell_surface_add_popup (CustomShellSurface *self,
+                                                  CustomShellSurface *popup,
+                                                  struct xdg_surface *popup_xdg_surface,
+                                                  struct xdg_positioner *positioner)
+{
+    if (g_list_find (self->private->popup_children, popup)) {
+        g_warning ("Popup added to shell surface multiple times");
+    } else {
+        self->private->popup_children = g_list_append (self->private->popup_children, popup);
+    }
+    popup->private->popup_parent = self;
+    return self->virtual->get_popup (self, popup_xdg_surface, positioner);
+}
+
+// Unamps all popups and then calls virtual->unmap()
+void custom_shell_surface_unmap (CustomShellSurface *self)
+{
+    // Since we have to unmap *before* the default GTK handler (so we delete our objects before the wl_surface gets
+    // deleted), we also unmap before the GTK logic kicks in that unmaps children before parents. That means we have to
+    // handle that ourselves.
+    GList* local_children = self->private->popup_children;
+    self->private->popup_children = NULL;
+    while (local_children) {
+        custom_shell_surface_unmap (local_children->data);
+        local_children = g_list_remove_link (local_children, local_children);
+    }
+    if (self->private->popup_parent) {
+        struct _CustomShellSurfacePrivate *parent_private = self->private->popup_parent->private;
+        parent_private->popup_children = g_list_remove (parent_private->popup_children, self);
+        self->private->popup_parent = NULL;
+    }
+    self->virtual->unmap (self);
 }
