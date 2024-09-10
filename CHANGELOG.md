@@ -2,9 +2,17 @@
 
 ## [Unreleased]
 
+## [0.9.0] - 9 Sep 2024
+- Project: officially place the project in maintenance mode, more details in readme
+- API: add `gtk_layer_try_force_commit()`
+- Fix: unmap tooltips of popups in correct order, fixes [#178](https://github.com/wmww/gtk-layer-shell/issues/178)
+- Fix: handle `xdg_wm_base::ping`, don't get labled as unresponsive
+- Compat: bump supported GTK to v3.24.43
+- Compat: __NOTE:__ GTK v3.24.44 may break previous versions of gtk-layer-shell and work with this one, but we won't know for sure until it's released
+
 ## [0.8.2] - 4 Jan 2024
 - Compat: bump supported GTK to v3.24.39
-- Compat: __NOTE:__ GTK v3.24.40 may break previous version and work with this one, but we won't know for sure until it's released
+- Compat: __NOTE:__ GTK v3.24.40 may break previous versions of gtk-layer-shell and work with this one, but we won't know for sure until it's released
 
 ## [0.8.1] - 12 Apr 2023
 - __The GTK4 port is complete!__
