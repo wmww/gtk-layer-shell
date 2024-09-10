@@ -27,11 +27,12 @@ struct SurfaceData
     SurfaceRole role;
     struct wl_resource* surface;
     struct wl_resource* pending_frame;
+    struct wl_resource* pending_buffer; // The attached but not committed buffer
+    char buffer_cleared; // If the buffer has been explicitly cleared since the last commit
     struct wl_resource* xdg_toplevel;
     struct wl_resource* xdg_popup;
     struct wl_resource* xdg_surface;
     struct wl_resource* layer_surface;
-    char has_pending_buffer; // If the pending buffer is non-null; same as has_committed_buffer if no pending buffer
     char has_committed_buffer; // This surface has a non-null committed buffer
     char initial_commit_for_role; // Set to 1 when a role is created for a surface, and cleared after the first commit
     char layer_send_configure; // If to send a layer surface configure on the next commit
@@ -98,16 +99,30 @@ static void wl_surface_attach(struct wl_resource *resource, const struct wl_mess
 {
     RESOURCE_ARG(wl_buffer, buffer, 0);
     SurfaceData* data = wl_resource_get_user_data(resource);
-    data->has_pending_buffer = (buffer != NULL);
+    data->pending_buffer = buffer;
+    data->buffer_cleared = buffer == NULL;
     data->click_on_surface = 1;
 }
 
 static void wl_surface_commit(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
 {
     SurfaceData* data = wl_resource_get_user_data(resource);
-    data->has_committed_buffer = data->has_pending_buffer;
+    if (data->buffer_cleared)
+    {
+        data->has_committed_buffer = 0;
+        data->buffer_cleared = 0;
+    }
+    else if (data->pending_buffer)
+    {
+        data->has_committed_buffer = 1;
+    }
 
-    // leave the contents of has_pending_buffer alone
+    if (data->pending_buffer)
+    {
+        wl_buffer_send_release(data->pending_buffer);
+        data->pending_buffer = NULL;
+    }
+
     if (data->pending_frame)
     {
         wl_callback_send_done(data->pending_frame, 0);
