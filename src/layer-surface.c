@@ -210,6 +210,9 @@ layer_surface_finalize (CustomShellSurface *super)
     LayerSurface *self = (LayerSurface *)super;
     custom_shell_surface_unmap (super);
     g_free ((gpointer)self->name_space);
+    GdkDisplay *gdk_display = gdk_display_get_default ();
+    // Disconnect the monitor change signals
+    g_signal_handlers_disconnect_by_data (gdk_display, self);
 }
 
 static struct xdg_popup *
@@ -298,6 +301,14 @@ layer_surface_on_size_allocate (GtkWidget *_gtk_window,
     }
 }
 
+static void monitor_changed(GdkDisplay* self, GdkMonitor* monitor, LayerSurface *layer_surface) {
+    (void)self; (void)monitor;
+    if (layer_surface->monitor == NULL) {
+        custom_shell_surface_remap ((CustomShellSurface *)layer_surface);
+    }
+    // Else the surface has a monitor set, so it's in charge of responding to monitor changes
+}
+
 LayerSurface *
 layer_surface_new (GtkWindow *gtk_window)
 {
@@ -323,6 +334,9 @@ layer_surface_new (GtkWindow *gtk_window)
 
     gtk_window_set_decorated (gtk_window, FALSE);
     g_signal_connect (gtk_window, "size-allocate", G_CALLBACK (layer_surface_on_size_allocate), self);
+    GdkDisplay *gdk_display = gdk_display_get_default ();
+    g_signal_connect (gdk_display, "monitor-added", G_CALLBACK (monitor_changed), self);
+    g_signal_connect (gdk_display, "monitor-removed", G_CALLBACK (monitor_changed), self);
 
     return self;
 }
