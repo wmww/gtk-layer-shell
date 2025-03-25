@@ -213,6 +213,7 @@ layer_surface_finalize (CustomShellSurface *super)
     GdkDisplay *gdk_display = gdk_display_get_default ();
     // Disconnect the monitor change signals
     g_signal_handlers_disconnect_by_data (gdk_display, self);
+    g_clear_object (&self->monitor);
 }
 
 static struct xdg_popup *
@@ -356,7 +357,8 @@ layer_surface_set_monitor (LayerSurface *self, GdkMonitor *monitor)
 {
     if (monitor) g_return_if_fail (GDK_IS_WAYLAND_MONITOR (monitor));
     if (monitor != self->monitor) {
-        self->monitor = monitor;
+        g_clear_object (&self->monitor);
+        self->monitor = g_object_ref (monitor);
         if (self->layer_surface) {
             custom_shell_surface_remap ((CustomShellSurface *)self);
         }
