@@ -303,10 +303,11 @@ layer_surface_on_size_allocate (GtkWidget *_gtk_window,
 
 static void monitor_changed(GdkDisplay* self, GdkMonitor* monitor, LayerSurface *layer_surface) {
     (void)self; (void)monitor;
-    if (layer_surface->monitor == NULL) {
+    // If the surface has a monitor set, it's in charge of responding to monitor changes
+    // Don't remap unless the surface is currently mapped (has a layer surface)
+    if (layer_surface->monitor == NULL && layer_surface->layer_surface) {
         custom_shell_surface_remap ((CustomShellSurface *)layer_surface);
     }
-    // Else the surface has a monitor set, so it's in charge of responding to monitor changes
 }
 
 LayerSurface *
