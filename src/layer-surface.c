@@ -358,7 +358,9 @@ layer_surface_set_monitor (LayerSurface *self, GdkMonitor *monitor)
     if (monitor) g_return_if_fail (GDK_IS_WAYLAND_MONITOR (monitor));
     if (monitor != self->monitor) {
         g_clear_object (&self->monitor);
-        self->monitor = g_object_ref (monitor);
+        if (monitor) {
+            self->monitor = g_object_ref (monitor);
+        }
         if (self->layer_surface) {
             custom_shell_surface_remap ((CustomShellSurface *)self);
         }
