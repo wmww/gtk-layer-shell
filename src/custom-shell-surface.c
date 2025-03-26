@@ -163,6 +163,11 @@ custom_shell_surface_force_commit (CustomShellSurface *self)
 void
 custom_shell_surface_remap (CustomShellSurface *self)
 {
+    GdkDisplay *gdk_display = gdk_display_get_default ();
+    if (gdk_display_get_n_monitors (gdk_display) == 0) {
+        // GTK will exit if you try to map a window while there are no monitors, so don't do that
+        return;
+    }
     GtkWidget *window_widget = GTK_WIDGET (self->private->gtk_window);
     g_return_if_fail (window_widget);
     gtk_widget_hide (window_widget);
