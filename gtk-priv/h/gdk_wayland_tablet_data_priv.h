@@ -4,7 +4,7 @@
  * This file is part of gtk-layer-shell
  *
  * Copyright (C) 2009 Carlos Garnacho <carlosg@gnome.org>
- * Copyright © 2024 gtk-priv/scripts/code.py
+ * Copyright © 2025 gtk-priv/scripts/code.py
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,7 @@
 typedef struct _GdkWaylandTabletData GdkWaylandTabletData;
 
 // Version ID 0
-// Valid for GTK v3.22.0 - v3.24.44 (unreleased)
+// Valid for GTK v3.22.0 - v3.24.48
 struct _GdkWaylandTabletData_v3_22_0
 {
   struct zwp_tablet_v2 *wp_tablet;
@@ -43,6 +43,30 @@ struct _GdkWaylandTabletData_v3_22_0
   GdkDevice *current_device;
   GdkSeat *seat;
   struct _GdkWaylandPointerData_v3_22_0 pointer_info;
+  GList *pads;
+  GdkWaylandTabletToolData *current_tool;
+  gint axis_indices[GDK_AXIS_LAST];
+  gdouble *axes;
+};
+
+// Version ID 1
+// Diff from previous version:
+// -   struct _GdkWaylandPointerData_v3_22_0 pointer_info;
+// +   struct _GdkWaylandPointerData_v3_24_49 pointer_info;
+// Valid for GTK v3.24.49 - v3.24.50 (unreleased)
+struct _GdkWaylandTabletData_v3_24_49
+{
+  struct zwp_tablet_v2 *wp_tablet;
+  gchar *name;
+  gchar *path;
+  uint32_t vid;
+  uint32_t pid;
+  GdkDevice *master;
+  GdkDevice *stylus_device;
+  GdkDevice *eraser_device;
+  GdkDevice *current_device;
+  GdkSeat *seat;
+  struct _GdkWaylandPointerData_v3_24_49 pointer_info;
   GList *pads;
   GdkWaylandTabletToolData *current_tool;
   gint axis_indices[GDK_AXIS_LAST];
@@ -136,13 +160,20 @@ int gdk_wayland_tablet_data_priv_get_version_id() {
       case 24041:
       case 24042:
       case 24043:
+      case 24045:
+      case 24046:
+      case 24047:
+      case 24048:
+      case 24049:
         break;
   
       default:
         gtk_priv_warn_gtk_version_may_be_unsupported();
     }
   
-    {
+    if (combo >= 24049) {
+      version_id = 1;
+    } else {
       version_id = 0;
     }
   }
@@ -155,6 +186,7 @@ int gdk_wayland_tablet_data_priv_get_version_id() {
 struct zwp_tablet_v2 * gdk_wayland_tablet_data_priv_get_wp_tablet(GdkWaylandTabletData * self) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: return ((struct _GdkWaylandTabletData_v3_22_0*)self)->wp_tablet;
+    case 1: return ((struct _GdkWaylandTabletData_v3_24_49*)self)->wp_tablet;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -162,6 +194,7 @@ struct zwp_tablet_v2 * gdk_wayland_tablet_data_priv_get_wp_tablet(GdkWaylandTabl
 void gdk_wayland_tablet_data_priv_set_wp_tablet(GdkWaylandTabletData * self, struct zwp_tablet_v2 * wp_tablet) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: ((struct _GdkWaylandTabletData_v3_22_0*)self)->wp_tablet = wp_tablet; break;
+    case 1: ((struct _GdkWaylandTabletData_v3_24_49*)self)->wp_tablet = wp_tablet; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -171,6 +204,7 @@ void gdk_wayland_tablet_data_priv_set_wp_tablet(GdkWaylandTabletData * self, str
 gchar * gdk_wayland_tablet_data_priv_get_name(GdkWaylandTabletData * self) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: return ((struct _GdkWaylandTabletData_v3_22_0*)self)->name;
+    case 1: return ((struct _GdkWaylandTabletData_v3_24_49*)self)->name;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -178,6 +212,7 @@ gchar * gdk_wayland_tablet_data_priv_get_name(GdkWaylandTabletData * self) {
 void gdk_wayland_tablet_data_priv_set_name(GdkWaylandTabletData * self, gchar * name) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: ((struct _GdkWaylandTabletData_v3_22_0*)self)->name = name; break;
+    case 1: ((struct _GdkWaylandTabletData_v3_24_49*)self)->name = name; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -187,6 +222,7 @@ void gdk_wayland_tablet_data_priv_set_name(GdkWaylandTabletData * self, gchar * 
 gchar * gdk_wayland_tablet_data_priv_get_path(GdkWaylandTabletData * self) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: return ((struct _GdkWaylandTabletData_v3_22_0*)self)->path;
+    case 1: return ((struct _GdkWaylandTabletData_v3_24_49*)self)->path;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -194,6 +230,7 @@ gchar * gdk_wayland_tablet_data_priv_get_path(GdkWaylandTabletData * self) {
 void gdk_wayland_tablet_data_priv_set_path(GdkWaylandTabletData * self, gchar * path) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: ((struct _GdkWaylandTabletData_v3_22_0*)self)->path = path; break;
+    case 1: ((struct _GdkWaylandTabletData_v3_24_49*)self)->path = path; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -203,6 +240,7 @@ void gdk_wayland_tablet_data_priv_set_path(GdkWaylandTabletData * self, gchar * 
 uint32_t gdk_wayland_tablet_data_priv_get_vid(GdkWaylandTabletData * self) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: return ((struct _GdkWaylandTabletData_v3_22_0*)self)->vid;
+    case 1: return ((struct _GdkWaylandTabletData_v3_24_49*)self)->vid;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -210,6 +248,7 @@ uint32_t gdk_wayland_tablet_data_priv_get_vid(GdkWaylandTabletData * self) {
 void gdk_wayland_tablet_data_priv_set_vid(GdkWaylandTabletData * self, uint32_t vid) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: ((struct _GdkWaylandTabletData_v3_22_0*)self)->vid = vid; break;
+    case 1: ((struct _GdkWaylandTabletData_v3_24_49*)self)->vid = vid; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -219,6 +258,7 @@ void gdk_wayland_tablet_data_priv_set_vid(GdkWaylandTabletData * self, uint32_t 
 uint32_t gdk_wayland_tablet_data_priv_get_pid(GdkWaylandTabletData * self) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: return ((struct _GdkWaylandTabletData_v3_22_0*)self)->pid;
+    case 1: return ((struct _GdkWaylandTabletData_v3_24_49*)self)->pid;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -226,6 +266,7 @@ uint32_t gdk_wayland_tablet_data_priv_get_pid(GdkWaylandTabletData * self) {
 void gdk_wayland_tablet_data_priv_set_pid(GdkWaylandTabletData * self, uint32_t pid) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: ((struct _GdkWaylandTabletData_v3_22_0*)self)->pid = pid; break;
+    case 1: ((struct _GdkWaylandTabletData_v3_24_49*)self)->pid = pid; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -235,6 +276,7 @@ void gdk_wayland_tablet_data_priv_set_pid(GdkWaylandTabletData * self, uint32_t 
 GdkDevice * gdk_wayland_tablet_data_priv_get_master(GdkWaylandTabletData * self) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: return ((struct _GdkWaylandTabletData_v3_22_0*)self)->master;
+    case 1: return ((struct _GdkWaylandTabletData_v3_24_49*)self)->master;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -242,6 +284,7 @@ GdkDevice * gdk_wayland_tablet_data_priv_get_master(GdkWaylandTabletData * self)
 void gdk_wayland_tablet_data_priv_set_master(GdkWaylandTabletData * self, GdkDevice * master) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: ((struct _GdkWaylandTabletData_v3_22_0*)self)->master = master; break;
+    case 1: ((struct _GdkWaylandTabletData_v3_24_49*)self)->master = master; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -251,6 +294,7 @@ void gdk_wayland_tablet_data_priv_set_master(GdkWaylandTabletData * self, GdkDev
 GdkDevice * gdk_wayland_tablet_data_priv_get_stylus_device(GdkWaylandTabletData * self) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: return ((struct _GdkWaylandTabletData_v3_22_0*)self)->stylus_device;
+    case 1: return ((struct _GdkWaylandTabletData_v3_24_49*)self)->stylus_device;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -258,6 +302,7 @@ GdkDevice * gdk_wayland_tablet_data_priv_get_stylus_device(GdkWaylandTabletData 
 void gdk_wayland_tablet_data_priv_set_stylus_device(GdkWaylandTabletData * self, GdkDevice * stylus_device) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: ((struct _GdkWaylandTabletData_v3_22_0*)self)->stylus_device = stylus_device; break;
+    case 1: ((struct _GdkWaylandTabletData_v3_24_49*)self)->stylus_device = stylus_device; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -267,6 +312,7 @@ void gdk_wayland_tablet_data_priv_set_stylus_device(GdkWaylandTabletData * self,
 GdkDevice * gdk_wayland_tablet_data_priv_get_eraser_device(GdkWaylandTabletData * self) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: return ((struct _GdkWaylandTabletData_v3_22_0*)self)->eraser_device;
+    case 1: return ((struct _GdkWaylandTabletData_v3_24_49*)self)->eraser_device;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -274,6 +320,7 @@ GdkDevice * gdk_wayland_tablet_data_priv_get_eraser_device(GdkWaylandTabletData 
 void gdk_wayland_tablet_data_priv_set_eraser_device(GdkWaylandTabletData * self, GdkDevice * eraser_device) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: ((struct _GdkWaylandTabletData_v3_22_0*)self)->eraser_device = eraser_device; break;
+    case 1: ((struct _GdkWaylandTabletData_v3_24_49*)self)->eraser_device = eraser_device; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -283,6 +330,7 @@ void gdk_wayland_tablet_data_priv_set_eraser_device(GdkWaylandTabletData * self,
 GdkDevice * gdk_wayland_tablet_data_priv_get_current_device(GdkWaylandTabletData * self) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: return ((struct _GdkWaylandTabletData_v3_22_0*)self)->current_device;
+    case 1: return ((struct _GdkWaylandTabletData_v3_24_49*)self)->current_device;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -290,6 +338,7 @@ GdkDevice * gdk_wayland_tablet_data_priv_get_current_device(GdkWaylandTabletData
 void gdk_wayland_tablet_data_priv_set_current_device(GdkWaylandTabletData * self, GdkDevice * current_device) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: ((struct _GdkWaylandTabletData_v3_22_0*)self)->current_device = current_device; break;
+    case 1: ((struct _GdkWaylandTabletData_v3_24_49*)self)->current_device = current_device; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -299,6 +348,7 @@ void gdk_wayland_tablet_data_priv_set_current_device(GdkWaylandTabletData * self
 GdkSeat * gdk_wayland_tablet_data_priv_get_seat(GdkWaylandTabletData * self) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: return ((struct _GdkWaylandTabletData_v3_22_0*)self)->seat;
+    case 1: return ((struct _GdkWaylandTabletData_v3_24_49*)self)->seat;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -306,6 +356,7 @@ GdkSeat * gdk_wayland_tablet_data_priv_get_seat(GdkWaylandTabletData * self) {
 void gdk_wayland_tablet_data_priv_set_seat(GdkWaylandTabletData * self, GdkSeat * seat) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: ((struct _GdkWaylandTabletData_v3_22_0*)self)->seat = seat; break;
+    case 1: ((struct _GdkWaylandTabletData_v3_24_49*)self)->seat = seat; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -315,6 +366,7 @@ void gdk_wayland_tablet_data_priv_set_seat(GdkWaylandTabletData * self, GdkSeat 
 GdkWaylandPointerData * gdk_wayland_tablet_data_priv_get_pointer_info_ptr(GdkWaylandTabletData * self) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: return (GdkWaylandPointerData *)&((struct _GdkWaylandTabletData_v3_22_0*)self)->pointer_info;
+    case 1: return (GdkWaylandPointerData *)&((struct _GdkWaylandTabletData_v3_24_49*)self)->pointer_info;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -324,6 +376,7 @@ GdkWaylandPointerData * gdk_wayland_tablet_data_priv_get_pointer_info_ptr(GdkWay
 GList * gdk_wayland_tablet_data_priv_get_pads(GdkWaylandTabletData * self) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: return ((struct _GdkWaylandTabletData_v3_22_0*)self)->pads;
+    case 1: return ((struct _GdkWaylandTabletData_v3_24_49*)self)->pads;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -331,6 +384,7 @@ GList * gdk_wayland_tablet_data_priv_get_pads(GdkWaylandTabletData * self) {
 void gdk_wayland_tablet_data_priv_set_pads(GdkWaylandTabletData * self, GList * pads) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: ((struct _GdkWaylandTabletData_v3_22_0*)self)->pads = pads; break;
+    case 1: ((struct _GdkWaylandTabletData_v3_24_49*)self)->pads = pads; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -340,6 +394,7 @@ void gdk_wayland_tablet_data_priv_set_pads(GdkWaylandTabletData * self, GList * 
 GdkWaylandTabletToolData * gdk_wayland_tablet_data_priv_get_current_tool(GdkWaylandTabletData * self) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: return ((struct _GdkWaylandTabletData_v3_22_0*)self)->current_tool;
+    case 1: return ((struct _GdkWaylandTabletData_v3_24_49*)self)->current_tool;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -347,6 +402,7 @@ GdkWaylandTabletToolData * gdk_wayland_tablet_data_priv_get_current_tool(GdkWayl
 void gdk_wayland_tablet_data_priv_set_current_tool(GdkWaylandTabletData * self, GdkWaylandTabletToolData * current_tool) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: ((struct _GdkWaylandTabletData_v3_22_0*)self)->current_tool = current_tool; break;
+    case 1: ((struct _GdkWaylandTabletData_v3_24_49*)self)->current_tool = current_tool; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -356,6 +412,7 @@ void gdk_wayland_tablet_data_priv_set_current_tool(GdkWaylandTabletData * self, 
 gint* * gdk_wayland_tablet_data_priv_get_axis_indices_ptr(GdkWaylandTabletData * self) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: return (gint* *)&((struct _GdkWaylandTabletData_v3_22_0*)self)->axis_indices;
+    case 1: return (gint* *)&((struct _GdkWaylandTabletData_v3_24_49*)self)->axis_indices;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -365,6 +422,7 @@ gint* * gdk_wayland_tablet_data_priv_get_axis_indices_ptr(GdkWaylandTabletData *
 gdouble * gdk_wayland_tablet_data_priv_get_axes(GdkWaylandTabletData * self) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: return ((struct _GdkWaylandTabletData_v3_22_0*)self)->axes;
+    case 1: return ((struct _GdkWaylandTabletData_v3_24_49*)self)->axes;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
@@ -372,6 +430,7 @@ gdouble * gdk_wayland_tablet_data_priv_get_axes(GdkWaylandTabletData * self) {
 void gdk_wayland_tablet_data_priv_set_axes(GdkWaylandTabletData * self, gdouble * axes) {
   switch (gdk_wayland_tablet_data_priv_get_version_id()) {
     case 0: ((struct _GdkWaylandTabletData_v3_22_0*)self)->axes = axes; break;
+    case 1: ((struct _GdkWaylandTabletData_v3_24_49*)self)->axes = axes; break;
     default: g_error("Invalid version ID"); g_abort();
   }
 }
