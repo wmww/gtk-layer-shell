@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+## [0.9.0] - 6 Apr 2025
+- Fix: handle monitors appearing and disappearing more correctly
+- Compat: bump supported GTK to v3.24.49
 
 ## [0.9.0] - 9 Sep 2024
 - Project: officially place the project in maintenance mode, more details in readme
