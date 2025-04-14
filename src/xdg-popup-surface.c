@@ -188,11 +188,6 @@ xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     xdg_positioner_destroy (positioner);
 
     xdg_popup_surface_maybe_grab (self, gdk_window);
-    xdg_surface_set_window_geometry (self->xdg_surface,
-                                     self->geom.x,
-                                     self->geom.y,
-                                     self->geom.width,
-                                     self->geom.height);
 }
 
 static void
