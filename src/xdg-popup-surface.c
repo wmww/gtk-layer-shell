@@ -162,6 +162,7 @@ xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     g_return_if_fail (xdg_wm_base_global);
     struct xdg_positioner *positioner = xdg_wm_base_create_positioner (xdg_wm_base_global);
     self->geom = gtk_window_get_priv_logical_geom (gtk_window);
+    self->cached_allocation = (GdkRectangle){0};
     enum xdg_positioner_anchor anchor = gdk_gravity_get_xdg_positioner_anchor(self->position.rect_anchor);
     enum xdg_positioner_gravity gravity = gdk_gravity_get_xdg_positioner_gravity(self->position.window_anchor);
     enum xdg_positioner_constraint_adjustment constraint_adjustment =
@@ -272,12 +273,7 @@ xdg_popup_surface_new (GtkWindow *gtk_window, XdgPopupPosition const* position)
     custom_shell_surface_init ((CustomShellSurface *)self, gtk_window);
 
     self->position = *position;
-    self->cached_allocation = (GdkRectangle) {
-        .x = 0,
-        .y = 0,
-        .width = 0,
-        .height = 0,
-    };
+    self->cached_allocation = (GdkRectangle){0};
     self->xdg_surface = NULL;
     self->xdg_popup = NULL;
 
