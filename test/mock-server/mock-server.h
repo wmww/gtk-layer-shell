@@ -34,6 +34,7 @@ void* alloc_zeroed(size_t size);
 #define NEW_ID_ARG(name, index) ASSERT(type_code_at_index(message, index) == 'n'); uint32_t name = args[index].n;
 #define RESOURCE_ARG(type, name, index) ASSERT(type_code_at_index(message, index) == 'o'); ASSERT(message->types[index] == &type##_interface); struct wl_resource* name = (struct wl_resource*)args[index].o;
 #define UINT_ARG(name, index) ASSERT(type_code_at_index(message, index) == 'u'); uint32_t name = args[index].u;
+#define INT_ARG(name, index) ASSERT(type_code_at_index(message, index) == 'i'); int32_t name = args[index].i;
 
 typedef void (*RequestOverrideFunction)(struct wl_resource* resource, const struct wl_message* message, union wl_argument* args);
 void install_request_override(const struct wl_interface* interface, const char* name, RequestOverrideFunction function);
