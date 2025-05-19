@@ -117,6 +117,7 @@ layer_surface_handle_configure (void *data,
     };
 
     layer_surface_update_size (self);
+    ((CustomShellSurface *)self)->configured = TRUE;
 }
 
 static void
