@@ -52,6 +52,7 @@ struct SurfaceData
 static struct wl_resource* seat_global = NULL;
 static struct wl_resource* pointer_global = NULL;
 static struct wl_resource* output_global = NULL;
+char configure_delay_enabled = 0;
 
 // Needs to be called before any role objects are assigned
 static void surface_data_set_role(SurfaceData* data, SurfaceRole role)
@@ -86,6 +87,39 @@ static void surface_data_add_pupup(SurfaceData* parent, SurfaceData* popup) {
     popup->popup_parent = parent;
 }
 
+static void surface_data_configure_layer_surface(SurfaceData* data) {
+    if (!data->layer_surface || !data->layer_send_configure) return;
+
+    char horiz = (
+        (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT) &&
+        (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT));
+    char vert = (
+        (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP) &&
+        (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM));
+    int width = data->layer_set_w;
+    int height = data->layer_set_h;
+    if (width == 0 && !horiz)
+        FATAL("not horizontally stretched and no width given");
+    if (height == 0 && !vert)
+        FATAL("not horizontally stretched and no width given");
+    if (horiz)
+        width = DEFAULT_OUTPUT_WIDTH;
+    if (vert)
+        height = DEFAULT_OUTPUT_HEIGHT;
+    uint32_t serial = wl_display_next_serial(display);
+    if (!data->layer_initial_configure_serial)
+    {
+        data->layer_initial_configure_serial = serial;
+    }
+    zwlr_layer_surface_v1_send_configure(data->layer_surface, serial, width, height);
+    data->layer_send_configure = 0;
+}
+
+static int surface_data_configure_layer_surface_timer_callback(void *data) {
+    surface_data_configure_layer_surface(data);
+    return 0;
+}
+
 static void wl_surface_frame(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
 {
     NEW_ID_ARG(callback, 0);
@@ -110,6 +144,7 @@ static void wl_surface_attach(struct wl_resource *resource, const struct wl_mess
 static void wl_surface_commit(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
 {
     SurfaceData* data = wl_resource_get_user_data(resource);
+
     if (data->buffer_cleared)
     {
         data->has_committed_buffer = 0;
@@ -150,29 +185,19 @@ static void wl_surface_commit(struct wl_resource *resource, const struct wl_mess
 
     if (data->layer_surface && data->layer_send_configure)
     {
-        char horiz = (
-            (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT) &&
-            (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT));
-        char vert = (
-            (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP) &&
-            (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM));
-        int width = data->layer_set_w;
-        int height = data->layer_set_h;
-        if (width == 0 && !horiz)
-            FATAL("not horizontally stretched and no width given");
-        if (height == 0 && !vert)
-            FATAL("not horizontally stretched and no width given");
-        if (horiz)
-            width = DEFAULT_OUTPUT_WIDTH;
-        if (vert)
-            height = DEFAULT_OUTPUT_HEIGHT;
-        uint32_t serial = wl_display_next_serial(display);
-        if (!data->layer_initial_configure_serial)
+        if (configure_delay_enabled)
         {
-            data->layer_initial_configure_serial = serial;
+            struct wl_event_source* source = wl_event_loop_add_timer(
+                wl_display_get_event_loop(display),
+                surface_data_configure_layer_surface_timer_callback,
+                data
+            );
+            wl_event_source_timer_update(source, 100);
         }
-        zwlr_layer_surface_v1_send_configure(data->layer_surface, serial, width, height);
-        data->layer_send_configure = 0;
+        else
+        {
+            surface_data_configure_layer_surface(data);
+        }
     }
 
     if (data->click_on_surface) {
