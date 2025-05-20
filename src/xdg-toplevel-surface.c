@@ -42,7 +42,7 @@ xdg_surface_handle_configure (void *_data,
     (void)_data;
 
     xdg_surface_ack_configure (xdg_surface, serial);
-    ((CustomShellSurface *)self)->configured = TRUE;
+    ((CustomShellSurface *)_data)->configured = TRUE;
 }
 
 static const struct xdg_surface_listener xdg_surface_listener = {
