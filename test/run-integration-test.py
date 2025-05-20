@@ -177,6 +177,8 @@ def run_test(name: str, server_args: List[str], client_args: List[str], xdg_runt
     env = os.environ.copy()
     env['XDG_RUNTIME_DIR'] = xdg_runtime
     env['WAYLAND_DISPLAY'] = wayland_display
+    env['CLIENT_TO_SERVER_FIFO'] = xdg_runtime + '/' + wayland_display + '-c2s'
+    env['SERVER_TO_CLIENT_FIFO'] = xdg_runtime + '/' + wayland_display + '-s2c'
     env['WAYLAND_DEBUG'] = '1'
 
     server = Program('server', server_args, env)
