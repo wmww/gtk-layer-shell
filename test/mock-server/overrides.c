@@ -475,5 +475,10 @@ void init()
 const char* handle_command(const char* command)
 {
     fprintf(stderr, "got command: %s\n", command);
-    FATAL_FMT("unkown command: %s", command);
+    if (strcmp(command, "enable_configure_delay") == 0) {
+        configure_delay_enabled = 1;
+        return "configure_delay_enabled";
+    } else {
+        FATAL_FMT("unkown command: %s", command);
+    }
 }
