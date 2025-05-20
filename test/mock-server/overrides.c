@@ -39,7 +39,6 @@ struct SurfaceData
     char layer_send_configure; // If to send a layer surface configure on the next commit
     uint32_t layer_initial_configure_serial; // The serial of the first configure event
     char layer_initial_configure_acked; // If the first configure event has been acked
-    char click_on_surface; // If to click on the surface next commit
     int layer_set_w; // The width to configure the layer surface with
     int layer_set_h; // The height to configure the layer surface with
     uint32_t layer_anchor; // The layer surface's anchor
@@ -53,6 +52,7 @@ static struct wl_resource* seat_global = NULL;
 static struct wl_resource* pointer_global = NULL;
 static struct wl_resource* output_global = NULL;
 char configure_delay_enabled = 0;
+SurfaceData* latest_surface = NULL;
 
 // Needs to be called before any role objects are assigned
 static void surface_data_set_role(SurfaceData* data, SurfaceRole role)
@@ -138,7 +138,6 @@ static void wl_surface_attach(struct wl_resource *resource, const struct wl_mess
     SurfaceData* data = wl_resource_get_user_data(resource);
     data->pending_buffer = buffer;
     data->buffer_cleared = buffer == NULL;
-    data->click_on_surface = 1;
 }
 
 static void wl_surface_commit(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
@@ -199,25 +198,6 @@ static void wl_surface_commit(struct wl_resource *resource, const struct wl_mess
             surface_data_configure_layer_surface(data);
         }
     }
-
-    if (data->click_on_surface) {
-        // Move the pointer onto the surface and click
-        // This is needed to trigger a tooltip or popup menu to open for the popup tests
-        ASSERT(pointer_global);
-        wl_pointer_send_enter(
-            pointer_global,
-            wl_display_next_serial(display),
-            data->surface,
-            wl_fixed_from_double(50), wl_fixed_from_double(50));
-        wl_pointer_send_frame(pointer_global);
-        data->click_serial = wl_display_next_serial(display);
-        wl_pointer_send_button(
-            pointer_global,
-            data->click_serial, 0,
-            BTN_LEFT, WL_POINTER_BUTTON_STATE_PRESSED);
-        wl_pointer_send_frame(pointer_global);
-        data->click_on_surface = 0;
-    }
 }
 
 static void wl_surface_destroy(struct wl_resource* resource, const struct wl_message* message, union wl_argument* args)
@@ -242,6 +222,7 @@ static void wl_compositor_create_surface(struct wl_resource* resource, const str
         id);
     SurfaceData* data = ALLOC_STRUCT(SurfaceData);
     data->surface = surface;
+    latest_surface = data;
     use_default_impl(surface);
     wl_resource_set_user_data(surface, data);
 }
@@ -478,6 +459,23 @@ const char* handle_command(const char* command)
     if (strcmp(command, "enable_configure_delay") == 0) {
         configure_delay_enabled = 1;
         return "configure_delay_enabled";
+    } else if (strcmp(command, "click_latest_surface") == 0) {
+        // Move the pointer onto the surface and click
+        // This is needed to trigger a tooltip or popup menu to open for the popup tests
+        ASSERT(pointer_global);
+        wl_pointer_send_enter(
+            pointer_global,
+            wl_display_next_serial(display),
+            latest_surface->surface,
+            wl_fixed_from_double(50), wl_fixed_from_double(50));
+        wl_pointer_send_frame(pointer_global);
+        latest_surface->click_serial = wl_display_next_serial(display);
+        wl_pointer_send_button(
+            pointer_global,
+            latest_surface->click_serial, 0,
+            BTN_LEFT, WL_POINTER_BUTTON_STATE_PRESSED);
+        wl_pointer_send_frame(pointer_global);
+        return "latest_surface_clicked";
     } else {
         FATAL_FMT("unkown command: %s", command);
     }

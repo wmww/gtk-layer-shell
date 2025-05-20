@@ -15,13 +15,7 @@ static GtkWindow* window;
 
 static void callback_0()
 {
-    // The mock server will automatically click on our window, triggering the menu to open
-
     EXPECT_MESSAGE(zwlr_layer_shell_v1 .get_layer_surface);
-    EXPECT_MESSAGE(xdg_wm_base .get_xdg_surface);
-    EXPECT_MESSAGE(xdg_surface .get_popup nil);
-    EXPECT_MESSAGE(zwlr_layer_surface_v1 .get_popup xdg_popup);
-    EXPECT_MESSAGE(xdg_popup .grab);
 
     window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     GtkWidget *menu_bar = gtk_menu_bar_new();
@@ -39,6 +33,16 @@ static void callback_0()
     gtk_widget_show_all(GTK_WIDGET(window));
 }
 
+static void callback_1()
+{
+    EXPECT_MESSAGE(xdg_wm_base .get_xdg_surface);
+    EXPECT_MESSAGE(xdg_surface .get_popup nil);
+    EXPECT_MESSAGE(zwlr_layer_surface_v1 .get_popup xdg_popup);
+    EXPECT_MESSAGE(xdg_popup .grab);
+    send_command("click_latest_surface", "latest_surface_clicked");
+}
+
 TEST_CALLBACKS(
     callback_0,
+    callback_1,
 )
