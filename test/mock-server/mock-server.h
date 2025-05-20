@@ -43,5 +43,6 @@ void default_global_create(struct wl_display* display, const struct wl_interface
 char type_code_at_index(const struct wl_message* message, int index);
 
 void init();
+const char* handle_command(const char* command);
 
 #endif // MOCK_SERVER_H

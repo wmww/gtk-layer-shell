@@ -11,7 +11,12 @@
 
 #include "mock-server.h"
 
+#include <fcntl.h>
+#include <sys/stat.h>
+
 struct wl_display* display = NULL;
+
+static void open_command_stream();
 
 void* alloc_zeroed(size_t size)
 {
@@ -144,6 +149,64 @@ static struct wl_listener client_connect_listener = {
     .notify = client_connect,
 };
 
+static void send_command_response(const char* command) {
+    const char* fifo_path = getenv("SERVER_TO_CLIENT_FIFO");
+    ASSERT(fifo_path);
+    int fd;
+    ASSERT((fd = open(fifo_path, O_WRONLY)) >= 0);
+    const char* response = handle_command(command);
+    ASSERT(write(fd, response, strlen(response)) > 0);
+    ASSERT(write(fd, "\n", 1) > 0);
+    close(fd);
+}
+
+static int read_command_stream(int fd, uint32_t mask, void *data)
+{
+#define BUFFER_SIZE 1024
+    static char buffer[BUFFER_SIZE];
+    static int length = 0;
+
+    while (true) {
+        ASSERT(length < BUFFER_SIZE);
+        char* c = buffer + length;
+        ssize_t bytes_read = read(fd, c, 1);
+        if (bytes_read == -1) {
+            return 0;
+        } else if (bytes_read == 0) {
+            close(fd);
+            open_command_stream();
+            return 0;
+        } else if (*c == '\n') {
+            *c = '\0';
+            length = 0;
+            send_command_response(buffer);
+        } else {
+            length++;
+        }
+    }
+
+#undef BUFFER_SIZE
+}
+
+static void open_command_stream() {
+    static struct wl_event_source* event_source = NULL;
+    if (event_source) {
+        wl_event_source_remove(event_source);
+    }
+    const char* fifo_path = getenv("CLIENT_TO_SERVER_FIFO");
+    ASSERT(fifo_path);
+    int fd;
+    mkfifo(fifo_path, 0666);
+    ASSERT((fd = open(fifo_path, O_RDONLY | O_NONBLOCK)) >= 0);
+    event_source = wl_event_loop_add_fd(
+        wl_display_get_event_loop(display),
+        fd,
+        WL_EVENT_READABLE,
+        read_command_stream,
+        NULL
+    );
+}
+
 int main(int argc, const char** argv)
 {
     wl_list_init(&request_overrides);
@@ -153,6 +216,8 @@ int main(int argc, const char** argv)
     {
         FATAL_FMT("server failed to connect to Wayland display %s", get_display_name());
     }
+
+    open_command_stream();
 
     wl_display_add_client_created_listener(display, &client_connect_listener);
 
