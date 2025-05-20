@@ -10,12 +10,53 @@
  */
 
 #include "integration-test-common.h"
+#include <fcntl.h>
+#include <sys/stat.h>
 
 // Time in milliseconds for each callback to run
 static int step_time = 300;
 
 static int return_code = 0;
 static int callback_index = 0;
+
+void send_command(const char* command, const char* expected_response) {
+    fprintf(stderr, "sending command: %s\n", command);
+
+    const char* rx_path = getenv("SERVER_TO_CLIENT_FIFO");
+
+    ASSERT(rx_path);
+    int rx_fd;
+    mkfifo(rx_path, 0666);
+
+    const char* tx_path = getenv("CLIENT_TO_SERVER_FIFO");
+    ASSERT(tx_path);
+    int tx_fd;
+    ASSERT((tx_fd = open(tx_path, O_WRONLY)) >= 0);
+    ASSERT(write(tx_fd, command, strlen(command)) > 0);
+    ASSERT(write(tx_fd, "\n", 1) > 0);
+    close(tx_fd);
+
+    fprintf(stderr, "awaiting response: %s\n", expected_response);
+    ASSERT((rx_fd = open(rx_path, O_RDONLY)) >= 0);
+#define BUFFER_SIZE 1024
+    char buffer[BUFFER_SIZE];
+    int length = 0;
+    while (TRUE) {
+        ASSERT(length < BUFFER_SIZE);
+        char* c = buffer + length;
+        ssize_t bytes_read = read(rx_fd, c, 1);
+        ASSERT(bytes_read > 0);
+        if (*c == '\n') {
+            *c = '\0';
+            ASSERT_STR_EQ(buffer, expected_response);
+            break;
+        } else {
+            length++;
+        }
+    }
+    close(rx_fd);
+#undef BUFFER_SIZE
+}
 
 static gboolean next_step(gpointer _data)
 {
