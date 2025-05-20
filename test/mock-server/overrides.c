@@ -37,6 +37,8 @@ struct SurfaceData
     char has_committed_buffer; // This surface has a non-null committed buffer
     char initial_commit_for_role; // Set to 1 when a role is created for a surface, and cleared after the first commit
     char layer_send_configure; // If to send a layer surface configure on the next commit
+    uint32_t layer_initial_configure_serial; // The serial of the first configure event
+    char layer_initial_configure_acked; // If the first configure event has been acked
     char click_on_surface; // If to click on the surface next commit
     int layer_set_w; // The width to configure the layer surface with
     int layer_set_h; // The height to configure the layer surface with
@@ -115,6 +117,10 @@ static void wl_surface_commit(struct wl_resource *resource, const struct wl_mess
     }
     else if (data->pending_buffer)
     {
+        if (data->layer_surface)
+        {
+            ASSERT(data->layer_initial_configure_acked);
+        }
         data->has_committed_buffer = 1;
     }
 
@@ -160,7 +166,12 @@ static void wl_surface_commit(struct wl_resource *resource, const struct wl_mess
             width = DEFAULT_OUTPUT_WIDTH;
         if (vert)
             height = DEFAULT_OUTPUT_HEIGHT;
-        zwlr_layer_surface_v1_send_configure(data->layer_surface, wl_display_next_serial(display), width, height);
+        uint32_t serial = wl_display_next_serial(display);
+        if (!data->layer_initial_configure_serial)
+        {
+            data->layer_initial_configure_serial = serial;
+        }
+        zwlr_layer_surface_v1_send_configure(data->layer_surface, serial, width, height);
         data->layer_send_configure = 0;
     }
 
@@ -386,6 +397,16 @@ static void zwlr_layer_shell_v1_get_layer_surface(struct wl_resource *resource, 
     data->layer_surface = layer_surface;
 }
 
+static void zwlr_layer_surface_v1_ack_configure(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
+{
+    SurfaceData* data = wl_resource_get_user_data(resource);
+    UINT_ARG(serial, 0);
+    if (serial && serial == data->layer_initial_configure_serial)
+    {
+        data->layer_initial_configure_acked = 1;
+    }
+}
+
 static void zwlr_layer_surface_v1_destroy(struct wl_resource *resource, const struct wl_message* message, union wl_argument* args)
 {
     SurfaceData* data = wl_resource_get_user_data(resource);
@@ -413,6 +434,7 @@ void init()
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, set_anchor);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, set_size);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, get_popup);
+    OVERRIDE_REQUEST(zwlr_layer_surface_v1, ack_configure);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, destroy);
 
     wl_global_create(display, &wl_seat_interface, 6, NULL, wl_seat_bind);
