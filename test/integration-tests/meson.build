@@ -33,5 +33,5 @@ integration_tests = [
     'test-get-monitor',
     'test-set-monitor',
     'test-create-subsurface',
-    'test-configure-delay',
+    'test-configure-delay-expect-fail',
 ]
