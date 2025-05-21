@@ -32,6 +32,9 @@ extern void (* test_callbacks[])(void);
 // Input is a sequence of callback names with a trailing comma
 #define TEST_CALLBACKS(...) void (* test_callbacks[])(void) = {__VA_ARGS__ NULL};
 
+// Send a command to the mock server and verify the response is correct
+void send_command(const char* command, const char* expected_response);
+
 GtkWindow* create_default_window();
 
 #endif // TEST_CLIENT_COMMON_H
