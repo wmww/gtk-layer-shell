@@ -33,6 +33,6 @@ integration_tests = [
     'test-get-monitor',
     'test-set-monitor',
     'test-create-subsurface',
-    'test-configure-delay-expect-fail',
-    'test-nested-popup-configure-delay-expect-fail',
+    'test-configure-delay',
+    'test-nested-popup-configure-delay',
 ]
