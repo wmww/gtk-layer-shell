@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+- Tests: significant refactor to the mock server used by the tests, brings it in line with the version in the gtk4-layer-shell repo
+- Meson: bump required Meson version to 0.54.0
+- Depends: require wayland-protocols >=1.16.0 to build
+
 ## [0.9.0] - 6 Apr 2025
 - Fix: handle monitors appearing and disappearing more correctly
 - Compat: bump supported GTK to v3.24.49

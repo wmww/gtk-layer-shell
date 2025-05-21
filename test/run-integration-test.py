@@ -177,6 +177,8 @@ def run_test(name: str, server_args: List[str], client_args: List[str], xdg_runt
     env = os.environ.copy()
     env['XDG_RUNTIME_DIR'] = xdg_runtime
     env['WAYLAND_DISPLAY'] = wayland_display
+    env['CLIENT_TO_SERVER_FIFO'] = xdg_runtime + '/' + wayland_display + '-c2s'
+    env['SERVER_TO_CLIENT_FIFO'] = xdg_runtime + '/' + wayland_display + '-s2c'
     env['WAYLAND_DEBUG'] = '1'
 
     server = Program('server', server_args, env)
@@ -188,11 +190,22 @@ def run_test(name: str, server_args: List[str], client_args: List[str], xdg_runt
         raise TestError(server.format_output() + '\n\n' + str(e))
 
     client = Program(name, client_args, env)
-    client.finish(timeout=10)
-    server.finish(timeout=1)
 
-    server.check_returncode()
-    client.check_returncode()
+    errors: List[str] = []
+    try:
+        client.finish(timeout=10)
+        client.check_returncode()
+    except TestError as e:
+        errors.append(str(e))
+
+    try:
+        server.finish(timeout=1)
+        server.check_returncode()
+    except TestError as e:
+        errors.append(str(e))
+
+    if errors:
+        raise TestError('\n\n'.join(errors))
 
     client_stdout, client_stderr = client.collect_output()
 
@@ -213,26 +226,56 @@ def line_contains(line: str, tokens: List[str]) -> bool:
 
 def verify_result(lines: List[str]):
     '''Runs through the output of a client and verifies that all expectations pass, see the test README.md details'''
-    assertions = []
+    assertions: List[List[str]] = []
+    negative_assertions: List[List[str]] = []
     section_start = 0
+    set_expectation = False
+    checked_expectation = False
+
     for i, line in enumerate(lines):
         if line.startswith('EXPECT: '):
             assertions.append(line.split()[1:])
+            set_expectation = True
+        elif line.startswith('UNEXPECT: '):
+            negative_assertions.append(line.split()[1:])
+            set_expectation = True
         elif line.startswith('[') and line.endswith(')') and ('@' in line or '#' in line):
             if assertions and line_contains(line, assertions[0]):
                 assertions = assertions[1:]
-        elif line == 'CHECK EXPECTATIONS COMPLETED' or i == len(lines) - 1:
+            for negative_assertion in negative_assertions:
+                if line_contains(line, negative_assertion):
+                    section = format_stream('relevant section', '\n'.join(lines[section_start:i + 1]))
+                    raise TestError(section + '\n\nunexpected message matching "' + ' '.join(negative_assertion) + '"')
+
+        if line == 'CHECK EXPECTATIONS COMPLETED' or i == len(lines) - 1:
+            checked_expectation = True
             if assertions:
                 section = format_stream('relevant section', '\n'.join(lines[section_start:i]))
                 raise TestError(section + '\n\ndid not find "' + ' '.join(assertions[0]) + '"')
             section_start = i + 1
+            negative_assertions = []
+
+    if not set_expectation or not checked_expectation:
+        # If the test didn't use the right expectation format or something we don't want to silently pass
+        raise TestError('test did not correctly set and check an expectation')
 
 def main():
     client_bin = sys.argv[1]
     name = path.basename(client_bin)
-    server_bin = path.join(path.dirname(client_bin), 'mock-server', 'mock-server')
+    build_dir = os.environ.get('GTK4_LAYER_SHELL_BUILD')
+    if not build_dir:
+        build_dir = path.dirname(client_bin)
+        while not path.exists(path.join(build_dir, 'build.ninja')):
+            build_dir = path.dirname(build_dir)
+            assert build_dir != '' and build_dir != '/', (
+                'Could not determine build directory from GTK4_LAYER_SHELL_BUILD or ' + client_bin
+            )
+    assert build_dir, 'GTK4_LAYER_SHELL_BUILD environment variable not set'
+    server_bin = path.join(build_dir, 'test', 'mock-server', 'mock-server')
     assert path.exists(client_bin), 'Could not find client at ' + client_bin
+    assert os.access(client_bin, os.X_OK), client_bin + ' is not executable'
     assert path.exists(server_bin), 'Could not find server at ' + server_bin
+    assert os.access(server_bin, os.X_OK), server_bin + ' is not executable'
     wayland_display = 'wayland-test'
     xdg_runtime = get_xdg_runtime_dir()
 

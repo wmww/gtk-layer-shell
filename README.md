@@ -56,6 +56,7 @@ The easiest way to build against GTK Layer Shell is to use the `gtk-layer-shell-
 ### Build Dependencies
 * [Meson](https://mesonbuild.com/) (>=0.45.1)
 * [libwayland](https://gitlab.freedesktop.org/wayland/wayland) (>=1.10.0)
+* [wayland-protocols](https://gitlab.freedesktop.org/wayland/wayland-protocols) (>=1.16.0)
 * [GTK3](https://www.gtk.org/) (>=3.22.0)
 * [GObject introspection](https://gitlab.gnome.org/GNOME/gobject-introspection/)
 * [GTK Doc](https://www.gtk.org/gtk-doc/) (only required if docs are enabled)
