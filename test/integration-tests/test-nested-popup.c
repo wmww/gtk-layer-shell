@@ -40,13 +40,13 @@ static void callback_0()
 static void callback_1()
 {
     EXPECT_MESSAGE(xdg_surface .get_popup nil); // Menu
-    send_command("click_latest_surface", "latest_surface_clicked");
+    send_command("click_latest_surface 50 50", "latest_surface_clicked");
 }
 
 static void callback_2()
 {
     EXPECT_MESSAGE(xdg_surface .get_popup xdg_surface); // Sub-menu
-    send_command("click_latest_surface", "latest_surface_clicked");
+    send_command("click_latest_surface 50 50", "latest_surface_clicked");
 }
 
 TEST_CALLBACKS(

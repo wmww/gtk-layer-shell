@@ -2,7 +2,7 @@ project('gtk-layer-shell',
     ['c'],
     version: '0.9.1',
     license: 'LGPLv3',
-    meson_version: '>=0.45.1',
+    meson_version: '>=0.54.0',
     default_options: ['c_std=gnu11', 'warning_level=3'])
 
 lib_so_version = '0'
@@ -20,8 +20,8 @@ wayland_server = dependency('wayland-server', version: '>=1.10.0', required: fal
 # wayland_scanner is required, but we can find it without pkg-config
 wayland_scanner = dependency('wayland-scanner', version: '>=1.10.0', required: false, native: true)
 
-# use system xdg-shell protocol when available
-wayland_protocols = dependency('wayland-protocols', version: '>=1.16', required: false)
+# required, see https://github.com/wmww/gtk4-layer-shell/issues/24
+wayland_protocols = dependency('wayland-protocols', version: '>=1.16', required: true)
 
 pkg_config = import('pkgconfig')
 gnome = import('gnome')

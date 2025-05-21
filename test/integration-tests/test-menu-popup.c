@@ -39,7 +39,7 @@ static void callback_1()
     EXPECT_MESSAGE(xdg_surface .get_popup nil);
     EXPECT_MESSAGE(zwlr_layer_surface_v1 .get_popup xdg_popup);
     EXPECT_MESSAGE(xdg_popup .grab);
-    send_command("click_latest_surface", "latest_surface_clicked");
+    send_command("click_latest_surface 50 50", "latest_surface_clicked");
 }
 
 TEST_CALLBACKS(
