@@ -1,11 +1,15 @@
 # Changelog
 
 ## [Unreleased]
-- Tests: significant refactor to the mock server used by the tests, brings it in line with the version in the gtk4-layer-shell repo
+
+## [0.9.2] - 21 May 2025
+- Fix: don't set popup window geometry with no buffer attached, [200](https://github.com/wmww/gtk-layer-shell/issues/200)
+- Fix: wait for configure event before letting GTK commit a buffer, [202](https://github.com/wmww/gtk-layer-shell/pull/202)
+- Tests: refactor the mock Wayland compositor used by the tests, brings it in line with the version in the gtk4-layer-shell repo
 - Meson: bump required Meson version to 0.54.0
 - Depends: require wayland-protocols >=1.16.0 to build
 
-## [0.9.0] - 6 Apr 2025
+## [0.9.1] - 6 Apr 2025
 - Fix: handle monitors appearing and disappearing more correctly
 - Compat: bump supported GTK to v3.24.49
 
