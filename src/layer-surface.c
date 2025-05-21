@@ -110,6 +110,7 @@ layer_surface_handle_configure (void *data,
     LayerSurface *self = data;
 
     zwlr_layer_surface_v1_ack_configure (surface, serial);
+    self->super.configured = TRUE;
 
     self->last_configure_size = (GtkRequisition) {
         .width = (gint)w,
@@ -117,7 +118,6 @@ layer_surface_handle_configure (void *data,
     };
 
     layer_surface_update_size (self);
-    ((CustomShellSurface *)self)->configured = TRUE;
 }
 
 static void

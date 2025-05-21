@@ -83,8 +83,11 @@ custom_shell_surface_on_window_map (GtkWidget *widget, CustomShellSurface *self)
     gdk_window_set_priv_mapped (gdk_window);
 
     wl_surface_commit (wl_surface);
-    while(!self->configured)
-      wl_display_roundtrip (gdk_wayland_display_get_wl_display (gdk_display_get_default ()));
+
+    struct wl_display *display = gdk_wayland_display_get_wl_display (gdk_display_get_default ());
+    while (!self->configured) {
+        wl_display_roundtrip (display);
+    }
 }
 
 void

@@ -35,14 +35,14 @@ struct _XdgToplevelSurface
 };
 
 static void
-xdg_surface_handle_configure (void *_data,
+xdg_surface_handle_configure (void *data,
                               struct xdg_surface *xdg_surface,
                               uint32_t serial)
 {
-    (void)_data;
+    XdgToplevelSurface *self = data;
 
     xdg_surface_ack_configure (xdg_surface, serial);
-    ((CustomShellSurface *)_data)->configured = TRUE;
+    self->super.configured = TRUE;
 }
 
 static const struct xdg_surface_listener xdg_surface_listener = {
