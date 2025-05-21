@@ -132,6 +132,7 @@ int gdk_window_impl_wayland_class_priv_get_version_id() {
       case 24041:
       case 24042:
       case 24043:
+      case 24044:
       case 24045:
       case 24046:
       case 24047:
