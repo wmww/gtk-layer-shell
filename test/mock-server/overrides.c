@@ -53,9 +53,6 @@ static struct wl_resource* current_session_lock = NULL;
 bool configure_delay_enabled = false;
 struct surface_data_t* latest_surface = NULL;
 
-static void layer_surface_send_configure(struct surface_data_t* data);
-static void lock_surface_send_configure(struct surface_data_t* data);
-
 static void surface_data_assert_no_role(struct surface_data_t* data) {
     ASSERT(!data->xdg_popup);
     ASSERT(!data->xdg_toplevel);
@@ -101,17 +98,69 @@ static void surface_data_add_pupup(struct surface_data_t* parent, struct surface
     popup->popup_parent = parent;
 }
 
-static int surface_data_configure_timer_callback(void *userdata) {
-    struct surface_data_t* data = userdata;
-    if (data->role == SURFACE_ROLE_LAYER && data->layer_send_configure && data->layer_surface) {
-        layer_surface_send_configure(data);
-    } else if (data->role == SURFACE_ROLE_SESSION_LOCK && data->lock_surface) {
-        lock_surface_send_configure(data);
+static void surface_data_send_configure(struct surface_data_t* data) {
+    data->configure_serial = wl_display_next_serial(display);
+    switch (data->role) {
+        case SURFACE_ROLE_NONE:
+            break;
+
+        case SURFACE_ROLE_XDG_TOPLEVEL:
+            if (!data->xdg_toplevel || !data->xdg_surface) break;
+            struct wl_array states;
+            wl_array_init(&states);
+            xdg_toplevel_send_configure(data->xdg_toplevel, 0, 0, &states);
+            wl_array_release(&states);
+            xdg_surface_send_configure(data->xdg_surface, data->configure_serial);
+            break;
+
+        case SURFACE_ROLE_XDG_POPUP:
+            if (!data->xdg_popup || !data->xdg_surface) break;
+            // If the configure size is too small GTK gets upset and unmaps its popup in protest
+            // https://gitlab.gnome.org/GNOME/gtk/-/blob/4.16.12/gtk/gtkpopover.c?ref_type=tags#L719
+            xdg_popup_send_configure(data->xdg_popup, 0, 0, 500, 500);
+            xdg_surface_send_configure(data->xdg_surface, data->configure_serial);
+            break;
+
+        case SURFACE_ROLE_LAYER:
+                    if (!data->layer_send_configure || !data->layer_surface) break;
+                bool horiz = (
+                (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT) &&
+                (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT));
+            bool vert = (
+                (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP) &&
+                (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM));
+            int width = data->layer_set_w;
+            int height = data->layer_set_h;
+            if (width == 0 && !horiz)
+                FATAL("not horizontally stretched and no width given");
+            if (height == 0 && !vert)
+                FATAL("not horizontally stretched and no width given");
+            if (horiz)
+                width = DEFAULT_OUTPUT_WIDTH;
+            if (vert)
+                height = DEFAULT_OUTPUT_HEIGHT;
+            zwlr_layer_surface_v1_send_configure(data->layer_surface, data->configure_serial, width, height);
+            data->layer_send_configure = false;
+            break;
+
+        case SURFACE_ROLE_SESSION_LOCK:
+            if (!data->lock_surface) break;
+            ext_session_lock_surface_v1_send_configure(
+                data->lock_surface,
+                data->configure_serial,
+                DEFAULT_OUTPUT_WIDTH,
+                DEFAULT_OUTPUT_HEIGHT
+            );
+            break;
     }
+}
+
+static int surface_data_configure_timer_callback(void *data) {
+    surface_data_send_configure(data);
     return 0;
 }
 
-static void surface_data_send_configure(struct surface_data_t* data) {
+static void surface_data_queue_configure(struct surface_data_t* data) {
     if (configure_delay_enabled) {
         struct wl_event_source* source = wl_event_loop_add_timer(
             wl_display_get_event_loop(display),
@@ -120,7 +169,7 @@ static void surface_data_send_configure(struct surface_data_t* data) {
         );
         wl_event_source_timer_update(source, 100);
     } else {
-        surface_data_configure_timer_callback(data);
+        surface_data_send_configure(data);
     }
 }
 
@@ -157,8 +206,8 @@ REQUEST_OVERRIDE_IMPL(wl_surface, commit) {
         data->has_committed_buffer = true;
     }
 
-    if (data->role == SURFACE_ROLE_LAYER && data->has_committed_buffer && !data->initial_configure_acked) {
-        FATAL("Layer surface committed buffer before initial configure");
+    if (data->role != SURFACE_ROLE_NONE && data->has_committed_buffer && !data->initial_configure_acked) {
+        FATAL("committed buffer before initial configure");
     }
 
     if (data->pending_buffer) {
@@ -183,7 +232,7 @@ REQUEST_OVERRIDE_IMPL(wl_surface, commit) {
     }
 
     if (data->role == SURFACE_ROLE_LAYER && data->layer_send_configure) {
-        surface_data_send_configure(data);
+        surface_data_queue_configure(data);
     }
 }
 
@@ -246,16 +295,20 @@ REQUEST_OVERRIDE_IMPL(xdg_surface, set_window_geometry) {
     data->pending_window_geom = true;
 }
 
+REQUEST_OVERRIDE_IMPL(xdg_surface, ack_configure) {
+    struct surface_data_t* data = wl_resource_get_user_data(xdg_surface);
+    UINT_ARG(serial, 0);
+    if (serial && serial == data->configure_serial) {
+        data->initial_configure_acked = true;
+    }
+}
+
 REQUEST_OVERRIDE_IMPL(xdg_surface, get_toplevel) {
-    struct wl_array states;
-    wl_array_init(&states);
-    xdg_toplevel_send_configure(new_resource, 0, 0, &states);
-    wl_array_release(&states);
-    xdg_surface_send_configure(xdg_surface, wl_display_next_serial(display));
     struct surface_data_t* data = wl_resource_get_user_data(xdg_surface);
     surface_data_set_role(data, SURFACE_ROLE_XDG_TOPLEVEL);
     wl_resource_set_user_data(new_resource, data);
     data->xdg_toplevel = new_resource;
+    surface_data_queue_configure(data);
 }
 
 REQUEST_OVERRIDE_IMPL(xdg_toplevel, destroy) {
@@ -267,10 +320,6 @@ REQUEST_OVERRIDE_IMPL(xdg_toplevel, destroy) {
 
 REQUEST_OVERRIDE_IMPL(xdg_surface, get_popup) {
     RESOURCE_ARG(xdg_surface, parent, 1);
-    // If the configure size is too small GTK gets upset and unmaps its popup in protest
-    // https://gitlab.gnome.org/GNOME/gtk/-/blob/4.16.12/gtk/gtkpopover.c?ref_type=tags#L719
-    xdg_popup_send_configure(new_resource, 0, 0, 500, 500);
-    xdg_surface_send_configure(xdg_surface, wl_display_next_serial(display));
     struct surface_data_t* data = wl_resource_get_user_data(xdg_surface);
     surface_data_set_role(data, SURFACE_ROLE_XDG_POPUP);
     wl_resource_set_user_data(new_resource, data);
@@ -279,6 +328,7 @@ REQUEST_OVERRIDE_IMPL(xdg_surface, get_popup) {
         struct surface_data_t* parent_data = wl_resource_get_user_data(parent);
         surface_data_add_pupup(parent_data, data);
     }
+    surface_data_queue_configure(data);
 }
 
 REQUEST_OVERRIDE_IMPL(xdg_popup, grab) {
@@ -332,28 +382,6 @@ REQUEST_OVERRIDE_IMPL(zwlr_layer_shell_v1, get_layer_surface) {
     data->layer_surface = new_resource;
 }
 
-static void layer_surface_send_configure(struct surface_data_t* data) {
-    bool horiz = (
-        (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT) &&
-        (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT));
-    bool vert = (
-        (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP) &&
-        (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM));
-    int width = data->layer_set_w;
-    int height = data->layer_set_h;
-    if (width == 0 && !horiz)
-        FATAL("not horizontally stretched and no width given");
-    if (height == 0 && !vert)
-        FATAL("not horizontally stretched and no width given");
-    if (horiz)
-        width = DEFAULT_OUTPUT_WIDTH;
-    if (vert)
-        height = DEFAULT_OUTPUT_HEIGHT;
-    data->configure_serial = wl_display_next_serial(display);
-    zwlr_layer_surface_v1_send_configure(data->layer_surface, data->configure_serial, width, height);
-    data->layer_send_configure = false;
-}
-
 REQUEST_OVERRIDE_IMPL(zwlr_layer_surface_v1, ack_configure) {
     struct surface_data_t* data = wl_resource_get_user_data(zwlr_layer_surface_v1);
     UINT_ARG(serial, 0);
@@ -390,16 +418,6 @@ REQUEST_OVERRIDE_IMPL(ext_session_lock_v1, unlock_and_destroy) {
     current_session_lock = NULL;
 }
 
-static void lock_surface_send_configure(struct surface_data_t* data) {
-    data->configure_serial = wl_display_next_serial(display);
-    ext_session_lock_surface_v1_send_configure(
-        data->lock_surface,
-        data->configure_serial,
-        DEFAULT_OUTPUT_WIDTH,
-        DEFAULT_OUTPUT_HEIGHT
-    );
-}
-
 REQUEST_OVERRIDE_IMPL(ext_session_lock_v1, get_lock_surface) {
     RESOURCE_ARG(wl_surface, surface, 1);
     RESOURCE_ARG(wl_output, output, 2);
@@ -408,7 +426,7 @@ REQUEST_OVERRIDE_IMPL(ext_session_lock_v1, get_lock_surface) {
     surface_data_set_role(data, SURFACE_ROLE_SESSION_LOCK);
     wl_resource_set_user_data(new_resource, data);
     data->lock_surface = new_resource;
-    surface_data_send_configure(data);
+    surface_data_queue_configure(data);
 }
 
 REQUEST_OVERRIDE_IMPL(ext_session_lock_surface_v1, ack_configure) {
@@ -429,6 +447,7 @@ void init() {
     OVERRIDE_REQUEST(xdg_wm_base, get_xdg_surface);
     OVERRIDE_REQUEST(xdg_surface, destroy);
     OVERRIDE_REQUEST(xdg_surface, set_window_geometry);
+    OVERRIDE_REQUEST(xdg_surface, ack_configure);
     OVERRIDE_REQUEST(xdg_surface, get_toplevel);
     OVERRIDE_REQUEST(xdg_toplevel, destroy);
     OVERRIDE_REQUEST(xdg_surface, get_popup);
