@@ -42,7 +42,7 @@ xdg_surface_handle_configure (void *data,
     XdgToplevelSurface *self = data;
 
     xdg_surface_ack_configure (xdg_surface, serial);
-    self->super.configured = TRUE;
+    self->super.awaiting_configure = FALSE;
 }
 
 static const struct xdg_surface_listener xdg_surface_listener = {
@@ -98,6 +98,7 @@ xdg_toplevel_surface_map (CustomShellSurface *super, struct wl_surface *wl_surfa
     self->xdg_surface = xdg_wm_base_get_xdg_surface (xdg_wm_base_global, wl_surface);
     g_return_if_fail (self->xdg_surface);
     xdg_surface_add_listener (self->xdg_surface, &xdg_surface_listener, self);
+    super->awaiting_configure = TRUE;
 
     self->xdg_toplevel = xdg_surface_get_toplevel (self->xdg_surface);
 

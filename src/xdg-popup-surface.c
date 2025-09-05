@@ -45,7 +45,7 @@ xdg_surface_handle_configure (void *data,
     (void)_xdg_surface;
 
     xdg_surface_ack_configure (self->xdg_surface, serial);
-    self->super.configured = TRUE;
+    self->super.awaiting_configure = FALSE;
 }
 
 static const struct xdg_surface_listener xdg_surface_listener = {
@@ -178,6 +178,7 @@ xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     self->xdg_surface = xdg_wm_base_get_xdg_surface (xdg_wm_base_global, wl_surface);
     g_return_if_fail (self->xdg_surface);
     xdg_surface_add_listener (self->xdg_surface, &xdg_surface_listener, self);
+    super->awaiting_configure = TRUE;
 
     CustomShellSurface *transient_for_shell_surface = self->position.transient_for_shell_surface;
     self->xdg_popup = custom_shell_surface_add_popup (transient_for_shell_surface,

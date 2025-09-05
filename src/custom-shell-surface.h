@@ -47,7 +47,7 @@ struct _CustomShellSurface
 {
     CustomShellSurfaceVirtual const *virtual;
     CustomShellSurfacePrivate *private;
-    gboolean configured;
+    gboolean awaiting_configure;
 };
 
 // Usually called by the subclass constructors
