@@ -153,6 +153,16 @@ xdg_popup_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
 
     g_return_if_fail (!self->xdg_popup);
     g_return_if_fail (!self->xdg_surface);
+    g_return_if_fail (self->position.transient_for_shell_surface);
+    GtkWindow *parent_gtk_window = custom_shell_surface_get_gtk_window (self->position.transient_for_shell_surface);
+    g_return_if_fail (parent_gtk_window);
+    GdkWindow *parent_gdk_window = gtk_widget_get_window (GTK_WIDGET (parent_gtk_window));
+    g_return_if_fail (parent_gdk_window);
+    if (!gdk_wayland_window_get_wl_surface (parent_gdk_window)) {
+        // See https://github.com/wmww/gtk-layer-shell/issues/207
+        g_warning ("Failed to create popup because parent is not mapped");
+        return;
+    }
 
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window (super);
     GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
