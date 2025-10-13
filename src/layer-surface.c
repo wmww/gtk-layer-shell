@@ -338,6 +338,9 @@ layer_surface_new (GtkWindow *gtk_window)
 
     gtk_window_set_decorated (gtk_window, FALSE);
     g_signal_connect (gtk_window, "size-allocate", G_CALLBACK (layer_surface_on_size_allocate), self);
+    // See https://github.com/wmww/gtk-layer-shell/issues/209
+    g_signal_connect (gtk_window, "delete-event", G_CALLBACK (gtk_true), NULL);
+
     GdkDisplay *gdk_display = gdk_display_get_default ();
     g_signal_connect (gdk_display, "monitor-added", G_CALLBACK (monitor_changed), self);
     g_signal_connect (gdk_display, "monitor-removed", G_CALLBACK (monitor_changed), self);
