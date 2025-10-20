@@ -35,4 +35,6 @@ integration_tests = [
     'test-create-subsurface',
     'test-configure-delay',
     'test-nested-popup-configure-delay',
+    'test-only-output-removed',
+    'test-respect-close',
 ]
