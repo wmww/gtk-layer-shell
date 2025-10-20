@@ -403,6 +403,7 @@ void gtk_layer_try_force_commit (GtkWindow *window);
 /**
  * gtk_layer_set_respect_close:
  * @window: A layer surface.
+ * @respect_close: If to forward the .closed event to GTK.
  *
  * Compositors may send the `zwlr_layer_surface_v1.closed` event in some cases (such as
  * when an output is destroyed). Prior to v0.10 this always triggered a GTK `delete-event`
