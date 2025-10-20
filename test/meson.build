@@ -7,6 +7,9 @@ subdir('unit-tests')
 py = find_program('python3')
 run_test_script = files(meson.current_source_dir() + '/run-integration-test.py')
 
+env = environment()
+env.set('GTK_LAYER_SHELL_BUILD', meson.build_root())
+
 foreach integration_test : integration_tests
     integration_test_srcs = files('integration-tests/' + integration_test + '.c')
     exe = executable(
@@ -19,6 +22,7 @@ foreach integration_test : integration_tests
         py,
         should_fail: expect_fail,
         workdir: meson.current_source_dir(),
+        env: env,
         args: [
             run_test_script,
             meson.current_build_dir() + '/' + integration_test,

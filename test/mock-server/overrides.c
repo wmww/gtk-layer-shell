@@ -12,6 +12,23 @@
 #include "mock-server.h"
 #include "linux/input.h"
 
+#define OUTPUT_SLOTS 10
+struct output_data_t {
+    struct wl_global* global;
+    int slot;
+    int width, height;
+};
+
+#define CLIENT_SLOTS 10
+struct client_data_t {
+    struct wl_client* client;
+    int slot;
+    struct wl_listener disconnect_listener;
+    struct wl_resource* seat;
+    struct wl_resource* pointer;
+    struct wl_resource* outputs[OUTPUT_SLOTS];
+};
+
 enum surface_role_t {
     SURFACE_ROLE_NONE = 0,
     SURFACE_ROLE_XDG_TOPLEVEL,
@@ -20,7 +37,9 @@ enum surface_role_t {
     SURFACE_ROLE_SESSION_LOCK,
 };
 
+#define SURFACE_SLOTS 20
 struct surface_data_t {
+    struct client_data_t* client;
     enum surface_role_t role;
     struct wl_resource* surface;
     struct wl_resource* pending_frame;
@@ -44,14 +63,44 @@ struct surface_data_t {
     struct surface_data_t* most_recent_popup; // Start of the popup linked list
     struct surface_data_t* previous_popup_sibling; // Forms a linked list of popups
     struct surface_data_t* popup_parent;
+    struct output_data_t* explicit_output; // The output requested by the client, or NULL if none
+    struct output_data_t* effective_output; // The output this surface is on, or NULL if none
 };
 
-static struct wl_resource* seat_global = NULL;
-static struct wl_resource* pointer_global = NULL;
-static struct wl_resource* output_global = NULL;
+int next_output_slot = 0;
+static struct output_data_t outputs[OUTPUT_SLOTS] = {0};
+static struct client_data_t clients[CLIENT_SLOTS] = {0};
+static struct surface_data_t surfaces[SURFACE_SLOTS] = {0};
 static struct wl_resource* current_session_lock = NULL;
 bool configure_delay_enabled = false;
+int next_surface_slot = 0;
 struct surface_data_t* latest_surface = NULL;
+
+static struct output_data_t* find_output(struct wl_resource* resource) {
+    for (int client_i = 0; client_i < CLIENT_SLOTS; client_i++)
+        for (int output_i = 0; output_i < next_output_slot; output_i++)
+            if (clients[client_i].outputs[output_i] == resource)
+                return &outputs[output_i];
+    return NULL;
+}
+
+static struct output_data_t* default_output() {
+    for (int i = 0; i < next_output_slot; i++)
+        if (outputs[i].global)
+            return &outputs[i];
+    return NULL;
+}
+
+static struct client_data_t* client_from_wl_client(struct wl_client* client) {
+    for (int i = 0; i < CLIENT_SLOTS; i++)
+        if (clients[i].client == client)
+            return &clients[i];
+    FATAL_FMT("invalid client %p", (void*)client);
+}
+
+static struct client_data_t* client_from_wl_resource(struct wl_resource* resource) {
+    return client_from_wl_client(wl_resource_get_client(resource));
+}
 
 static void surface_data_assert_no_role(struct surface_data_t* data) {
     ASSERT(!data->xdg_popup);
@@ -135,21 +184,20 @@ static void surface_data_send_configure(struct surface_data_t* data) {
                 FATAL("not horizontally stretched and no width given");
             if (height == 0 && !vert)
                 FATAL("not horizontally stretched and no width given");
-            if (horiz)
-                width = DEFAULT_OUTPUT_WIDTH;
-            if (vert)
-                height = DEFAULT_OUTPUT_HEIGHT;
+            if (horiz && data->effective_output)  width  = data->effective_output->width;
+            if (vert  && data->effective_output)  height = data->effective_output->height;
             zwlr_layer_surface_v1_send_configure(data->layer_surface, data->configure_serial, width, height);
             data->layer_send_configure = false;
             break;
 
         case SURFACE_ROLE_SESSION_LOCK:
             if (!data->lock_surface) break;
+            ASSERT(data->explicit_output);
             ext_session_lock_surface_v1_send_configure(
                 data->lock_surface,
                 data->configure_serial,
-                DEFAULT_OUTPUT_WIDTH,
-                DEFAULT_OUTPUT_HEIGHT
+                data->explicit_output->width,
+                data->explicit_output->height
             );
             break;
     }
@@ -240,34 +288,42 @@ REQUEST_OVERRIDE_IMPL(wl_surface, destroy) {
     struct surface_data_t* data = wl_resource_get_user_data(wl_surface);
     surface_data_assert_no_role(data);
     data->surface = NULL;
-    // Don't free surfaces to guarantee traversing popups is always safe
-    // We're employing the missile memory management pattern here https://x.com/pomeranian99/status/858856994438094848
 }
 
 REQUEST_OVERRIDE_IMPL(wl_compositor, create_surface) {
-    struct surface_data_t* data = calloc(1, sizeof(struct surface_data_t));
+    struct client_data_t* client_data = client_from_wl_resource(wl_compositor);
+    ASSERT(next_surface_slot < SURFACE_SLOTS);
+    struct surface_data_t* data = &surfaces[next_surface_slot];
+    next_surface_slot++;
     wl_resource_set_user_data(new_resource, data);
+    data->client = client_data;
     data->surface = new_resource;
     latest_surface = data;
 }
 
 void wl_seat_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id) {
-    ASSERT(!seat_global);
-    seat_global = wl_resource_create(client, &wl_seat_interface, version, id);
-    use_default_impl(seat_global);
-    wl_seat_send_capabilities(seat_global, WL_SEAT_CAPABILITY_POINTER | WL_SEAT_CAPABILITY_KEYBOARD);
+    struct client_data_t* client_data = client_from_wl_client(client);
+    ASSERT(!client_data->seat);
+    client_data->seat = wl_resource_create(client, &wl_seat_interface, version, id);
+    use_default_impl(client_data->seat);
+    wl_seat_send_capabilities(client_data->seat, WL_SEAT_CAPABILITY_POINTER | WL_SEAT_CAPABILITY_KEYBOARD);
 };
 
 void wl_output_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id) {
-    ASSERT(!output_global);
-    output_global = wl_resource_create(client, &wl_output_interface, version, id);
-    use_default_impl(output_global);
-    wl_output_send_done(output_global);
+    struct output_data_t* output = data;
+    struct client_data_t* client_data = client_from_wl_client(client);
+    ASSERT(!client_data->outputs[output->slot]);
+    struct wl_resource* resource = wl_resource_create(client, &wl_output_interface, version, id);
+    use_default_impl(resource);
+    client_data->outputs[output->slot] = resource;
+    wl_output_send_mode(resource, WL_OUTPUT_MODE_CURRENT, output->width, output->height, 60000);
+    wl_output_send_done(resource);
 };
 
 REQUEST_OVERRIDE_IMPL(wl_seat, get_pointer) {
-    ASSERT(!pointer_global);
-    pointer_global = new_resource;
+    struct client_data_t* client_data = client_from_wl_resource(wl_seat);
+    ASSERT(!client_data->pointer);
+    client_data->pointer = new_resource;
 }
 
 REQUEST_OVERRIDE_IMPL(xdg_wm_base, get_xdg_surface) {
@@ -282,6 +338,9 @@ REQUEST_OVERRIDE_IMPL(xdg_surface, destroy) {
     ASSERT(!data->xdg_toplevel);
     ASSERT(!data->xdg_popup);
     data->xdg_surface = NULL;
+    data->popup_parent = NULL;
+    data->previous_popup_sibling = NULL;
+    data->most_recent_popup = NULL;
 }
 
 REQUEST_OVERRIDE_IMPL(xdg_surface, set_window_geometry) {
@@ -323,6 +382,7 @@ REQUEST_OVERRIDE_IMPL(xdg_surface, get_popup) {
     struct surface_data_t* data = wl_resource_get_user_data(xdg_surface);
     surface_data_set_role(data, SURFACE_ROLE_XDG_POPUP);
     wl_resource_set_user_data(new_resource, data);
+    ASSERT(!data->xdg_popup);
     data->xdg_popup = new_resource;
     if (parent) {
         struct surface_data_t* parent_data = wl_resource_get_user_data(parent);
@@ -335,7 +395,7 @@ REQUEST_OVERRIDE_IMPL(xdg_popup, grab) {
     struct surface_data_t* data = wl_resource_get_user_data(xdg_popup);
     RESOURCE_ARG(wl_seat, seat, 0);
     UINT_ARG(serial, 1);
-    ASSERT_EQ(seat, seat_global, "%p");
+    ASSERT_EQ(seat, client_from_wl_resource(xdg_popup)->seat, "%p");
     ASSERT(data->popup_parent);
     if (data->popup_parent->click_serial) {
         ASSERT_EQ(serial, data->popup_parent->click_serial, "%u");
@@ -375,11 +435,17 @@ REQUEST_OVERRIDE_IMPL(zwlr_layer_surface_v1, get_popup) {
 
 REQUEST_OVERRIDE_IMPL(zwlr_layer_shell_v1, get_layer_surface) {
     RESOURCE_ARG(wl_surface, surface, 1);
+    RESOURCE_ARG(wl_output, output, 2);
     struct surface_data_t* data = wl_resource_get_user_data(surface);
     surface_data_set_role(data, SURFACE_ROLE_LAYER);
     wl_resource_set_user_data(new_resource, data);
     data->layer_send_configure = true;
     data->layer_surface = new_resource;
+    if (output) {
+        data->explicit_output = find_output(output);
+        ASSERT(data->explicit_output);
+    }
+    data->effective_output = data->explicit_output ? data->explicit_output : default_output();
 }
 
 REQUEST_OVERRIDE_IMPL(zwlr_layer_surface_v1, ack_configure) {
@@ -421,11 +487,12 @@ REQUEST_OVERRIDE_IMPL(ext_session_lock_v1, unlock_and_destroy) {
 REQUEST_OVERRIDE_IMPL(ext_session_lock_v1, get_lock_surface) {
     RESOURCE_ARG(wl_surface, surface, 1);
     RESOURCE_ARG(wl_output, output, 2);
-    ASSERT_EQ(output, output_global, "%p");
     struct surface_data_t* data = wl_resource_get_user_data(surface);
     surface_data_set_role(data, SURFACE_ROLE_SESSION_LOCK);
     wl_resource_set_user_data(new_resource, data);
     data->lock_surface = new_resource;
+    ASSERT(output);
+    data->effective_output = data->explicit_output = find_output(output);
     surface_data_queue_configure(data);
 }
 
@@ -435,6 +502,22 @@ REQUEST_OVERRIDE_IMPL(ext_session_lock_surface_v1, ack_configure) {
     if (serial && serial == data->configure_serial) {
         data->initial_configure_acked = true;
     }
+}
+
+REQUEST_OVERRIDE_IMPL(ext_session_lock_surface_v1, destroy) {
+    struct surface_data_t* data = wl_resource_get_user_data(ext_session_lock_surface_v1);
+    data->lock_surface = NULL;
+}
+
+static void create_output(int width, int height) {
+    ASSERT(next_output_slot < OUTPUT_SLOTS);
+    outputs[next_output_slot] = (struct output_data_t) {
+        .global = wl_global_create(display, &wl_output_interface, 2, &outputs[next_output_slot], wl_output_bind),
+        .slot = next_output_slot,
+        .width = width,
+        .height = height,
+    };
+    next_output_slot++;
 }
 
 void init() {
@@ -464,9 +547,11 @@ void init() {
     OVERRIDE_REQUEST(ext_session_lock_v1, unlock_and_destroy);
     OVERRIDE_REQUEST(ext_session_lock_v1, get_lock_surface);
     OVERRIDE_REQUEST(ext_session_lock_surface_v1, ack_configure);
+    OVERRIDE_REQUEST(ext_session_lock_surface_v1, destroy);
+
+    create_output(DEFAULT_OUTPUT_WIDTH, DEFAULT_OUTPUT_HEIGHT);
 
     wl_global_create(display, &wl_seat_interface, 6, NULL, wl_seat_bind);
-    wl_global_create(display, &wl_output_interface, 2, NULL, wl_output_bind);
     default_global_create(display, &wl_shm_interface, 1);
     default_global_create(display, &wl_data_device_manager_interface, 2);
     default_global_create(display, &wl_compositor_interface, 4);
@@ -475,6 +560,35 @@ void init() {
     default_global_create(display, &zwlr_layer_shell_v1_interface, 4);
     default_global_create(display, &ext_session_lock_manager_v1_interface, 1);
     default_global_create(display, &xdg_wm_dialog_v1_interface, 1);
+}
+
+static void client_disconnect(struct wl_listener *listener, void *data) {
+    struct wl_client* client = (struct wl_client*)data;
+    struct client_data_t* client_data = client_from_wl_client(client);
+    *client_data = (struct client_data_t){0};
+    fprintf(stderr, "Client %d disconnected\n", client_data->slot);
+    bool clients_still_connected = false;
+    for (int i = 0; i < CLIENT_SLOTS; i++) if (clients[i].client) clients_still_connected = true;
+    if (!clients_still_connected) {
+        fprintf(stderr, "Shutting down\n");
+        wl_display_terminate(display);
+    }
+}
+
+void register_client(struct wl_client* client) {
+    for (int i = 0; i < CLIENT_SLOTS; i++) {
+        if (!clients[i].client) {
+            clients[i] = (struct client_data_t) {
+                .client = client,
+                .slot = i,
+                .disconnect_listener.notify = client_disconnect,
+            };
+            fprintf(stderr, "Client %d connected\n", i);
+            wl_client_add_destroy_listener(client, &clients[i].disconnect_listener);
+            return;
+        }
+    }
+    FATAL("ran out of client slots");
 }
 
 static double parse_number(const char* str) {
@@ -495,7 +609,7 @@ static double parse_number(const char* str) {
 }
 
 const char* handle_command(const char** argv) {
-    fprintf(stderr, "got command:");
+    fprintf(stderr, "Got command:");
     for (int i = 0; argv[i]; i++) {
         fprintf(stderr, " %s", argv[i]);
     }
@@ -506,27 +620,37 @@ const char* handle_command(const char** argv) {
     } else if (strcmp(argv[0], "click_latest_surface") == 0) {
         // Move the pointer onto the surface and click
         // This is needed to trigger a tooltip or popup menu to open for the popup tests
-        ASSERT(pointer_global);
-        double x = parse_number(argv[1]);
-        double y = parse_number(argv[2]);
-        wl_pointer_send_enter(
-            pointer_global,
-            wl_display_next_serial(display),
-            latest_surface->surface,
-            wl_fixed_from_double(x), wl_fixed_from_double(y));
-        wl_pointer_send_frame(pointer_global);
+        ASSERT(latest_surface);
+        struct wl_resource* pointer = latest_surface->client->pointer;
+        ASSERT(latest_surface->client->pointer);
+        wl_fixed_t x = wl_fixed_from_double(parse_number(argv[1]));
+        wl_fixed_t y = wl_fixed_from_double(parse_number(argv[2]));
+        wl_pointer_send_enter(pointer, wl_display_next_serial(display), latest_surface->surface, x, y);
+        wl_pointer_send_frame(pointer);
         latest_surface->click_serial = wl_display_next_serial(display);
-        wl_pointer_send_button(
-            pointer_global,
-            latest_surface->click_serial, 0,
-            BTN_LEFT, WL_POINTER_BUTTON_STATE_PRESSED);
-        wl_pointer_send_frame(pointer_global);
-        wl_pointer_send_button(
-            pointer_global,
-            wl_display_next_serial(display), 0,
-            BTN_LEFT, WL_POINTER_BUTTON_STATE_RELEASED);
-        wl_pointer_send_frame(pointer_global);
+        wl_pointer_send_button(pointer, latest_surface->click_serial, 0, BTN_LEFT, WL_POINTER_BUTTON_STATE_PRESSED);
+        wl_pointer_send_frame(pointer);
+        wl_pointer_send_button(pointer, wl_display_next_serial(display), 0, BTN_LEFT, WL_POINTER_BUTTON_STATE_RELEASED);
+        wl_pointer_send_frame(pointer);
         return "latest_surface_clicked";
+    } else if (strcmp(argv[0], "create_output") == 0) {
+        int width = parse_number(argv[1]);
+        int height = parse_number(argv[2]);
+        create_output(width, height);
+        return "output_created";
+    } else if (strcmp(argv[0], "destroy_output") == 0) {
+        int slot = parse_number(argv[1]);
+        struct output_data_t* output = &outputs[slot];
+        for (int i = 0; i < next_surface_slot; i++) {
+            if (surfaces[i].layer_surface && surfaces[i].effective_output == output) {
+                zwlr_layer_surface_v1_send_closed(surfaces[i].layer_surface);
+            }
+        }
+        if (slot < 0 || slot >= OUTPUT_SLOTS || !outputs[slot].global)
+            FATAL_FMT("destroying invalid output %d", slot);
+        wl_global_remove(output->global);
+        *output = (struct output_data_t){0};
+        return "output_destroyed";
     } else {
         FATAL_FMT("unkown command: %s", argv[0]);
     }

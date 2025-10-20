@@ -29,22 +29,22 @@ cleanup_funcs = []
 class TestError(RuntimeError):
     pass
 
-def get_xdg_runtime_dir() -> str:
+def get_test_dir() -> str:
     '''
-    Creates a directory to use as the XDG_RUNTIME_DIR.
+    Creates a directory to use as the test directory.
     It bases the result on the current PID because each test running in parallel needs a unique directory.
     '''
-    tmp_runtime_dir = '/tmp/layer-shell-test-runtime-dir-' + str(os.getpid())
-    if (path.exists(tmp_runtime_dir)):
+    tmp_test_dir = '/tmp/gtkls-test-' + str(os.getpid())
+    if (path.exists(tmp_test_dir)):
         # We should wipe the dir on cleanup, but things can go wrong
-        wipe_xdg_runtime_dir(tmp_runtime_dir)
-    os.mkdir(tmp_runtime_dir)
-    cleanup_funcs.append(lambda: wipe_xdg_runtime_dir(tmp_runtime_dir))
-    return tmp_runtime_dir
+        wipe_test_dir(tmp_test_dir)
+    os.mkdir(tmp_test_dir)
+    cleanup_funcs.append(lambda: wipe_test_dir(tmp_test_dir))
+    return tmp_test_dir
 
-def wipe_xdg_runtime_dir(p: str):
+def wipe_test_dir(p: str):
     assert p.startswith('/tmp'), 'Sanity check'
-    assert 'layer-shell-test-runtime-dir' in p, 'Sanity check'
+    assert 'gtkls-test-' in p, 'Sanity check'
     shutil.rmtree(p)
 
 def wait_until_appears(p: str):
@@ -169,22 +169,22 @@ class Program:
     def collect_output(self):
         return self.stdout.collect_str(), self.stderr.collect_str()
 
-def run_test(name: str, server_args: List[str], client_args: List[str], xdg_runtime: str, wayland_display: str) -> str:
+def run_test(name: str, server_args: List[str], client_args: List[str], test_dir: str) -> str:
     '''
     Runs two processes: a mock server and the test client
     Does *not* check that client's message assertions pass, this must be done later using the returned output
     '''
+    wayland_display = path.join(test_dir, 'gtkls-test-display')
     env = os.environ.copy()
-    env['XDG_RUNTIME_DIR'] = xdg_runtime
+    env['GTKLS_TEST_DIR'] = test_dir
+    env['XDG_RUNTIME_DIR'] = test_dir
     env['WAYLAND_DISPLAY'] = wayland_display
-    env['CLIENT_TO_SERVER_FIFO'] = xdg_runtime + '/' + wayland_display + '-c2s'
-    env['SERVER_TO_CLIENT_FIFO'] = xdg_runtime + '/' + wayland_display + '-s2c'
     env['WAYLAND_DEBUG'] = '1'
 
     server = Program('server', server_args, env)
 
     try:
-        wait_until_appears(path.join(xdg_runtime, wayland_display))
+        wait_until_appears(wayland_display)
     except TestError as e:
         server.kill()
         raise TestError(server.format_output() + '\n\n' + str(e))
@@ -262,24 +262,23 @@ def verify_result(lines: List[str]):
 def main():
     client_bin = sys.argv[1]
     name = path.basename(client_bin)
-    build_dir = os.environ.get('GTK4_LAYER_SHELL_BUILD')
+    build_dir = os.environ.get('GTK_LAYER_SHELL_BUILD')
     if not build_dir:
         build_dir = path.dirname(client_bin)
         while not path.exists(path.join(build_dir, 'build.ninja')):
             build_dir = path.dirname(build_dir)
             assert build_dir != '' and build_dir != '/', (
-                'Could not determine build directory from GTK4_LAYER_SHELL_BUILD or ' + client_bin
+                'Could not determine build directory from GTK_LAYER_SHELL_BUILD or ' + client_bin
             )
-    assert build_dir, 'GTK4_LAYER_SHELL_BUILD environment variable not set'
+    assert build_dir, 'GTK_LAYER_SHELL_BUILD environment variable not set'
     server_bin = path.join(build_dir, 'test', 'mock-server', 'mock-server')
     assert path.exists(client_bin), 'Could not find client at ' + client_bin
     assert os.access(client_bin, os.X_OK), client_bin + ' is not executable'
     assert path.exists(server_bin), 'Could not find server at ' + server_bin
     assert os.access(server_bin, os.X_OK), server_bin + ' is not executable'
-    wayland_display = 'wayland-test'
-    xdg_runtime = get_xdg_runtime_dir()
+    test_dir = get_test_dir()
 
-    client_stderr = run_test(name, [server_bin], [client_bin, '--auto'], xdg_runtime, wayland_display)
+    client_stderr = run_test(name, [server_bin], [client_bin, '--auto'], test_dir)
     client_lines = [line.strip() for line in client_stderr.strip().splitlines()]
 
     try:

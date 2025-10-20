@@ -13,18 +13,11 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <stdbool.h>
 
 struct wl_display* display = NULL;
 
 static void open_command_stream();
-
-static const char* get_display_name() {
-    const char* result = getenv("WAYLAND_DISPLAY");
-    if (!result) {
-        FATAL("WAYLAND_DISPLAY not set");
-    }
-    return result;
-}
 
 struct request_override_t {
     const struct wl_message* message;
@@ -33,6 +26,23 @@ struct request_override_t {
 };
 
 struct wl_list request_overrides;
+
+char wayland_display[255] = {0};
+char command_fifo_path[255] = {0};
+char response_fifo_path[255] = {0};
+static void init_paths() {
+    const char* test_dir = getenv("GTKLS_TEST_DIR");
+    if (!test_dir) {
+        test_dir = getenv("XDG_RUNTIME_DIR");
+    }
+    if (!test_dir || strlen(test_dir) == 0) {
+        FATAL_FMT("GTKLS_TEST_DIR or XDG_RUNTIME_DIR must be set");
+    }
+    ASSERT(strlen(test_dir) < 200);
+    sprintf(wayland_display, "%s/gtkls-test-display", test_dir);
+    sprintf(command_fifo_path, "%s/gtkls-test-command", test_dir);
+    sprintf(response_fifo_path, "%s/gtkls-test-response", test_dir);
+}
 
 void install_request_override(
     const struct wl_interface* interface,
@@ -118,29 +128,18 @@ char type_code_at_index(const struct wl_message* message, int index) {
     FATAL_FMT(".%s does not have an argument %d", message->name, index);
 }
 
-static void client_disconnect(struct wl_listener *listener, void *data) {
-    wl_display_terminate(display);
-}
-
-static struct wl_listener client_disconnect_listener = {
-    .notify = client_disconnect,
-};
-
 static void client_connect(struct wl_listener *listener, void *data) {
     struct wl_client* client = (struct wl_client*)data;
-    wl_client_add_destroy_listener(client, &client_disconnect_listener);
+    register_client(client);
 }
 
 static struct wl_listener client_connect_listener = {
     .notify = client_connect,
 };
 
-
 static void send_command_response(char* command) {
-    const char* fifo_path = getenv("SERVER_TO_CLIENT_FIFO");
-    ASSERT(fifo_path);
     int fd;
-    ASSERT((fd = open(fifo_path, O_WRONLY)) >= 0);
+    ASSERT((fd = open(response_fifo_path, O_WRONLY)) >= 0);
     const char* argv[20] = {command};
     int argc = 1;
     while (*command) {
@@ -189,11 +188,9 @@ static void open_command_stream() {
     if (event_source) {
         wl_event_source_remove(event_source);
     }
-    const char* fifo_path = getenv("CLIENT_TO_SERVER_FIFO");
-    ASSERT(fifo_path);
     int fd;
-    mkfifo(fifo_path, 0666);
-    ASSERT((fd = open(fifo_path, O_RDONLY | O_NONBLOCK)) >= 0);
+    mkfifo(command_fifo_path, 0666);
+    ASSERT((fd = open(command_fifo_path, O_RDONLY | O_NONBLOCK)) >= 0);
     event_source = wl_event_loop_add_fd(
         wl_display_get_event_loop(display),
         fd,
@@ -206,9 +203,11 @@ static void open_command_stream() {
 int main(int argc, const char** argv) {
     wl_list_init(&request_overrides);
 
+    init_paths();
+
     display = wl_display_create();
-    if (wl_display_add_socket(display, get_display_name()) != 0) {
-        FATAL_FMT("server failed to connect to Wayland display %s", get_display_name());
+    if (wl_display_add_socket(display, wayland_display) != 0) {
+        FATAL_FMT("server failed to connect to Wayland display %s", wayland_display);
     }
 
     open_command_stream();
@@ -217,6 +216,7 @@ int main(int argc, const char** argv) {
 
     init();
 
+    fprintf(stderr, "Mock server started\n");
     wl_display_run(display);
     wl_display_destroy(display);
 
