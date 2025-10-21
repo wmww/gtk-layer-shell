@@ -21,6 +21,7 @@
 
 #include "test-common.h"
 #include <wayland-server.h>
+#include <stdbool.h>
 #include "xdg-shell-server.h"
 #include "xdg-dialog-v1-server.h"
 #include "ext-session-lock-v1-server.h"
@@ -45,4 +46,5 @@ void default_global_create(struct wl_display* display, const struct wl_interface
 char type_code_at_index(const struct wl_message* message, int index);
 
 void init();
+void register_client(struct wl_client* client);
 const char* handle_command(const char** argv);

@@ -127,8 +127,10 @@ layer_surface_handle_closed (void *data,
     LayerSurface *self = data;
     (void)_surface;
 
-    GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
-    gtk_window_close (gtk_window);
+    if (self->respect_surface_closed) {
+        GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
+        gtk_window_close (gtk_window);
+    }
 }
 
 static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
@@ -330,6 +332,7 @@ layer_surface_new (GtkWindow *gtk_window)
     self->last_configure_size = self->current_allocation;
     self->monitor = NULL;
     self->layer = GTK_LAYER_SHELL_LAYER_TOP;
+    self->respect_surface_closed = default_respect_surface_closed;
     self->name_space = NULL;
     self->exclusive_zone = 0;
     self->auto_exclusive_zone = FALSE;

@@ -270,7 +270,20 @@ void
 gtk_layer_try_force_commit (GtkWindow *window)
 {
     CustomShellSurface *shell_surface = gtk_window_get_custom_shell_surface (window);
-    if (!shell_surface)
-        return;
+    if (!shell_surface) return;
     custom_shell_surface_force_commit (shell_surface);
+}
+
+void gtk_layer_set_respect_close (GtkWindow *window, gboolean respect_close)
+{
+    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
+    if (!layer_surface) return; // Error message already shown in gtk_window_get_layer_surface
+    layer_surface->respect_surface_closed = respect_close;
+}
+
+gboolean gtk_layer_get_respect_close (GtkWindow *window)
+{
+    LayerSurface *layer_surface = gtk_window_get_layer_surface (window);
+    if (!layer_surface) return default_respect_surface_closed; // Error message already shown in gtk_window_get_layer_surface
+    return layer_surface->respect_surface_closed;
 }

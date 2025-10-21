@@ -17,6 +17,8 @@
 #include "gtk-layer-shell.h"
 #include <gtk/gtk.h>
 
+static const gboolean default_respect_surface_closed = FALSE;
+
 // A LayerSurface * can be safely cast to a CustomShellSurface *
 typedef struct _LayerSurface LayerSurface;
 
@@ -33,6 +35,7 @@ struct _LayerSurface
     gboolean auto_exclusive_zone; // If to automatically change the exclusive zone to match the window size
     GtkLayerShellKeyboardMode keyboard_mode; // Type of keyboard interactivity enabled for this surface
     GtkLayerShellLayer layer; // The current layer, needs surface recreation on old layer shell versions
+    gboolean respect_surface_closed; // If to forward the .closed event to GTK
 
     // Need the surface to be recreated to change
     GdkMonitor *monitor; // Can be null
