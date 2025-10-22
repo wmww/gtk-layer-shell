@@ -13,8 +13,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-// Time for each callback to run. 60ms is three frames and change
-static int step_time = 60;
+// Time for each callback to run
+static int step_time = 300;
 
 static int return_code = 0;
 static int callback_index = 0;
@@ -98,7 +98,7 @@ static gboolean next_step(gpointer _data) {
         fprintf(stderr, "\nBEGINNING OF CLEANUP\n");
         GList* toplevels = gtk_window_list_toplevels();
         while (toplevels) {
-            gtk_widget_destroy(GTK_WIDGET(toplevels->data));
+            gtk_widget_unrealize(GTK_WIDGET(toplevels->data));
             toplevels = g_list_next(toplevels);
         }
         complete = TRUE;
@@ -147,6 +147,9 @@ static void create_debug_control_window()
 
 int main(int argc, char** argv) {
     EXPECT_MESSAGE(wl_display .get_registry);
+
+    // Vulkan (the default) causes errors under Valgrind and generally introduces complexity
+    setenv("GSK_RENDERER", "cairo", FALSE);
 
     init_paths();
     gtk_init(0, NULL);

@@ -2,7 +2,7 @@
 This directory is home to the gtk-layer-shell test suite.
 
 ## To run tests
-`ninja -C build test` (where `build` is the path to your build directory).
+`ninja -C build test` or `GTKLS_VALGRIND=1 ninja -C build test` (where `build` is the path to your build directory).
 
 ### To add a new integration test
 1. Copy an existing integration test file
