@@ -23,6 +23,8 @@ import subprocess
 import threading
 from typing import List, Dict, Optional, Any
 
+valgrind_error_return_code = 123
+
 # All callables (generally lambdas) appended to this list will be called at the end of the program
 cleanup_funcs = []
 
@@ -82,6 +84,18 @@ def format_process_report(name: str, returncode: int, stdout: str, stderr: str) 
     else:
         result += 'stdout empty, '
     result += 'exit code: ' + str(returncode)
+    if returncode == 0:
+        result += ' (Success)'
+    elif abs(returncode) == 9:
+        result += ' (Killed/timeout)'
+    elif abs(returncode) == 11:
+        result += ' (Segfault)'
+    elif abs(returncode) == 6:
+        result += ' (Abort/failed assertion)'
+    elif returncode == valgrind_error_return_code:
+        result += ' (Valgrind error)'
+    else:
+        result += ' (Error)'
     return result
 
 class Pipe:
@@ -164,55 +178,10 @@ class Program:
         if self.subprocess.returncode != 0:
             raise TestError(
                 self.format_output() + '\n\n' +
-                self.name + ' failed (return code ' + str(self.subprocess.returncode) + ')')
+                self.name + ' failed (exit code ' + str(self.subprocess.returncode) + ')')
 
     def collect_output(self):
         return self.stdout.collect_str(), self.stderr.collect_str()
-
-def run_test(name: str, server_args: List[str], client_args: List[str], test_dir: str) -> str:
-    '''
-    Runs two processes: a mock server and the test client
-    Does *not* check that client's message assertions pass, this must be done later using the returned output
-    '''
-    wayland_display = path.join(test_dir, 'gtkls-test-display')
-    env = os.environ.copy()
-    env['GTKLS_TEST_DIR'] = test_dir
-    env['XDG_RUNTIME_DIR'] = test_dir
-    env['WAYLAND_DISPLAY'] = wayland_display
-    env['WAYLAND_DEBUG'] = '1'
-
-    server = Program('server', server_args, env)
-
-    try:
-        wait_until_appears(wayland_display)
-    except TestError as e:
-        server.kill()
-        raise TestError(server.format_output() + '\n\n' + str(e))
-
-    client = Program(name, client_args, env)
-
-    errors: List[str] = []
-    try:
-        client.finish(timeout=10)
-        client.check_returncode()
-    except TestError as e:
-        errors.append(str(e))
-
-    try:
-        server.finish(timeout=1)
-        server.check_returncode()
-    except TestError as e:
-        errors.append(str(e))
-
-    if errors:
-        raise TestError('\n\n'.join(errors))
-
-    client_stdout, client_stderr = client.collect_output()
-
-    if client_stdout.strip() != '':
-        raise TestError(format_stream(name + ' stdout', client_stdout) + '\n\n' + name + ' stdout not empty')
-
-    return client_stderr
 
 def line_contains(line: str, tokens: List[str]) -> bool:
     '''Returns if the given line contains a list of tokens in the given order (anything can be between tokens)'''
@@ -259,18 +228,18 @@ def verify_result(lines: List[str]):
         # If the test didn't use the right expectation format or something we don't want to silently pass
         raise TestError('test did not correctly set and check an expectation')
 
-def main():
+def main() -> None:
     client_bin = sys.argv[1]
     name = path.basename(client_bin)
-    build_dir = os.environ.get('GTK_LAYER_SHELL_BUILD')
+    valgrind_enabled = os.environ.get('GTKLS_VALGRIND') == '1'
+    build_dir = os.environ.get('GTKLS_BUILD_DIR')
     if not build_dir:
         build_dir = path.dirname(client_bin)
         while not path.exists(path.join(build_dir, 'build.ninja')):
             build_dir = path.dirname(build_dir)
             assert build_dir != '' and build_dir != '/', (
-                'Could not determine build directory from GTK_LAYER_SHELL_BUILD or ' + client_bin
+                'Could not determine build directory from GTKLS_BUILD_DIR or ' + client_bin
             )
-    assert build_dir, 'GTK_LAYER_SHELL_BUILD environment variable not set'
     server_bin = path.join(build_dir, 'test', 'mock-server', 'mock-server')
     assert path.exists(client_bin), 'Could not find client at ' + client_bin
     assert os.access(client_bin, os.X_OK), client_bin + ' is not executable'
@@ -278,7 +247,52 @@ def main():
     assert os.access(server_bin, os.X_OK), server_bin + ' is not executable'
     test_dir = get_test_dir()
 
-    client_stderr = run_test(name, [server_bin], [client_bin, '--auto'], test_dir)
+    wayland_display = path.join(test_dir, 'gtkls-test-display')
+    env = os.environ.copy()
+    env['GTKLS_TEST_DIR'] = test_dir
+    env['XDG_RUNTIME_DIR'] = test_dir
+    env['WAYLAND_DISPLAY'] = wayland_display
+    env['WAYLAND_DEBUG'] = '1'
+
+    server = Program('server', [server_bin], env)
+
+    try:
+        wait_until_appears(wayland_display)
+    except TestError as e:
+        server.kill()
+        raise TestError(server.format_output() + '\n\n' + str(e))
+
+    client_args = [client_bin, '--auto']
+    if valgrind_enabled:
+        client_args = [
+            'valgrind',
+            '--exit-on-first-error=yes',
+            '--error-exitcode=' + str(valgrind_error_return_code),
+            '--quiet'
+        ] + client_args;
+    client = Program(name, client_args, env)
+
+    errors: List[str] = []
+    try:
+        client.finish(timeout=60)
+        client.check_returncode()
+    except TestError as e:
+        errors.append(str(e))
+
+    try:
+        server.finish(timeout=1)
+        server.check_returncode()
+    except TestError as e:
+        errors.append(str(e))
+
+    if errors:
+        raise TestError('\n\n'.join(errors))
+
+    client_stdout, client_stderr = client.collect_output()
+
+    if client_stdout.strip() != '':
+        raise TestError(format_stream(name + ' stdout', client_stdout) + '\n\n' + name + ' stdout not empty')
+
     client_lines = [line.strip() for line in client_stderr.strip().splitlines()]
 
     try:
