@@ -407,7 +407,7 @@ void gtk_layer_try_force_commit (GtkWindow *window);
  *
  * Compositors may send the `zwlr_layer_surface_v1.closed` event in some cases (such as
  * when an output is destroyed). Prior to v0.10 this always triggered a GTK `delete-event`
- * signal, which would close the window if not intercepted by application code. In v0.10+
+ * signal, which would destroy the window if not intercepted by application code. In v0.10+
  * this behavior is disabled by default, and can be turned back on by calling this
  * function with %TRUE. To handle the `.closed` event without destroying your window
  * turn respect_close on and connect a `delete-event` listener that returns %TRUE.
