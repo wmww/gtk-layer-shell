@@ -54,7 +54,7 @@ struct _GdkWaylandPointerData_v3_22_0
 // Version ID 1
 // Diff from previous version:
 // +   struct wp_cursor_shape_device_v1 *shape_device;
-// Valid for GTK v3.24.49 - v3.24.50 (unreleased)
+// Valid for GTK v3.24.49 - v3.24.52 (unreleased)
 struct _GdkWaylandPointerData_v3_24_49
 {
   GdkWindow *focus;
@@ -170,6 +170,8 @@ int gdk_wayland_pointer_data_priv_get_version_id() {
       case 24047:
       case 24048:
       case 24049:
+      case 24050:
+      case 24051:
         break;
   
       default:

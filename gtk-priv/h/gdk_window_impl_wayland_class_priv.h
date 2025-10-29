@@ -39,7 +39,7 @@ struct _GdkWindowImplWaylandClass_v3_22_0
 // Diff from previous version:
 // -   struct _GdkWindowImplClass_v3_22_0 parent_class;
 // +   struct _GdkWindowImplClass_v3_24_35 parent_class;
-// Valid for GTK v3.24.35 - v3.24.50 (unreleased)
+// Valid for GTK v3.24.35 - v3.24.52 (unreleased)
 struct _GdkWindowImplWaylandClass_v3_24_35
 {
   struct _GdkWindowImplClass_v3_24_35 parent_class;
@@ -138,6 +138,8 @@ int gdk_window_impl_wayland_class_priv_get_version_id() {
       case 24047:
       case 24048:
       case 24049:
+      case 24050:
+      case 24051:
         break;
   
       default:
