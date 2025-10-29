@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.10.0] - 29 Oct 2025
+- API: add `gtk_layer_set_respect_close()`/`gtk_layer_get_respect_close()`
+- Fix: ignore `.closed` event by default, [209](https://github.com/wmww/gtk-layer-shell/issues/209)
+- Fix: protocol error on popup menu tooltop, [207](https://github.com/wmww/gtk-layer-shell/issues/207)
+- Tests: support optionally running under Valgrind
+
 ## [0.9.2] - 21 May 2025
 - Fix: don't set popup window geometry with no buffer attached, [200](https://github.com/wmww/gtk-layer-shell/issues/200)
 - Fix: wait for configure event before letting GTK commit a buffer, [202](https://github.com/wmww/gtk-layer-shell/pull/202)
