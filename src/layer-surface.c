@@ -110,7 +110,7 @@ layer_surface_handle_configure (void *data,
     LayerSurface *self = data;
 
     zwlr_layer_surface_v1_ack_configure (surface, serial);
-    self->super.awaiting_configure = FALSE;
+    self->super.awaiting_initial_configure = FALSE;
 
     self->last_configure_size = (GtkRequisition) {
         .width = (gint)w,
@@ -194,7 +194,7 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
                                         self->cached_layer_size.height);
     }
     zwlr_layer_surface_v1_add_listener (self->layer_surface, &layer_surface_listener, self);
-    self->super.awaiting_configure = TRUE;
+    self->super.awaiting_initial_configure = TRUE;
 }
 
 static void
