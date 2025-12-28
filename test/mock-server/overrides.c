@@ -57,6 +57,9 @@ struct surface_data_t {
     int layer_set_w; // The width to configure the layer surface with
     int layer_set_h; // The height to configure the layer surface with
     uint32_t layer_anchor; // The layer surface's anchor
+    struct {
+        int top, left, bottom, right;
+    } layer_margin; // The layer surface's margin
     uint32_t click_serial; // The most recent serial that was used to click on this surface
     uint32_t configure_serial; // The latest serial used to configure the surface
     bool initial_configure_acked; // If the initial configure event has been acked
@@ -171,8 +174,8 @@ static void surface_data_send_configure(struct surface_data_t* data) {
             break;
 
         case SURFACE_ROLE_LAYER:
-                    if (!data->layer_send_configure || !data->layer_surface) break;
-                bool horiz = (
+            if (!data->layer_send_configure || !data->layer_surface) break;
+            bool horiz = (
                 (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT) &&
                 (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT));
             bool vert = (
@@ -184,9 +187,15 @@ static void surface_data_send_configure(struct surface_data_t* data) {
                 FATAL("not horizontally stretched and no width given");
             if (height == 0 && !vert)
                 FATAL("not horizontally stretched and no width given");
-            if (horiz && data->effective_output)  width  = data->effective_output->width;
-            if (vert  && data->effective_output)  height = data->effective_output->height;
-            zwlr_layer_surface_v1_send_configure(data->layer_surface, data->configure_serial, width, height);
+            if (horiz && data->effective_output) width =
+                data->effective_output->width - data->layer_margin.left - data->layer_margin.right;
+            if (vert  && data->effective_output) height =
+                data->effective_output->height - data->layer_margin.top - data->layer_margin.bottom;
+            if (width < 0 || height < 0) {
+                zwlr_layer_surface_v1_send_closed(data->layer_surface);
+            } else {
+                zwlr_layer_surface_v1_send_configure(data->layer_surface, data->configure_serial, width, height);
+            }
             data->layer_send_configure = false;
             break;
 
@@ -425,6 +434,19 @@ REQUEST_OVERRIDE_IMPL(zwlr_layer_surface_v1, set_size) {
     data->layer_set_h = height;
 }
 
+REQUEST_OVERRIDE_IMPL(zwlr_layer_surface_v1, set_margin) {
+    INT_ARG(top, 0);
+    INT_ARG(right, 1);
+    INT_ARG(bottom, 2);
+    INT_ARG(left, 3);
+    struct surface_data_t* data = wl_resource_get_user_data(zwlr_layer_surface_v1);
+    data->layer_send_configure = true;
+    data->layer_margin.top = top;
+    data->layer_margin.right = right;
+    data->layer_margin.bottom = bottom;
+    data->layer_margin.left = left;
+}
+
 REQUEST_OVERRIDE_IMPL(zwlr_layer_surface_v1, get_popup) {
     RESOURCE_ARG(xdg_popup, popup, 0);
     struct surface_data_t* data = wl_resource_get_user_data(zwlr_layer_surface_v1);
@@ -539,6 +561,7 @@ void init() {
     OVERRIDE_REQUEST(zwlr_layer_shell_v1, get_layer_surface);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, set_anchor);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, set_size);
+    OVERRIDE_REQUEST(zwlr_layer_surface_v1, set_margin);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, get_popup);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, ack_configure);
     OVERRIDE_REQUEST(zwlr_layer_surface_v1, destroy);
