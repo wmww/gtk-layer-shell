@@ -37,4 +37,5 @@ integration_tests = [
     'test-nested-popup-configure-delay',
     'test-only-output-removed',
     'test-respect-close',
+    'test-immediate-close',
 ]
