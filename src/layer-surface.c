@@ -126,9 +126,16 @@ layer_surface_handle_closed (void *data,
 {
     LayerSurface *self = data;
     (void)_surface;
+    GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
 
-    if (self->respect_surface_closed) {
-        GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
+    if (self->super.awaiting_initial_configure) {
+        g_warning ("Compositor closed layer surface before sending initial .configure");
+        // If we continue waiting for configure we probably just loop, if we stop waiting for configure without
+        // unmapping we commit to an invalid surface. This sequence has the highest chance of letting the app continue
+        // to run if that's what it wants to do.
+        self->super.awaiting_initial_configure = FALSE;
+        gtk_widget_unmap (GTK_WIDGET(gtk_window));
+    } else if (self->respect_surface_closed) {
         gtk_window_close (gtk_window);
     }
 }
