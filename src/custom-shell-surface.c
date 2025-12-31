@@ -78,14 +78,14 @@ custom_shell_surface_on_window_map (GtkWidget *widget, CustomShellSurface *self)
     // attached, so we don't need to commit. If this is removed, test-window-with-initially-attached-buffer should fail.
     wl_surface_attach (wl_surface, NULL, 0, 0);
 
-    self->awaiting_configure = FALSE;
+    self->awaiting_initial_configure = FALSE;
     self->virtual->map (self, wl_surface);
     gdk_window_set_priv_mapped (gdk_window);
 
     wl_surface_commit (wl_surface);
 
     struct wl_display *display = gdk_wayland_display_get_wl_display (gdk_display_get_default ());
-    while (self->awaiting_configure) {
+    while (self->awaiting_initial_configure) {
         wl_display_roundtrip (display);
     }
 }
