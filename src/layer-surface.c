@@ -317,7 +317,11 @@ static void monitor_changed(GdkDisplay* self, GdkMonitor* monitor, LayerSurface 
     (void)self; (void)monitor;
     // If the surface has a monitor set, it's in charge of responding to monitor changes
     // Don't remap unless the surface is currently mapped (has a layer surface)
-    if (layer_surface->monitor == NULL && layer_surface->layer_surface) {
+    // Also don't remap while waiting for initial configure - this would create nested map
+    // operations which can cause infinite loops (see https://github.com/wmww/gtk-layer-shell/issues/217)
+    if (layer_surface->monitor == NULL &&
+        layer_surface->layer_surface &&
+        !layer_surface->super.awaiting_initial_configure) {
         custom_shell_surface_remap ((CustomShellSurface *)layer_surface);
     }
 }
