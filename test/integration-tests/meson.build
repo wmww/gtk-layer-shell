@@ -40,4 +40,6 @@ integration_tests = [
     'test-immediate-close',
     'test-closed-before-configure',
     'test-monitor-change-closed-before-configure',
+    'test-rapid-monitor-changes',
+    'test-monitor-change-during-configure-wait',
 ]
