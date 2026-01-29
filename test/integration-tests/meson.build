@@ -38,4 +38,6 @@ integration_tests = [
     'test-only-output-removed',
     'test-respect-close',
     'test-immediate-close',
+    'test-closed-before-configure',
+    'test-monitor-change-closed-before-configure',
 ]
