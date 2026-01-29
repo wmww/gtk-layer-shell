@@ -72,11 +72,15 @@ struct surface_data_t {
 
 int next_output_slot = 0;
 static struct output_data_t outputs[OUTPUT_SLOTS] = {0};
+
+// Forward declaration
+static void create_output(int width, int height);
 static struct client_data_t clients[CLIENT_SLOTS] = {0};
 static struct surface_data_t surfaces[SURFACE_SLOTS] = {0};
 static struct wl_resource* current_session_lock = NULL;
 bool configure_delay_enabled = false;
 bool send_closed_instead_of_configure = false;
+int create_output_on_layer_surface_count = 0;  // If > 0, create a new output each time get_layer_surface is called
 int next_surface_slot = 0;
 struct surface_data_t* latest_surface = NULL;
 
@@ -475,6 +479,14 @@ REQUEST_OVERRIDE_IMPL(zwlr_layer_shell_v1, get_layer_surface) {
         ASSERT(data->explicit_output);
     }
     data->effective_output = data->explicit_output ? data->explicit_output : default_output();
+
+    // If enabled, create a new output each time a layer surface is created.
+    // This simulates a compositor that sends monitor events during the configure wait,
+    // which can trigger remap() and cause nested map operations or infinite loops.
+    if (create_output_on_layer_surface_count > 0 && next_output_slot < OUTPUT_SLOTS) {
+        create_output_on_layer_surface_count--;
+        create_output(800, 600);
+    }
 }
 
 REQUEST_OVERRIDE_IMPL(zwlr_layer_surface_v1, ack_configure) {
@@ -650,6 +662,12 @@ const char* handle_command(const char** argv) {
     } else if (strcmp(argv[0], "send_closed_instead_of_configure") == 0) {
         send_closed_instead_of_configure = true;
         return "will_send_closed";
+    } else if (strcmp(argv[0], "enable_output_on_layer_surface") == 0) {
+        // Usage: enable_output_on_layer_surface <count>
+        // Creates a new output each time get_layer_surface is called, up to <count> times.
+        // This simulates monitor events during configure wait, testing for infinite loops.
+        create_output_on_layer_surface_count = parse_number(argv[1]);
+        return "output_on_layer_surface_enabled";
     } else if (strcmp(argv[0], "click_latest_surface") == 0) {
         // Move the pointer onto the surface and click
         // This is needed to trigger a tooltip or popup menu to open for the popup tests
