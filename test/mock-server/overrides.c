@@ -76,6 +76,7 @@ static struct client_data_t clients[CLIENT_SLOTS] = {0};
 static struct surface_data_t surfaces[SURFACE_SLOTS] = {0};
 static struct wl_resource* current_session_lock = NULL;
 bool configure_delay_enabled = false;
+bool send_closed_instead_of_configure = false;
 int next_surface_slot = 0;
 struct surface_data_t* latest_surface = NULL;
 
@@ -175,6 +176,12 @@ static void surface_data_send_configure(struct surface_data_t* data) {
 
         case SURFACE_ROLE_LAYER:
             if (!data->layer_send_configure || !data->layer_surface) break;
+            if (send_closed_instead_of_configure) {
+                zwlr_layer_surface_v1_send_closed(data->layer_surface);
+                send_closed_instead_of_configure = false;
+                data->layer_send_configure = false;
+                break;
+            }
             bool horiz = (
                 (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT) &&
                 (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT));
@@ -640,6 +647,9 @@ const char* handle_command(const char** argv) {
     if (strcmp(argv[0], "enable_configure_delay") == 0) {
         configure_delay_enabled = true;
         return "configure_delay_enabled";
+    } else if (strcmp(argv[0], "send_closed_instead_of_configure") == 0) {
+        send_closed_instead_of_configure = true;
+        return "will_send_closed";
     } else if (strcmp(argv[0], "click_latest_surface") == 0) {
         // Move the pointer onto the surface and click
         // This is needed to trigger a tooltip or popup menu to open for the popup tests
