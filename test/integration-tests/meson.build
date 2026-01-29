@@ -42,4 +42,5 @@ integration_tests = [
     'test-monitor-change-closed-before-configure',
     'test-rapid-monitor-changes',
     'test-monitor-change-during-configure-wait',
+    'test-monitor-cascade-remap',
 ]
