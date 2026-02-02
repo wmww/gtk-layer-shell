@@ -85,8 +85,14 @@ custom_shell_surface_on_window_map (GtkWidget *widget, CustomShellSurface *self)
     wl_surface_commit (wl_surface);
 
     struct wl_display *display = gdk_wayland_display_get_wl_display (gdk_display_get_default ());
+    gint64 start_time_micro = g_get_monotonic_time();
     while (self->awaiting_initial_configure) {
         wl_display_roundtrip (display);
+        if (g_get_monotonic_time() > start_time_micro + 1000000) {
+            g_warning ("Timed out waiting for initial .configure");
+            gtk_widget_unmap (GTK_WIDGET(gdk_window));
+            break;
+        }
     }
 }
 
