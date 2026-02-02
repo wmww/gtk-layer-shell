@@ -72,10 +72,14 @@ struct surface_data_t {
 
 int next_output_slot = 0;
 static struct output_data_t outputs[OUTPUT_SLOTS] = {0};
+
+static void create_output(int width, int height);
+static void destroy_output(int slot);
 static struct client_data_t clients[CLIENT_SLOTS] = {0};
 static struct surface_data_t surfaces[SURFACE_SLOTS] = {0};
 static struct wl_resource* current_session_lock = NULL;
 bool configure_delay_enabled = false;
+bool destroy_outputs_on_layer_surface_create = false;
 int next_surface_slot = 0;
 struct surface_data_t* latest_surface = NULL;
 
@@ -468,6 +472,15 @@ REQUEST_OVERRIDE_IMPL(zwlr_layer_shell_v1, get_layer_surface) {
         ASSERT(data->explicit_output);
     }
     data->effective_output = data->explicit_output ? data->explicit_output : default_output();
+
+    if (destroy_outputs_on_layer_surface_create) {
+        for (int i = 0; i < OUTPUT_SLOTS; i++) {
+            if (outputs[i].global) {
+                destroy_output(i);
+            }
+        }
+        destroy_outputs_on_layer_surface_create = false;
+    }
 }
 
 REQUEST_OVERRIDE_IMPL(zwlr_layer_surface_v1, ack_configure) {
@@ -540,6 +553,19 @@ static void create_output(int width, int height) {
         .height = height,
     };
     next_output_slot++;
+}
+
+static void destroy_output(int slot) {
+    struct output_data_t* output = &outputs[slot];
+    for (int i = 0; i < next_surface_slot; i++) {
+        if (surfaces[i].layer_surface && surfaces[i].effective_output == output) {
+            zwlr_layer_surface_v1_send_closed(surfaces[i].layer_surface);
+        }
+    }
+    if (slot < 0 || slot >= OUTPUT_SLOTS || !outputs[slot].global)
+        FATAL_FMT("destroying invalid output %d", slot);
+    wl_global_remove(output->global);
+    *output = (struct output_data_t){0};
 }
 
 void init() {
@@ -640,6 +666,9 @@ const char* handle_command(const char** argv) {
     if (strcmp(argv[0], "enable_configure_delay") == 0) {
         configure_delay_enabled = true;
         return "configure_delay_enabled";
+    } else if (strcmp(argv[0], "destroy_outputs_on_layer_surface_create") == 0) {
+        destroy_outputs_on_layer_surface_create = true;
+        return "destroy_outputs_on_layer_surface_create_enabled";
     } else if (strcmp(argv[0], "click_latest_surface") == 0) {
         // Move the pointer onto the surface and click
         // This is needed to trigger a tooltip or popup menu to open for the popup tests
@@ -663,16 +692,7 @@ const char* handle_command(const char** argv) {
         return "output_created";
     } else if (strcmp(argv[0], "destroy_output") == 0) {
         int slot = parse_number(argv[1]);
-        struct output_data_t* output = &outputs[slot];
-        for (int i = 0; i < next_surface_slot; i++) {
-            if (surfaces[i].layer_surface && surfaces[i].effective_output == output) {
-                zwlr_layer_surface_v1_send_closed(surfaces[i].layer_surface);
-            }
-        }
-        if (slot < 0 || slot >= OUTPUT_SLOTS || !outputs[slot].global)
-            FATAL_FMT("destroying invalid output %d", slot);
-        wl_global_remove(output->global);
-        *output = (struct output_data_t){0};
+        destroy_output(slot);
         return "output_destroyed";
     } else {
         FATAL_FMT("unkown command: %s", argv[0]);

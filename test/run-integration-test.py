@@ -209,12 +209,19 @@ def verify_result(lines: List[str]):
             negative_assertions.append(line.split()[1:])
             set_expectation = True
         elif line.startswith('[') and line.endswith(')') and ('@' in line or '#' in line):
+            # Wayland debug log line
             if assertions and line_contains(line, assertions[0]):
                 assertions = assertions[1:]
             for negative_assertion in negative_assertions:
                 if line_contains(line, negative_assertion):
                     section = format_stream('relevant section', '\n'.join(lines[section_start:i + 1]))
                     raise TestError(section + '\n\nunexpected message matching "' + ' '.join(negative_assertion) + '"')
+        elif line.startswith('** (') and ':' in line:
+            # glib log line
+            if assertions and line_contains(line, assertions[0]):
+                assertions = assertions[1:]
+            else:
+                raise TestError('unexpected glib log message: ' + line)
 
         if line == 'CHECK EXPECTATIONS COMPLETED' or i == len(lines) - 1:
             checked_expectation = True

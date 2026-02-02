@@ -26,6 +26,8 @@ Integration tests can be run directly on a normal Wayland compositor (this may b
 ### Expectations format
 Integration tests emit protocol expectations by using the `EXPECT_MESSAGE` macro. Each expectation is a white-space-separated sequence of tokens written to a line of stdout. The first element must be `EXPECT:` (this is automatically inserted by `EXPECT_MESSAGE`). For an expectation to match a message, each following token must appear in order in the message line. The list of expected messages must match in the correct order. Messages are matched against the output of the app run with `WAYLAND_DEBUG=1`. Events and requests are not distinguished.
 
+`EXPECT_MESSAGE` must also be used to expect any glib warnings/errors emitted.
+
 Tests can also use the `UNEXPECT_MESSAGE()` macro to emit `UNEXPECT:` lines. They're the same, except if a matching message is encountered the test fails.
 
 When the script encounters `CHECK EXPECTATIONS COMPLETED` (emitted by the `CHECK_EXPECTATIONS()` macro), it will assert that all previous expectations have been met. This is emitted automatically at the start of each test callback, and implicitly exists at the end of the test.

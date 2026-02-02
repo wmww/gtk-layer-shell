@@ -133,8 +133,8 @@ layer_surface_handle_closed (void *data,
         // If we continue waiting for configure we probably just loop, if we stop waiting for configure without
         // unmapping we commit to an invalid surface. This sequence has the highest chance of letting the app continue
         // to run if that's what it wants to do.
-        self->super.awaiting_initial_configure = FALSE;
         gtk_widget_unmap (GTK_WIDGET(gtk_window));
+        self->remap_on_monitor_change = TRUE;
     } else if (self->respect_surface_closed) {
         gtk_window_close (gtk_window);
     }
@@ -202,6 +202,7 @@ layer_surface_map (CustomShellSurface *super, struct wl_surface *wl_surface)
     }
     zwlr_layer_surface_v1_add_listener (self->layer_surface, &layer_surface_listener, self);
     self->super.awaiting_initial_configure = TRUE;
+    self->remap_on_monitor_change = FALSE;
 }
 
 static void
@@ -315,9 +316,12 @@ layer_surface_on_size_allocate (GtkWidget *_gtk_window,
 
 static void monitor_changed(GdkDisplay* self, GdkMonitor* monitor, LayerSurface *layer_surface) {
     (void)self; (void)monitor;
-    // If the surface has a monitor set, it's in charge of responding to monitor changes
-    // Don't remap unless the surface is currently mapped (has a layer surface)
-    if (layer_surface->monitor == NULL && layer_surface->layer_surface) {
+    // If the surface has a monitor set, it is in charge of responding to monitor changes.
+    // Don't remap unless the surface is currently mapped (has a layer surface), or has
+    // requested to be remapped.
+    if (layer_surface->monitor == NULL &&
+        (layer_surface->layer_surface || layer_surface->remap_on_monitor_change)
+    ) {
         custom_shell_surface_remap ((CustomShellSurface *)layer_surface);
     }
 }
