@@ -17,6 +17,7 @@ static void callback_0()
 {
     EXPECT_MESSAGE(zwlr_layer_shell_v1 .get_layer_surface nil);
     EXPECT_MESSAGE(zwlr_layer_surface_v1 .closed);
+    EXPECT_MESSAGE(WARNING Compositor closed layer surface before sending initial .configure);
     window = g_object_ref(create_default_window());
     gtk_layer_init_for_window(window);
     gtk_layer_set_margin(window, GTK_LAYER_SHELL_EDGE_LEFT, 10000);

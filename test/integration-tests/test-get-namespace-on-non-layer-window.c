@@ -15,6 +15,7 @@ static GtkWindow* window;
 
 static void callback_0()
 {
+    EXPECT_MESSAGE(CRITICAL GtkWindow is not a layer surface. Make sure you called gtk_layer_init_for_window ());
     window = create_default_window();
     const char *name_space = gtk_layer_get_namespace(window);
     ASSERT_STR_EQ(name_space, "gtk-layer-shell");
