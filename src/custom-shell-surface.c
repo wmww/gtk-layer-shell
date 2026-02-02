@@ -208,6 +208,7 @@ void custom_shell_surface_unmap (CustomShellSurface *self)
     // handle that ourselves.
     GList* local_children = self->private->popup_children;
     self->private->popup_children = NULL;
+    self->awaiting_initial_configure = FALSE;
     while (local_children) {
         custom_shell_surface_unmap (local_children->data);
         local_children = g_list_remove_link (local_children, local_children);
