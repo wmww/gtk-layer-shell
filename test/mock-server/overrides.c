@@ -53,6 +53,7 @@ struct surface_data_t {
     struct wl_resource* lock_surface;
     bool has_committed_buffer; // This surface has a non-null committed buffer
     bool initial_commit_for_role; // Set to 1 when a role is created for a surface, and cleared after the first commit
+    bool layer_is_closed; // If this surface has been closed and should not get any more configures
     bool layer_send_configure; // If to send a layer surface configure on the next commit
     int layer_set_w; // The width to configure the layer surface with
     int layer_set_h; // The height to configure the layer surface with
@@ -178,7 +179,7 @@ static void surface_data_send_configure(struct surface_data_t* data) {
             break;
 
         case SURFACE_ROLE_LAYER:
-            if (!data->layer_send_configure || !data->layer_surface) break;
+            if (data->layer_is_closed || !data->layer_send_configure || !data->layer_surface) break;
             bool horiz = (
                 (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT) &&
                 (data->layer_anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT));
@@ -197,6 +198,7 @@ static void surface_data_send_configure(struct surface_data_t* data) {
                 data->effective_output->height - data->layer_margin.top - data->layer_margin.bottom;
             if (width < 0 || height < 0) {
                 zwlr_layer_surface_v1_send_closed(data->layer_surface);
+                data->layer_is_closed = true;
             } else {
                 zwlr_layer_surface_v1_send_configure(data->layer_surface, data->configure_serial, width, height);
             }
@@ -479,6 +481,7 @@ REQUEST_OVERRIDE_IMPL(zwlr_layer_shell_v1, get_layer_surface) {
                 destroy_output(i);
             }
         }
+        data->layer_is_closed = true;
         destroy_outputs_on_layer_surface_create = false;
     }
 }
@@ -560,6 +563,7 @@ static void destroy_output(int slot) {
     for (int i = 0; i < next_surface_slot; i++) {
         if (surfaces[i].layer_surface && surfaces[i].effective_output == output) {
             zwlr_layer_surface_v1_send_closed(surfaces[i].layer_surface);
+            surfaces[i].layer_is_closed = true;
         }
     }
     if (slot < 0 || slot >= OUTPUT_SLOTS || !outputs[slot].global)
