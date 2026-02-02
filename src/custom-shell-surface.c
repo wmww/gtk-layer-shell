@@ -88,9 +88,9 @@ custom_shell_surface_on_window_map (GtkWidget *widget, CustomShellSurface *self)
     gint64 start_time_micro = g_get_monotonic_time();
     while (self->awaiting_initial_configure) {
         wl_display_roundtrip (display);
-        if (g_get_monotonic_time() > start_time_micro + 1000000) {
+        if (g_get_monotonic_time () > start_time_micro + 1000000) {
             g_warning ("Timed out waiting for initial .configure");
-            gtk_widget_unmap (GTK_WIDGET(gdk_window));
+            gtk_widget_unmap (GTK_WIDGET (widget));
             break;
         }
     }
