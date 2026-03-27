@@ -260,6 +260,11 @@ def main() -> None:
     env['XDG_RUNTIME_DIR'] = test_dir
     env['WAYLAND_DISPLAY'] = wayland_display
     env['WAYLAND_DEBUG'] = '1'
+    ld_lib_path = env.get('LD_LIBRARY_PATH')
+    env['LD_LIBRARY_PATH'] = (
+        path.join(build_dir, 'src') +
+        (os.pathsep + ld_lib_path if ld_lib_path else '')
+    )
 
     server = Program('server', [server_bin], env)
 
