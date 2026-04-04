@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.10.1] - 3 Apr 2026
+- Fix: unmap when surface is immediately requested to close after opening, [218](https://github.com/wmww/gtk-layer-shell/pull/218)
+- Fix: time out after 1 second of waiting for configure, [220](https://github.com/wmww/gtk-layer-shell/pull/220)
+- Fix: edge cases around montiros changing while being mapped, [221](https://github.com/wmww/gtk-layer-shell/pull/221)
+- gtk-priv: rename ast.py -> c_ast.py to avoid name collision with std lib
+- Compat: bump supported GTK to v3.24.52
+
 ## [0.10.0] - 29 Oct 2025
 - API: add `gtk_layer_set_respect_close()`/`gtk_layer_get_respect_close()`
 - Fix: ignore `.closed` event by default, [209](https://github.com/wmww/gtk-layer-shell/issues/209)
