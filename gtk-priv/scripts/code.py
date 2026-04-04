@@ -21,7 +21,7 @@ import tempfile
 import subprocess
 
 import parse
-from ast import *
+from c_ast import *
 from version import COMBO_FACTOR, Version
 
 logger = logging.getLogger(__name__)
