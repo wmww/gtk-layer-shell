@@ -14,7 +14,7 @@
 #include <sys/stat.h>
 
 // Time for each callback to run
-static int step_time = 300;
+static int step_time = 500;
 
 static int return_code = 0;
 static int callback_index = 0;
