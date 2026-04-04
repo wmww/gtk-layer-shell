@@ -33,4 +33,5 @@ The table below shows which GTK Layer Shell versions work with which GTK version
 | __v0.9.1__ | v3.20.0 - v3.24.49 | v3.24.49 | - |
 | __v0.9.2__ | v3.20.0 - v3.24.49 | v3.24.51 | - |
 | __v0.10.0__| v3.20.0 - v3.24.51 | v3.24.51 | - |
-| __master__ | v3.20.0 - v3.24.51 | v3.24.51 | - |
+| __v0.10.1__| v3.20.0 - v3.24.52 | v3.24.52 | - |
+| __master__ | v3.20.0 - v3.24.52 | v3.24.52 | - |
