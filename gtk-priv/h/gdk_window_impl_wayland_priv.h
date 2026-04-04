@@ -4,7 +4,7 @@
  * This file is part of gtk-layer-shell
  *
  * Copyright © 2010 Intel Corporation
- * Copyright © 2025 gtk-priv/scripts/code.py
+ * Copyright © 2026 gtk-priv/scripts/code.py
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -1201,7 +1201,7 @@ struct _GdkWindowImplWayland_v3_24_40
 // -   struct zxdg_imported_v1 *imported_transient_for;
 // +   struct zxdg_imported_v1 *imported_v1_transient_for;
 // +   struct zxdg_imported_v2 *imported_v2_transient_for;
-// Valid for GTK v3.24.44 - v3.24.52 (unreleased)
+// Valid for GTK v3.24.44 - v3.24.53 (unreleased)
 struct _GdkWindowImplWayland_v3_24_44
 {
   struct _GdkWindowImpl_v3_22_0 parent_instance;
@@ -1401,6 +1401,7 @@ int gdk_window_impl_wayland_priv_get_version_id() {
       case 24049:
       case 24050:
       case 24051:
+      case 24052:
         break;
   
       default:

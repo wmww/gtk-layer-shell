@@ -4,7 +4,7 @@
  * This file is part of gtk-layer-shell
  *
  * Copyright (C) 2009 Carlos Garnacho <carlosg@gnome.org>
- * Copyright © 2025 gtk-priv/scripts/code.py
+ * Copyright © 2026 gtk-priv/scripts/code.py
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -76,7 +76,7 @@ struct _GdkWaylandTabletData_v3_24_49
 // Version ID 2
 // Diff from previous version:
 // +   GList *events;
-// Valid for GTK v3.24.51 - v3.24.52 (unreleased)
+// Valid for GTK v3.24.51 - v3.24.53 (unreleased)
 struct _GdkWaylandTabletData_v3_24_51
 {
   struct zwp_tablet_v2 *wp_tablet;
@@ -192,6 +192,7 @@ int gdk_wayland_tablet_data_priv_get_version_id() {
       case 24049:
       case 24050:
       case 24051:
+      case 24052:
         break;
   
       default:

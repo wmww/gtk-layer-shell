@@ -4,7 +4,7 @@
  * This file is part of gtk-layer-shell
  *
  * Copyright (C) 2009 Carlos Garnacho <carlosg@gnome.org>
- * Copyright © 2025 gtk-priv/scripts/code.py
+ * Copyright © 2026 gtk-priv/scripts/code.py
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -54,7 +54,7 @@ struct _GdkWaylandPointerData_v3_22_0
 // Version ID 1
 // Diff from previous version:
 // +   struct wp_cursor_shape_device_v1 *shape_device;
-// Valid for GTK v3.24.49 - v3.24.52 (unreleased)
+// Valid for GTK v3.24.49 - v3.24.53 (unreleased)
 struct _GdkWaylandPointerData_v3_24_49
 {
   GdkWindow *focus;
@@ -172,6 +172,7 @@ int gdk_wayland_pointer_data_priv_get_version_id() {
       case 24049:
       case 24050:
       case 24051:
+      case 24052:
         break;
   
       default:

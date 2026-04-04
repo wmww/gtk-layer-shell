@@ -4,7 +4,7 @@
  * This file is part of gtk-layer-shell
  *
  * Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald
- * Copyright © 2025 gtk-priv/scripts/code.py
+ * Copyright © 2026 gtk-priv/scripts/code.py
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,7 @@
 typedef struct _GdkWindowImpl GdkWindowImpl;
 
 // Version ID 0
-// Valid for GTK v3.22.0 - v3.24.52 (unreleased)
+// Valid for GTK v3.22.0 - v3.24.53 (unreleased)
 struct _GdkWindowImpl_v3_22_0
 {
   GObject parent;
@@ -130,6 +130,7 @@ int gdk_window_impl_priv_get_version_id() {
       case 24049:
       case 24050:
       case 24051:
+      case 24052:
         break;
   
       default:
