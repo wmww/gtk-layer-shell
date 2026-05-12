@@ -61,18 +61,29 @@ xdg_popup_handle_configure (void *data,
                             int32_t height)
 {
     XdgPopupSurface *self = data;
+    gint cur_width, cur_height;
     (void)_xdg_popup;
 
     g_return_if_fail(width >= 0 && height >= 0); // Protocol error
 
     // Technically this should not be applied until we get a xdg_surface.configure
     GtkWindow *gtk_window = custom_shell_surface_get_gtk_window ((CustomShellSurface *)self);
-    gtk_window_move (gtk_window, x, y);
-    gtk_window_resize (gtk_window, width, height);
     GdkWindow *gdk_window = gtk_widget_get_window (GTK_WIDGET (gtk_window));
-    g_return_if_fail (gdk_window);
-    // calculating the correct values is hard, but we're not required to provide them
-    g_signal_emit_by_name (gdk_window, "moved-to-rect", NULL, NULL, FALSE, FALSE);
+
+    gtk_window_get_size (gtk_window, &cur_width, &cur_height);
+    width = width == 0 ? cur_width : MIN (cur_width, width);
+    height = height == 0 ? cur_height : MIN (cur_height, height);
+
+    if (gdk_window != NULL) {
+        gint shadow_width = gdk_window_priv_get_shadow_left (gdk_window) + gdk_window_priv_get_shadow_right (gdk_window);
+        gint shadow_height = gdk_window_priv_get_shadow_top (gdk_window) + gdk_window_priv_get_shadow_bottom (gdk_window);
+        gdk_window_move_resize (gdk_window, x, y, width + shadow_width, height + shadow_height);
+        // calculating the correct values is hard, but we're not required to provide them
+        g_signal_emit_by_name (gdk_window, "moved-to-rect", NULL, NULL, FALSE, FALSE);
+    } else {
+        gtk_window_move (gtk_window, x, y);
+        gtk_window_resize (gtk_window, width, height);
+    }
 }
 
 static void
