@@ -12,7 +12,7 @@
 
 #include "integration-test-common.h"
 
-#define PANEL_HEIGHT 50
+#define PANEL_HEIGHT 120
 
 static GtkWindow* window;
 
@@ -33,7 +33,7 @@ static void handle_button_press(GtkWidget *window, GdkEventButton *event)
 static void callback_0()
 {
     EXPECT_MESSAGE(zwlr_layer_surface_v1 .set_size 0 0);
-    EXPECT_MESSAGE(.create_buffer 1920 50); // size must match DEFAULT_OUTPUT_WIDTH in common.h, PANEL_HEIGHT above
+    EXPECT_MESSAGE(.create_buffer 1920 120); // size must match DEFAULT_OUTPUT_WIDTH in common.h, PANEL_HEIGHT above
 
     window = create_default_window();
     gtk_widget_add_events(GTK_WIDGET(window), GDK_BUTTON_PRESS_MASK);
@@ -60,12 +60,8 @@ static void callback_1()
     EXPECT_MESSAGE(zwlr_layer_surface_v1 .get_popup xdg_popup);
     EXPECT_MESSAGE(xdg_popup .grab);
 
-    // The mock compositor always sends 500x500 in the xdg_popup configure
-    // event.  GTK will add on pixels for shadow widths.  This works on my
-    // machine, but I assume it could be theme-dependent.  Unfortunately, I the
-    // tests don't seem to have access to gtk-priv, so I can't get the shadow
-    // widths here.
-    EXPECT_MESSAGE(.create_buffer 512);
+    // The mock compositor always sends 500x500 in the xdg_popup configure event.
+    EXPECT_MESSAGE(.set_window_geometry 500);
 
     send_command("click_latest_surface 50 25", "latest_surface_clicked");
 }
