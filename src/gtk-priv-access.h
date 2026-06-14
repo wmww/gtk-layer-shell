@@ -37,4 +37,10 @@ GdkRectangle gtk_window_get_priv_logical_geom (GtkWindow *widget);
 // Checks if it is safe to commit wl_surface for the window directly
 gboolean gdk_window_get_priv_pending_commit (GdkWindow *gdk_window);
 
+// Gets window shadow widths
+gint gdk_window_priv_get_shadow_top (GdkWindow *gdk_window);
+gint gdk_window_priv_get_shadow_bottom (GdkWindow *gdk_window);
+gint gdk_window_priv_get_shadow_left (GdkWindow *gdk_window);
+gint gdk_window_priv_get_shadow_right (GdkWindow *gdk_window);
+
 #endif // GDK_WINDOW_HACK_H

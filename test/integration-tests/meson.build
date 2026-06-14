@@ -39,4 +39,5 @@ integration_tests = [
     'test-respect-close',
     'test-immediate-close',
     'test-monitor-destroyed-before-configure',
+    'test-popup-honors-compositor-configure-size',
 ]
