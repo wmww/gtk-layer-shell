@@ -40,4 +40,5 @@ integration_tests = [
     'test-immediate-close',
     'test-monitor-destroyed-before-configure',
     'test-popup-honors-compositor-configure-size',
+    'test-remapped-popup-sets-window-geometry',
 ]
