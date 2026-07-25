@@ -43,7 +43,7 @@ The easiest way to build against GTK Layer Shell is to use the `gtk-layer-shell-
 [mswiger](https://github.com/mswiger) maintains [Ruby bindings](https://github.com/mswiger/ruby-gtk-layer-shell) which are published to [RubyGems](https://rubygems.org/gems/gtk_layer_shell).
 
 ## Distro Packages
-[![List of distros GTK Layer Shell is packaged for](https://repology.org/badge/vertical-allrepos/gtk-layer-shell.svg)](https://repology.org/project/gtk-layer-shell/versions)
+[![List of distros GTK Layer Shell is packaged for](https://repology.org/badge/vertical-allrepos/gtk-layer-shell.svg?exclude_unsupported=1)](https://repology.org/project/gtk-layer-shell/versions)
 
 ## Building From Source
 1. Clone this repo
