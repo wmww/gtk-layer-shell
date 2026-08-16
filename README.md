@@ -11,7 +11,18 @@ A library to write [GTK](https://www.gtk.org/) applications that use [Layer Shel
 [GTK4 version](https://github.com/wmww/gtk4-layer-shell)
 
 ## Reporting Bugs
-To report a crash or other problem using this library open a new [issue on Github](https://github.com/wmww/gtk-layer-shell/issues). Try to include a minimum reproducer if possible (ideally in C). **DO NOT REPORT GTK LAYER SHELL BUGS TO UPSTREAM GTK**. If you can reproduce the problem without including or linking to the gtk-layer-shell library **at all** then and only then report it to GTK instead of here.
+- Try to include a minimum reproducer if possible (ideally in C)
+- **DO NOT REPORT GTK LAYER SHELL BUGS TO UPSTREAM GTK**
+- If you come across a genuine GTK bug while building a GTK Layer Shell program, reproduce it with this library completely absent (not included or linked in at all), and report to GTK using that reproducer
+
+## AI policy
+AI agents are very useful, however I find their output annoying to read and frontier LLMs can not write code for this project that is consistently correct. Therefore:
+- AI assistance in debugging and experimentation is encouraged
+- All issue/PR comments must start with and should mostly consist of human writing
+- If it's useful to include AI content for some reason, clearly mark it as such
+- Production code must be human-written
+- Test code may be AI-written if you've manually reviewed it
+- Violations of this policy may result in the issue/PR being closed, or a sequence of bad-faith criticisms and tedious demands from my agent until yours give up
 
 ## Supported Desktops
 This library only works on Wayland, and only on Wayland compositors that support the Layer Shell protocol. Layer shell __is supported__ on:
