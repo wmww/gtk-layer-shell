@@ -38,6 +38,7 @@ integration_tests = [
     'test-only-output-removed',
     'test-respect-close',
     'test-immediate-close',
+    'test-disconnect-before-initial-configure',
     'test-monitor-destroyed-before-configure',
     'test-popup-honors-compositor-configure-size',
     'test-remapped-popup-sets-window-geometry',
